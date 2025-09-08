@@ -253,7 +253,7 @@ watch(
 }
 .sticky-card {
   position: sticky;
-  top: 9rem;
+  top: 10rem;
   align-self: flex-start;
   height: fit-content;
 }
@@ -261,7 +261,7 @@ watch(
 .spec-card-wrapper {
   display: flex;
   width: 100%;
-  gap: 20px;
+  gap: 40px;
 }
 
 .bike-detail-container {

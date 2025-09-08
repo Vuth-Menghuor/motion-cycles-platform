@@ -1,5 +1,6 @@
 <script>
 import Brand_carousel from '@/components/brand/brand_carousel.vue'
+import Footer_section from '@/components/footer_section.vue'
 import Landing_page from '@/components/landing_page.vue'
 import Navigation_header from '@/components/navigation_header.vue'
 import Popular_card from '@/components/popular_card.vue'
@@ -14,6 +15,7 @@ export default {
     Brand_carousel,
     Popular_card,
     Product_card,
+    Footer_section,
   },
 }
 </script>
@@ -34,6 +36,7 @@ export default {
       <label class="section-title">Product Listing</label>
     </div>
     <Product_card />
+    <Footer_section />
   </div>
 </template>
 

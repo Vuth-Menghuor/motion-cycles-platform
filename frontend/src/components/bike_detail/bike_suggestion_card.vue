@@ -278,7 +278,7 @@ const viewBikeDetails = async (bikeId) => {
 }
 
 .suggestions-header {
-  text-align: center;
+  text-align: start;
   margin-bottom: 40px;
 }
 
@@ -298,7 +298,7 @@ const viewBikeDetails = async (bikeId) => {
 .bikes-scroll-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 0;
   overflow: hidden;
   position: relative;
 }
