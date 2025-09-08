@@ -24,6 +24,9 @@
           </div>
           <Bike_card_sticky :bike="bike" :image="bike.image" class="sticky-card" />
         </div>
+        <div class="recommend-section">
+          <Bike_suggestion_card />
+        </div>
       </div>
     </div>
   </div>
@@ -39,13 +42,14 @@ import bike3 from '@/assets/images/product_card/mount_3.png'
 import bike4 from '@/assets/images/product_card/road_1.png'
 import bike5 from '@/assets/images/product_card/road_2.png'
 import bike6 from '@/assets/images/product_card/road_3.png'
-import Bread_crumb from '@/components/bread_crumb.vue'
 import Navigation_header from '@/components/navigation_header.vue'
-import Bike_image_gallery from '@/components/bike_image_gallery.vue'
-import Bike_info from '@/components/bike_info.vue'
-import Bike_specifications from '@/components/bike_specifications.vue'
-import Bike_card_sticky from '@/components/bike_card_sticky.vue'
-import Reviews_page from '@/components/reviews/reviews_page.vue'
+import Bread_crumb from '@/components/bread_crumb.vue'
+import Bike_image_gallery from '@/components/bike_detail/bike_image_gallery.vue'
+import Bike_info from '@/components/bike_detail/bike_info.vue'
+import Bike_specifications from '@/components/bike_detail/bike_specifications.vue'
+import Reviews_page from '@/components/bike_detail/reviews/reviews_page.vue'
+import Bike_card_sticky from '@/components/bike_detail/bike_card_sticky.vue'
+import Bike_suggestion_card from '@/components/bike_detail/bike_suggestion_card.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -231,6 +235,18 @@ watch(
 </script>
 
 <style scoped>
+.recommend-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+}
+.recommend-section {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Poppins', sans-serif;
+  border-top: 1px solid #e2e8f0;
+}
 .specifications-section {
   margin-bottom: 14px;
   width: 100%;
