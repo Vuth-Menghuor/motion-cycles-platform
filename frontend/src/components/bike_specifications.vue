@@ -81,6 +81,8 @@ export default {
 .specifications-container {
   width: 100%;
   font-family: 'Poppins', sans-serif;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 18px;
 }
 .tab-button {
   border-radius: 8px;
@@ -93,7 +95,8 @@ export default {
 }
 
 .tab-button.active-tab {
-  background-color: #14c9c9;
+  background-color: #3b82f6;
+  font-weight: 500;
   color: white;
 }
 
@@ -117,7 +120,7 @@ export default {
 
 .specifications-title {
   font-size: 24px;
-  font-weight: 500;
+  font-weight: 600;
   color: black;
 }
 .specification-row {

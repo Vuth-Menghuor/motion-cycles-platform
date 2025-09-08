@@ -68,40 +68,7 @@ import Rating_overview from './rating_overview.vue'
 const props = defineProps({
   reviews: {
     type: Array,
-    default: () => [
-      {
-        user: 'v1',
-        rating: 1,
-      },
-      {
-        user: 'v2',
-        rating: 2,
-      },
-      {
-        user: 'v3',
-        rating: 3,
-      },
-      {
-        user: 'v4',
-        rating: 5,
-      },
-      {
-        user: 'v5',
-        rating: 3,
-      },
-      {
-        user: 'v6',
-        rating: 2,
-      },
-      {
-        user: 'v7',
-        rating: 1,
-      },
-      {
-        user: 'v8',
-        rating: 1,
-      },
-    ],
+    default: () => [],
   },
 })
 
@@ -137,6 +104,9 @@ const progressPercentage = computed(() => (averageRating.value / 5) * 100)
 <style scoped>
 .rating-overview {
   display: flex;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 34px;
+  margin-bottom: 14px;
   background: white;
   border-radius: 8px;
 }

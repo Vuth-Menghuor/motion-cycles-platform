@@ -20,6 +20,7 @@
         <div class="spec-card-wrapper">
           <div class="specifications-section">
             <Bike_specifications />
+            <Reviews_page />
           </div>
           <Bike_card_sticky :bike="bike" :image="bike.image" class="sticky-card" />
         </div>
@@ -44,6 +45,7 @@ import Bike_image_gallery from '@/components/bike_image_gallery.vue'
 import Bike_info from '@/components/bike_info.vue'
 import Bike_specifications from '@/components/bike_specifications.vue'
 import Bike_card_sticky from '@/components/bike_card_sticky.vue'
+import Reviews_page from '@/components/reviews/reviews_page.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -230,6 +232,9 @@ watch(
 
 <style scoped>
 .specifications-section {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 34px;
+  margin-bottom: 14px;
   width: 100%;
 }
 .sticky-card {
@@ -243,9 +248,6 @@ watch(
   display: flex;
   width: 100%;
   gap: 20px;
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 34px;
-  margin-bottom: 14px;
 }
 
 .bike-detail-container {
