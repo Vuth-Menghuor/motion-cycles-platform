@@ -8,7 +8,7 @@
     </div>
 
     <!-- star -->
-    <div class="review-car-stars">
+    <div class="review-card-stars">
       <span
         v-for="i in 5"
         :key="i"
