@@ -1,0 +1,41 @@
+Component Structure
+Main Component:
+
+ReviewsPage or ReviewsSection
+
+Child Components:
+
+RatingOverview - The top section with 4.5 rating and rating distribution bars
+ReviewsList - The customer feedback section with individual reviews
+ReviewForm - The "Submit Your Review" form at the bottom
+
+Smaller Sub-components:
+
+RatingStars - Reusable star rating component
+RatingBar - Individual rating distribution bar
+ReviewCard - Individual review item
+
+Recommended Tools/Libraries for Charts & Ratings
+For Rating Charts & Visualizations:
+
+Recharts - Great for the rating distribution bars
+Chart.js - Another solid option for bar charts
+D3.js - Most flexible but requires more setup
+
+
+src
+ └── components
+      └── reviews
+          ├── ReviewsPage.vue          # Main container (or ReviewsSection.vue if nested in a page)
+          │
+          ├── overview
+          │   ├── RatingOverview.vue   # Top section with overall rating & distribution
+          │   ├── RatingStars.vue      # Reusable star rating display
+          │   └── RatingBar.vue        # Single rating bar (1–5 stars distribution)
+          │
+          ├── list
+          │   ├── ReviewsList.vue      # Displays multiple reviews
+          │   └── ReviewCard.vue       # Single review card (author, comment, stars)
+          │
+          └── form
+              └── ReviewForm.vue       # Form for submitting reviews
