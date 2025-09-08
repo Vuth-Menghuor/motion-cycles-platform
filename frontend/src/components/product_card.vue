@@ -8,6 +8,10 @@ import bike3 from '@/assets/images/product_card/mount_3.png'
 import bike4 from '@/assets/images/product_card/road_1.png'
 import bike5 from '@/assets/images/product_card/road_2.png'
 import bike6 from '@/assets/images/product_card/road_3.png'
+import { useRouter } from 'vue-router'
+
+// router instance
+const router = useRouter
 
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
 
@@ -232,6 +236,10 @@ const getDiscountedPrice = (bike) => {
   }
 }
 
+const viewBikeDetails = (bikeId) => {
+  window.location.href = `/bike/${bikeId}`
+}
+
 // Handle filter events from child component
 const handleClearFilters = () => {
   selectedPriceRange.value = ''
@@ -371,9 +379,9 @@ onUnmounted(() => {
 
             <div class="card-footer">
               <!-- Updated View Details button with router-link -->
-              <router-link :to="`/bike/${bike.id}`" class="view-detail-btn">
+              <button class="view-detail-btn" @click="viewBikeDetails(bike.id)">
                 <span class="detail">View Details</span>
-              </router-link>
+              </button>
               <button class="quick-buy-btn" :style="{ background: bike.bgBtn }">
                 <Icon icon="fa7-solid:cart-arrow-down" />
                 <span>Add To Cart</span>
@@ -619,7 +627,7 @@ onUnmounted(() => {
 }
 
 .product-card {
-  max-width: 520px;
+  max-width: 460px;
   background-color: white;
   border: 1px solid #dee2e6;
   border-radius: 10px;
@@ -759,10 +767,15 @@ onUnmounted(() => {
 }
 
 .detail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: 'Poppins', sans-serif;
   font-size: 14px;
   font-weight: 500;
-  padding: 10px 50px;
+  height: 40px;
+  cursor: pointer;
+  width: 180px;
 }
 
 .quick-buy-btn {
