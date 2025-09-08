@@ -110,6 +110,7 @@ const getSavings = (bike) => {
   width: 50%;
   overflow: hidden;
   background: #fff;
+  margin-bottom: 38px;
 }
 
 /* Image */

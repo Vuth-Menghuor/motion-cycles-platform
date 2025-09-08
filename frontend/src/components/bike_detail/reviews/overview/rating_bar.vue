@@ -49,8 +49,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import Rating_stars from './rating_stars.vue'
 import Rating_overview from './rating_overview.vue'
+import Rating_stars from './rating_stars.vue'
 
 // const props = defineProps({
 //   ratings: {

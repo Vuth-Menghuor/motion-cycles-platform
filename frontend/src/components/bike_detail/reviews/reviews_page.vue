@@ -13,9 +13,9 @@
 
 <script setup>
 import { ref } from 'vue'
-import Review_form from './form/review_form.vue'
-import Reviews_list from './list/reviews_list.vue'
 import Rating_bar from './overview/rating_bar.vue'
+import Reviews_list from './list/reviews_list.vue'
+import Review_form from './form/review_form.vue'
 
 // Make reviews reactive
 const reviews = ref([
