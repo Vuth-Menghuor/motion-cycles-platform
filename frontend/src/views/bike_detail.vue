@@ -232,8 +232,6 @@ watch(
 
 <style scoped>
 .specifications-section {
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 34px;
   margin-bottom: 14px;
   width: 100%;
 }
