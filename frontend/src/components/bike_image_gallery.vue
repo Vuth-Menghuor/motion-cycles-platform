@@ -75,7 +75,6 @@ const selectImage = (imageSrc) => {
   align-items: center;
   justify-content: center;
   background: white;
-  border-radius: 12px;
   border: 1px solid #e2e8f0;
 }
 
@@ -97,7 +96,6 @@ const selectImage = (imageSrc) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid #e2e8f0;
@@ -110,7 +108,6 @@ const selectImage = (imageSrc) => {
 .thumbnail-item img {
   width: 99%;
   object-fit: fill;
-  border-radius: 6px;
 }
 
 /* Responsive Design */
