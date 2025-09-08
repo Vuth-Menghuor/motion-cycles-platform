@@ -32,8 +32,8 @@
         <!-- Price -->
         <div class="price-section">
           <div class="price-details">
-            <div v-if="bike.discount" class="original-price">${{ formatNumber(bike.price) }}</div>
             <div class="current-price">${{ formatNumber(getDiscountedPrice(bike)) }}</div>
+            <div v-if="bike.discount" class="original-price">${{ formatNumber(bike.price) }}</div>
           </div>
           <div v-if="bike.discount" class="savings">
             You save: ${{ formatNumber(getSavings(bike)) }}
