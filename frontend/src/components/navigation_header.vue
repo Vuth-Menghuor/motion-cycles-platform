@@ -1,5 +1,13 @@
-<script setup lang="ts">
+<script setup>
 import { Icon } from '@iconify/vue'
+
+const log = async () => {
+  try {
+    window.location.href = '/'
+  } catch (error) {
+    console.error('Navigation error:', error)
+  }
+}
 </script>
 
 <template>
@@ -9,7 +17,7 @@ import { Icon } from '@iconify/vue'
         <!-- Logo & Menu -->
         <div class="brand-logo-wrapper">
           <Icon icon="ic:outline-menu" class="menu-icon" />
-          <RouterLink to="/" class="brand-logo">
+          <RouterLink to="/" class="brand-logo" @click="log('Logo clicked')">
             <span class="brand-text">MOTION CYCLE</span>
           </RouterLink>
         </div>
@@ -171,10 +179,6 @@ import { Icon } from '@iconify/vue'
   font-size: 36px;
   cursor: pointer;
   transition: transform 0.3s ease;
-}
-
-.menu-icon:hover {
-  transform: scale(1.1);
 }
 
 .brand-logo {
