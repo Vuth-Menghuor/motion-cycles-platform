@@ -14,7 +14,13 @@
             </p>
           </div>
           <div class="newsletter-form">
-            <input type="email" placeholder="Enter your email" class="email-input" />
+            <input
+              type="email"
+              placeholder="Enter your email"
+              class="email-input"
+              v-model="email"
+              @keyup.enter="subscribeNewsletter"
+            />
             <small>
               We care about your data in our
               <a href="#" class="privacy-link">privacy policy</a>
@@ -40,12 +46,12 @@
         <div class="footer-section">
           <h4 class="footer-title">Support</h4>
           <ul>
-            <li><a href="#">Cancellation Policy</a></li>
-            <li><a href="#">Register Bike</a></li>
-            <li><a href="#">Return Policy</a></li>
-            <li><a href="#">Shipping Info</a></li>
-            <li><a href="#">Support</a></li>
-            <li><a href="#">Warranty</a></li>
+            <li><a href="#" @click="handleLinkClick('cancellation')">Cancellation Policy</a></li>
+            <li><a href="#" @click="handleLinkClick('register')">Register Bike</a></li>
+            <li><a href="#" @click="handleLinkClick('return')">Return Policy</a></li>
+            <li><a href="#" @click="handleLinkClick('shipping')">Shipping Info</a></li>
+            <li><a href="#" @click="handleLinkClick('support')">Support</a></li>
+            <li><a href="#" @click="handleLinkClick('warranty')">Warranty</a></li>
           </ul>
         </div>
 
@@ -53,10 +59,10 @@
         <div class="footer-section">
           <h4 class="footer-title">Electric Bike</h4>
           <ul>
-            <li><a href="#">All Electric Bike</a></li>
-            <li><a href="#">Accessories</a></li>
-            <li><a href="#">Gift Cards</a></li>
-            <li><a href="#">Promotions</a></li>
+            <li><a href="#" @click="handleLinkClick('all-bikes')">All Electric Bike</a></li>
+            <li><a href="#" @click="handleLinkClick('accessories')">Accessories</a></li>
+            <li><a href="#" @click="handleLinkClick('gift-cards')">Gift Cards</a></li>
+            <li><a href="#" @click="handleLinkClick('promotions')">Promotions</a></li>
           </ul>
         </div>
 
@@ -64,10 +70,10 @@
         <div class="footer-section">
           <h4 class="footer-title">Company</h4>
           <ul>
-            <li><a href="#">About us</a></li>
-            <li><a href="#">Contact us</a></li>
-            <li><a href="#">Blog</a></li>
-            <li><a href="#">Videos</a></li>
+            <li><a href="#" @click="handleLinkClick('about')">About us</a></li>
+            <li><a href="#" @click="handleLinkClick('contact')">Contact us</a></li>
+            <li><a href="#" @click="handleLinkClick('blog')">Blog</a></li>
+            <li><a href="#" @click="handleLinkClick('videos')">Videos</a></li>
           </ul>
         </div>
 
@@ -83,19 +89,19 @@
       <div class="footer-bottom">
         <p>© 2077 ElectroBike. All rights reserved.</p>
         <div class="social-icons">
-          <a href="#">
+          <a href="#" @click="handleSocialClick('twitter')">
             <Icon icon="mdi:twitter" />
           </a>
-          <a href="#">
+          <a href="#" @click="handleSocialClick('linkedin')">
             <Icon icon="mdi:linkedin" />
           </a>
-          <a href="#">
+          <a href="#" @click="handleSocialClick('facebook')">
             <Icon icon="ic:baseline-facebook" />
           </a>
-          <a href="#">
+          <a href="#" @click="handleSocialClick('github')">
             <Icon icon="mdi:github" />
           </a>
-          <a href="#">
+          <a href="#" @click="handleSocialClick('instagram')">
             <Icon icon="mdi:instagram" />
           </a>
         </div>
@@ -105,9 +111,46 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// no logic needed yet
+// Props for customization (optional)
+const props = defineProps({
+  showNewsletter: {
+    type: Boolean,
+    default: true,
+  },
+  companyName: {
+    type: String,
+    default: 'MOTION CYCLE',
+  },
+  companyDescription: {
+    type: String,
+    default: 'Design amazing digital experiences that create more happy in the world.',
+  },
+})
+
+// Emits for parent component communication
+const emit = defineEmits(['newsletter-subscribe', 'link-click', 'social-click'])
+
+// Reactive data
+const email = ref('')
+
+// Methods
+const subscribeNewsletter = () => {
+  if (email.value.trim()) {
+    emit('newsletter-subscribe', email.value)
+    email.value = ''
+  }
+}
+
+const handleLinkClick = (linkType) => {
+  emit('link-click', linkType)
+}
+
+const handleSocialClick = (platform) => {
+  emit('social-click', platform)
+}
 </script>
 
 <style scoped>
@@ -145,7 +188,7 @@ import { Icon } from '@iconify/vue'
 .newsletter {
   display: flex;
   justify-content: space-between;
-  width: 80%;
+  width: 90%;
 }
 
 .newsletter-text {
@@ -241,6 +284,7 @@ import { Icon } from '@iconify/vue'
   color: #eaecf0;
   text-decoration: none;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .footer-section ul li a:hover {
@@ -265,9 +309,57 @@ import { Icon } from '@iconify/vue'
   font-size: 2rem;
   text-decoration: none;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .social-icons a:hover {
   color: #fff;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .footer-container {
+    padding: 2rem 1rem;
+  }
+
+  .footer-newsletter {
+    padding: 1rem 2rem;
+    height: auto;
+    width: 95%;
+  }
+
+  .newsletter {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .newsletter-text {
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .newsletter-title {
+    text-align: center;
+    font-size: 1.5rem;
+  }
+
+  .email-input {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .social-icons {
+    justify-content: center;
+  }
+
+  .social-icons a {
+    margin: 0 0.5rem;
+  }
 }
 </style>
