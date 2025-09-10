@@ -117,7 +117,7 @@ watch(
   align-items: center;
 }
 .main-image img {
-  width: 105%;
+  width: 100%;
   object-fit: contain;
   cursor: pointer;
 }
