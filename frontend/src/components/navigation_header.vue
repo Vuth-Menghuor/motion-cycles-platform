@@ -1,5 +1,9 @@
 <script setup>
+import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
+import Navigation_sidebar from './sidebar/navigation_sidebar.vue'
+
+const isSidebarOpen = ref(false)
 
 const log = async () => {
   try {
@@ -8,15 +12,26 @@ const log = async () => {
     console.error('Navigation error:', error)
   }
 }
+
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
+
+const closeSidebar = () => {
+  isSidebarOpen.value = false
+}
 </script>
 
 <template>
+  <!-- Sidebar Component -->
+  <Navigation_sidebar :isOpen="isSidebarOpen" @close="closeSidebar" />
+
   <header class="header-slideshow">
     <nav class="main-navigation">
       <div class="nav-container">
         <!-- Logo & Menu -->
         <div class="brand-logo-wrapper">
-          <Icon icon="ic:outline-menu" class="menu-icon" />
+          <Icon icon="ic:outline-menu" class="menu-icon" @click="toggleSidebar" />
           <RouterLink to="/" class="brand-logo" @click="log('Logo clicked')">
             <span class="brand-text">MOTION CYCLE</span>
           </RouterLink>
@@ -45,7 +60,7 @@ const log = async () => {
       </div>
     </nav>
 
-    <!-- Brand Categories Navigation - Moved outside nav-container -->
+    <!-- Brand Categories Navigation -->
     <nav class="brand-navigation">
       <div class="brand-nav-container">
         <ul class="brand-list">
@@ -88,6 +103,7 @@ const log = async () => {
   z-index: 999;
   pointer-events: auto;
 }
+
 .account-container {
   display: flex;
   align-items: center;
@@ -179,6 +195,11 @@ const log = async () => {
   font-size: 36px;
   cursor: pointer;
   transition: transform 0.3s ease;
+  color: white;
+}
+
+.menu-icon:hover {
+  transform: scale(1.1);
 }
 
 .brand-logo {
