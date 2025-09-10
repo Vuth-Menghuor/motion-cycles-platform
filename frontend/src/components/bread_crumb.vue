@@ -33,6 +33,7 @@ const props = defineProps({
   display: flex;
   list-style: none;
   padding: 0;
+  margin: 0 0 16px 0;
   gap: 5px;
   font-size: 16px;
 }
