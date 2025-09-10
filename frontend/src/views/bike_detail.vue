@@ -1,5 +1,22 @@
 <template>
-  <Navigation_header />
+  <Navigation_header
+    :disableAnimation="true"
+    :colors="{
+      headerBg: 'white',
+      boxShadowHeader: '0 4px 20px rgba(0, 0, 0, 0.1)',
+      menuIcon: 'black',
+      logoName: 'black',
+      searchBorder: 'rgba(0, 0, 0, 0.2)',
+      searchBg: 'white',
+      cartIcon: 'black',
+      userIcon: 'black',
+      userBorderBtn: 'rgba(0, 0, 0, 0.2)',
+      userBgBtn: 'white',
+      brandName: 'black',
+      brandBorder: '#e5e5e5',
+      brandBg: 'white',
+    }"
+  />
   <div class="bike-detail-container">
     <!-- Bike Details -->
     <div class="bike-detail">
