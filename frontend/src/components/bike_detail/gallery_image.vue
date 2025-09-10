@@ -41,12 +41,12 @@ const goBack = () => {
 
 <style scoped>
 .header-wrapper {
-  position: sticky; /* makes it stick when scrolling */
-  top: 0; /* stick to top of viewport */
+  position: sticky;
+  top: 0;
   left: 0;
   width: 100%;
   padding: 14px 18px 16px 18px;
-  background-color: rgba(255, 255, 255, 0.9); /* semi-transparent overlay */
+  background-color: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(5px); /* adds a subtle blur effect behind */
   z-index: 1000; /* ensure it's above other content */
   border-bottom: 1px solid #d0d5dd;

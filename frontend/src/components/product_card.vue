@@ -731,14 +731,15 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-.product-image.slide-in {
-  opacity: 1;
-  transform: translateY(0);
+.product-image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: 0.3s;
 }
 
-.product-image.slide-out {
-  opacity: 0;
-  transform: translateY(50px);
+.product-image-container:hover img {
+  transform: scale(1.05);
 }
 
 .card-footer {
