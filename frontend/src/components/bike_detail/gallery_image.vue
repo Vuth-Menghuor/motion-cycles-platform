@@ -31,8 +31,11 @@ const additionalImages = route.query.additionalImages
 const gridImages = computed(() => [image, ...additionalImages.slice(0, 7)])
 
 const goBack = () => {
-  const bikeId = route.params.id // assuming your route is /bike/:id/gallery
-  router.push(`/bike/${bikeId}`)
+  try {
+    window.location.href = `/bike/${route.params.id}`
+  } catch (error) {
+    console.error('Navigation error:', error)
+  }
 }
 </script>
 
