@@ -37,7 +37,7 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 // Import your bike images
 import bike1 from '@/assets/images/product_card/mount_1.png'
-import bike2 from '@/assets/images/product_card/mount_2.png'
+import bike2 from '@/assets/images/product_card/mount_2/mount_2.png'
 import bike3 from '@/assets/images/product_card/mount_3.png'
 import bike4 from '@/assets/images/product_card/road_1.png'
 import bike5 from '@/assets/images/product_card/road_2.png'
@@ -50,6 +50,15 @@ import Bike_specifications from '@/components/bike_detail/bike_specifications.vu
 import Reviews_page from '@/components/bike_detail/reviews/reviews_page.vue'
 import Bike_card_sticky from '@/components/bike_detail/bike_card_sticky.vue'
 import Bike_suggestion_card from '@/components/bike_detail/bike_suggestion_card.vue'
+
+import bike2_alt1 from '@/assets/images/product_card/mount_2/mount_2_alt1.png'
+import bike2_alt2 from '@/assets/images/product_card/mount_2/mount_2_alt2.png'
+import bike2_alt3 from '@/assets/images/product_card/mount_2/mount_2_alt3.png'
+import bike2_alt4 from '@/assets/images/product_card/mount_2/mount_2_alt4.png'
+import bike2_alt5 from '@/assets/images/product_card/mount_2/mount_2_alt5.png'
+import bike2_alt6 from '@/assets/images/product_card/mount_2/mount_2_alt6.png'
+import bike2_alt7 from '@/assets/images/product_card/mount_2/mount_2_alt7.png'
+import bike2_alt8 from '@/assets/images/product_card/mount_2/mount_2_alt8.png'
 
 const route = useRoute()
 const router = useRouter()
@@ -103,6 +112,56 @@ const bikes = ref([
       },
     ],
     image: bike2,
+    additionalImages: [
+      {
+        id: 1,
+        url: bike2_alt1,
+        alt: 'Trek Slash main view',
+        isMain: true,
+      },
+      {
+        id: 2,
+        url: bike2_alt2,
+        alt: 'Trek Slash side view',
+        isMain: false,
+      },
+      {
+        id: 3,
+        url: bike2_alt3,
+        alt: 'Trek Slash rear view',
+        isMain: false,
+      },
+      {
+        id: 4,
+        url: bike2_alt4,
+        alt: 'Trek Slash detail view',
+        isMain: false,
+      },
+      {
+        id: 5,
+        url: bike2_alt5,
+        alt: 'Trek Slash side view',
+        isMain: false,
+      },
+      {
+        id: 6,
+        url: bike2_alt6,
+        alt: 'Trek Slash rear view',
+        isMain: false,
+      },
+      {
+        id: 7,
+        url: bike2_alt7,
+        alt: 'Trek Slash detail view',
+        isMain: false,
+      },
+      {
+        id: 8,
+        url: bike2_alt8,
+        alt: 'Trek Slash detail view',
+        isMain: false,
+      },
+    ],
   },
   {
     id: 3,

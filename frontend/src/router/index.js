@@ -4,7 +4,7 @@ import Home_view from '@/views/home_view.vue'
 import Brand_page from '@/views/brand_page.vue'
 import Bike_detail from '@/views/bike_detail.vue'
 import Default_layout from '@/layouts/Default_layout.vue'
-import { chai } from 'globals'
+import Gallery_image from '@/components/bike_detail/gallery_image.vue'
 
 const routes = [
   {
@@ -26,6 +26,12 @@ const routes = [
         path: '/bike/:id',
         name: 'BikeDetail',
         component: Bike_detail,
+        props: true,
+      },
+      {
+        path: '/bike/:id/gallery',
+        name: 'BikeGallery',
+        component: Gallery_image,
         props: true,
       },
     ],

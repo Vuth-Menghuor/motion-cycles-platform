@@ -144,7 +144,7 @@ const allBikes = ref([
     },
     rating: 2.4,
     reviewCount: 3221,
-    image: '/src/assets/images/product_card/mount_2.png',
+    image: '/src/assets/images/product_card/mount_2/mount_2.png',
   },
   {
     id: 3,

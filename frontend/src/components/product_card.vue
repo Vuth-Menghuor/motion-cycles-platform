@@ -2,12 +2,14 @@
 import { Icon } from '@iconify/vue'
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import bike_filter from './bike_filter.vue'
+
 import bike1 from '@/assets/images/product_card/mount_1.png'
-import bike2 from '@/assets/images/product_card/mount_2.png'
+import bike2 from '@/assets/images/product_card/mount_2/mount_2.png'
 import bike3 from '@/assets/images/product_card/mount_3.png'
 import bike4 from '@/assets/images/product_card/road_1.png'
 import bike5 from '@/assets/images/product_card/road_2.png'
 import bike6 from '@/assets/images/product_card/road_3.png'
+
 import { useRouter } from 'vue-router'
 
 // router instance
