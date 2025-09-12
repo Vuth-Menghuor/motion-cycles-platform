@@ -18,7 +18,6 @@
     }"
   />
   <div class="bike-detail-container">
-    <!-- Bike Details -->
     <div class="bike-detail">
       <Bread_crumb :brand="bike.subtitle" :product="bike.title" />
       <div class="detail-content">
@@ -33,6 +32,7 @@
           :getDiscountedPrice="getDiscountedPrice"
           :getSavings="getSavings"
           :getBrandDescription="getBrandDescription"
+          @addToCart="handleAddToCart"
         />
         <div class="spec-card-wrapper">
           <div class="specifications-section">
@@ -47,12 +47,17 @@
       </div>
     </div>
   </div>
+  <Transition name="fade">
+    <div v-if="showToast" class="toast-popup">
+      <p>{{ toastMessage }}</p>
+    </div>
+  </Transition>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-// Import your bike images
+// ... (Keep existing imports)
 import bike1 from '@/assets/images/product_card/mount_1.png'
 import bike2 from '@/assets/images/product_card/mount_2/mount_2.png'
 import bike3 from '@/assets/images/product_card/mount_3.png'
@@ -76,11 +81,14 @@ import bike2_alt5 from '@/assets/images/product_card/mount_2/mount_2_alt5.png'
 import bike2_alt6 from '@/assets/images/product_card/mount_2/mount_2_alt6.png'
 import bike2_alt7 from '@/assets/images/product_card/mount_2/mount_2_alt7.png'
 import bike2_alt8 from '@/assets/images/product_card/mount_2/mount_2_alt8.png'
+import { useCartStore } from '@/stores/cart'
 
 const route = useRoute()
 const router = useRouter()
 
-// Bike data (should be same as your main component or imported from a store)
+const cartStore = useCartStore() // Use the store
+
+// ... (Keep the bikes data)
 const bikes = ref([
   {
     id: 1,
@@ -260,6 +268,35 @@ const bikes = ref([
   },
 ])
 
+// Toast state (New)
+const showToast = ref(false)
+const toastMessage = ref('')
+const itemQuantities = reactive({})
+
+// Toast function (New)
+const showToastMessage = (message) => {
+  toastMessage.value = message
+  showToast.value = true
+  setTimeout(() => {
+    showToast.value = false
+    toastMessage.value = ''
+  }, 2000)
+}
+
+// Handle Add to Cart logic (New)
+const handleAddToCart = () => {
+  if (bike.value) {
+    const bikeId = bike.value.id
+    itemQuantities[bikeId] = (itemQuantities[bikeId] || 0) + 1
+    const quantityString = 'x' + itemQuantities[bikeId].toString().padStart(2, '0')
+    const message = `${bike.value.title} added to cart! ${quantityString} 🛒`
+    showToastMessage(message)
+
+    // Call the action from the Pinia store to update the global count
+    cartStore.incrementCount()
+  }
+}
+
 // Find the current bike
 const bike = computed(() => {
   const bikeId = parseInt(route.params.id)
@@ -311,6 +348,34 @@ watch(
 </script>
 
 <style scoped>
+.toast-popup {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  z-index: 1000;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition:
+    opacity 0.3s ease-in-out,
+    transform 0.3s ease-in-out;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(20px) translateX(-50%);
+}
+
 .recommend-title {
   font-family: 'Poppins', sans-serif;
   font-size: 24px;

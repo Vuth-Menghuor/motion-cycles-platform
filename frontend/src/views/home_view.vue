@@ -4,6 +4,7 @@ import Landing_page from '@/components/landing_page.vue'
 import Navigation_header from '@/components/navigation_header.vue'
 import Popular_card from '@/components/popular_card.vue'
 import Product_card from '@/components/product_card.vue'
+import { ref } from 'vue'
 
 export default {
   name: 'HomeView',
@@ -15,12 +16,23 @@ export default {
     Popular_card,
     Product_card,
   },
+  setup() {
+    const cartCount = ref(0)
+
+    const handleAddToCart = () => {
+      cartCount.value++
+    }
+    return {
+      cartCount,
+      handleAddToCart,
+    }
+  },
 }
 </script>
 
 <template>
   <div>
-    <Navigation_header />
+    <Navigation_header :cart-count="cartCount" />
     <Landing_page />
     <div>
       <label class="brand-list-title">Brand Lists</label>
@@ -33,7 +45,7 @@ export default {
     <div class="content-title">
       <label class="section-title">Product Listing</label>
     </div>
-    <Product_card />
+    <Product_card @add-to-cart="handleAddToCart" />
   </div>
 </template>
 

@@ -1,19 +1,18 @@
 <script setup>
 import { Icon } from '@iconify/vue'
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, reactive } from 'vue' // Import reactive
 import bike_filter from './bike_filter.vue'
-
 import bike1 from '@/assets/images/product_card/mount_1.png'
 import bike2 from '@/assets/images/product_card/mount_2/mount_2.png'
 import bike3 from '@/assets/images/product_card/mount_3.png'
 import bike4 from '@/assets/images/product_card/road_1.png'
 import bike5 from '@/assets/images/product_card/road_2.png'
 import bike6 from '@/assets/images/product_card/road_3.png'
-
 import { useRouter } from 'vue-router'
+import { useCartStore } from '@/stores/cart'
 
 // router instance
-const router = useRouter
+const router = useRouter()
 
 const props = defineProps({
   brand: {
@@ -22,6 +21,11 @@ const props = defineProps({
     default: '',
   },
 })
+
+const cartStore = useCartStore() // Use the store
+
+// Emit event for parent to listen to
+const emit = defineEmits(['add-to-cart'])
 
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
 
@@ -158,44 +162,61 @@ const bikes = ref([
   },
 ])
 
-// Filter state - now managed in parent
+const showToast = ref(false)
+const toastMessage = ref('')
+// Use a reactive object to store item quantities by ID
+const itemQuantities = reactive({})
+
+const showToastMessage = (message) => {
+  toastMessage.value = message
+  showToast.value = true
+  setTimeout(() => {
+    showToast.value = false
+    toastMessage.value = ''
+  }, 2000)
+}
+
+// Function to handle the "Add to Cart" click
+const handleAddToCart = (bikeId) => {
+  const bike = bikes.value.find((b) => b.id === bikeId)
+  if (bike) {
+    // Increment the quantity for this specific item (local state)
+    itemQuantities[bikeId] = (itemQuantities[bikeId] || 0) + 1
+    const quantityString = 'x' + itemQuantities[bikeId].toString().padStart(2, '0')
+    const message = `${bike.title} added to cart! ${quantityString} 🛒`
+    showToastMessage(message)
+
+    // Call the action from the Pinia store to update the global count
+    cartStore.incrementCount()
+  }
+}
+
+// ... (Keep the rest of your script setup)
 const selectedPriceRange = ref('')
 const selectedColors = ref([])
 const selectedBrands = ref([])
 const selectedDiscountStatuses = ref([])
 const showFilters = ref(false)
-
-// Reference to the filter component to access priceRanges
 const bike_filters = ref(null)
-
-// Helper function to check if bike has discount
 const hasDiscount = (bike) => {
   return bike.discount && (bike.discount.type === 'percent' || bike.discount.type === 'fixed')
 }
-
 const filteredBikes = computed(() => {
   return bikes.value.filter((bike) => {
-    // Brand prop filter
     if (props.brand && bike.subtitle.toLowerCase() !== props.brand.toLowerCase()) {
       return false
     }
-
     const discountedPrice = getDiscountedPrice(bike)
-
-    // Price filter
     if (selectedPriceRange.value && bike_filters.value) {
       const range = bike_filters.value.priceRanges.find((r) => r.label === selectedPriceRange.value)
       if (range && (discountedPrice < range.min || discountedPrice > range.max)) {
         return false
       }
     }
-
-    // Discount status filter
     if (selectedDiscountStatuses.value.length > 0) {
       const bikeHasDiscount = hasDiscount(bike)
       const shouldShowDiscounted = selectedDiscountStatuses.value.includes('discounted')
       const shouldShowRegular = selectedDiscountStatuses.value.includes('regular')
-
       if (bikeHasDiscount && !shouldShowDiscounted) {
         return false
       }
@@ -203,24 +224,17 @@ const filteredBikes = computed(() => {
         return false
       }
     }
-
-    // Color filter
     if (selectedColors.value.length > 0 && !selectedColors.value.includes(bike.color)) {
       return false
     }
-
-    // Brand filter (from filter UI)
     if (selectedBrands.value.length > 0 && !selectedBrands.value.includes(bike.subtitle)) {
       return false
     }
-
     return true
   })
 })
-
 const favorites = ref(new Set())
 const visibleBikes = ref(new Set())
-
 const toggleFavorite = (bikeId) => {
   if (favorites.value.has(bikeId)) {
     favorites.value.delete(bikeId)
@@ -229,18 +243,15 @@ const toggleFavorite = (bikeId) => {
   }
   favorites.value = new Set(favorites.value)
 }
-
 const isFavorited = (bikeId) => {
   return favorites.value.has(bikeId)
 }
-
 const getDiscountLabel = (bike) => {
   if (!bike.discount) return null
   return bike.discount.type === 'percent'
     ? `${bike.discount.value}% OFF`
     : `-${bike.discount.value.toLocaleString()} OFF`
 }
-
 const getDiscountedPrice = (bike) => {
   if (!bike.discount) return bike.price
   if (bike.discount.type === 'percent') {
@@ -249,21 +260,16 @@ const getDiscountedPrice = (bike) => {
     return bike.price - bike.discount.value
   }
 }
-
 const viewBikeDetails = (bikeId) => {
-  window.location.href = `/bike/${bikeId}`
+  router.push(`/bike/${bikeId}`).then(() => window.scrollTo(0, 0))
 }
-
-// Handle filter events from child component
 const handleClearFilters = () => {
   selectedPriceRange.value = ''
   selectedColors.value = []
   selectedBrands.value = []
   selectedDiscountStatuses.value = []
 }
-
 let observer
-
 onMounted(() => {
   observer = new IntersectionObserver(
     (entries) => {
@@ -279,24 +285,20 @@ onMounted(() => {
     },
     { threshold: 0.5 },
   )
-
   const cards = document.querySelectorAll('.product-card')
   cards.forEach((card) => observer.observe(card))
 })
-
 onUnmounted(() => {
   if (observer) observer.disconnect()
 })
-
-const filteredByBrand = computed(() => {
-  if (!props.brand) return bikes.value
-  return bikes.value.filter((bike) => bike.subtitle.toLowerCase() === props.brand.toLowerCase())
-})
+// const filteredByBrand = computed(() => {
+//   if (!props.brand) return bikes.value
+//   return bikes.value.filter((bike) => bike.subtitle.toLowerCase() === props.brand.toLowerCase())
+// })
 </script>
 
 <template>
   <div class="main-container">
-    <!-- Filter Toggle Button for Mobile -->
     <div class="filter-toggle-container">
       <button class="filter-toggle-btn" @click="showFilters = !showFilters">
         <Icon icon="mdi:filter-variant" class="toggle-icon" />
@@ -306,7 +308,6 @@ const filteredByBrand = computed(() => {
     </div>
 
     <div class="content-wrapper">
-      <!-- Use the separated filter component -->
       <bike_filter
         ref="bike_filters"
         :bikes="bikes"
@@ -318,7 +319,6 @@ const filteredByBrand = computed(() => {
         @clear-filters="handleClearFilters"
       />
 
-      <!-- Products Grid -->
       <div class="products-section">
         <div class="products-header">
           <h2>
@@ -400,11 +400,10 @@ const filteredByBrand = computed(() => {
             </div>
 
             <div class="card-footer">
-              <!-- Updated View Details button with router-link -->
               <button class="view-detail-btn" @click="viewBikeDetails(bike.id)">
                 <span class="detail">View Details</span>
               </button>
-              <button class="quick-buy-btn" :style="{ background: bike.bgBtn }">
+              <button class="quick-buy-btn" @click="handleAddToCart(bike.id)">
                 <Icon icon="fa7-solid:cart-arrow-down" />
                 <span>Add To Cart</span>
               </button>
@@ -412,7 +411,6 @@ const filteredByBrand = computed(() => {
           </div>
         </div>
 
-        <!-- No Results Message -->
         <div v-if="filteredBikes.length === 0" class="no-results">
           <Icon icon="mdi:magnify-close" class="no-results-icon" />
           <h3>No bikes found</h3>
@@ -421,10 +419,43 @@ const filteredByBrand = computed(() => {
         </div>
       </div>
     </div>
+
+    <Transition name="fade">
+      <div v-if="showToast" class="toast-popup">
+        <p>{{ toastMessage }}</p>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <style scoped>
+.toast-popup {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  z-index: 1000;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition:
+    opacity 0.3s ease-in-out,
+    transform 0.3s ease-in-out;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(20px) translateX(-50%);
+}
 .main-container {
   width: 100%;
   font-family: 'Poppins', sans-serif;

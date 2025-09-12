@@ -1,11 +1,11 @@
-Update this component so it accepts props:
-
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navigation_sidebar from './sidebar/navigation_sidebar.vue'
+import { useCartStore } from '@/stores/cart' // Import the cart store
+import { storeToRefs } from 'pinia' // Import storeToRefs
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -31,6 +31,10 @@ const props = defineProps({
     }),
   },
 })
+
+// Access the cart store and its state
+const cartStore = useCartStore()
+const { count } = storeToRefs(cartStore) // Get the reactive count from the store
 
 const isSidebarOpen = ref(false)
 const headerRef = ref(null)
@@ -93,9 +97,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <!-- Sidebar Component -->
   <Navigation_sidebar :isOpen="isSidebarOpen" @close="closeSidebar" />
-
   <header
     ref="headerRef"
     class="header-slideshow"
@@ -103,7 +105,6 @@ onUnmounted(() => {
   >
     <nav class="main-navigation">
       <div class="nav-container">
-        <!-- Logo & Menu -->
         <div class="brand-logo-wrapper">
           <Icon
             ref="menuIconRef"
@@ -117,8 +118,6 @@ onUnmounted(() => {
             <span class="brand-text" :style="{ color: colors.logoName || '' }">MOTION CYCLE</span>
           </RouterLink>
         </div>
-
-        <!-- Search Bar -->
         <div class="search-container">
           <input
             type="search"
@@ -133,12 +132,10 @@ onUnmounted(() => {
             <Icon icon="ri:search-line" class="search-icon" />
           </button>
         </div>
-
-        <!-- Shopping Cart -->
         <div class="cart-container">
           <button class="cart-button">
             <Icon icon="ion:cart" class="cart-icon" :style="{ color: colors.cartIcon }" />
-            <span class="cart-badge">3</span>
+            <span class="cart-badge" v-if="count > 0">{{ count }}</span>
           </button>
           <div class="account-container">
             <router-link to="/authentication/sign_in">
@@ -156,8 +153,6 @@ onUnmounted(() => {
         </div>
       </div>
     </nav>
-
-    <!-- Brand Categories Navigation -->
     <nav
       class="brand-navigation"
       :style="{ backgroundColor: colors.brandBg || '', borderColor: colors.brandBorder }"

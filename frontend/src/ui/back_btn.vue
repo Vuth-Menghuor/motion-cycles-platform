@@ -4,48 +4,29 @@
       <Icon icon="weui:back-filled" class="back-icon" />
       <span>Back</span>
     </button>
-    <!-- <div class="brand-logo-header">
+    <div class="brand-logo-header">
       <span>{{ brandName.toUpperCase() }}</span>
-    </div> -->
-  </div>
-  <div class="gallery-wrapper">
-    <div class="gallery-container">
-      <div class="gallery-column">
-        <div v-for="(img, idx) in gridImages" :key="idx" class="grid-item">
-          <img :src="img.url || img" :alt="img.alt || `${title} - Image ${idx + 1}`" />
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 
 const props = defineProps({
   brandName: {
     type: String,
-    requirement: true,
+    required: true,
   },
 })
 
-const route = useRoute()
 const router = useRouter()
 
-// Get data from query
-const image = route.query.image
-const title = route.query.title
-const additionalImages = route.query.additionalImages
-  ? JSON.parse(route.query.additionalImages)
-  : []
-
-// First 7 images
-const gridImages = computed(() => [image, ...additionalImages.slice(0, 7)])
-
 const goBack = () => {
-  router.push(`/bike/${route.params.id}`).then(() => window.scrollTo(0, 0))
+  router.push('/').then(() => {
+    window.scrollTo(0, 0)
+  })
 }
 </script>
 
@@ -93,31 +74,5 @@ const goBack = () => {
   font-family: '911Porscha', sans-serif;
   font-size: 1.4rem;
   font-weight: 500;
-}
-
-.gallery-container {
-  width: 80%;
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.gallery-column {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.grid-item {
-  position: relative;
-  overflow: hidden;
-}
-
-.grid-item img {
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 </style>

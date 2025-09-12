@@ -43,9 +43,9 @@
 
       <!-- Action Buttons -->
       <div class="action-buttons">
-        <button class="add-to-cart-btn">
-          <Icon icon="fa7-solid:cart-arrow-down" />
-          <span>Add to Cart</span>
+        <button class="add-to-cart-btn" @click="emit('addToCart')">
+          <Icon icon="ic:round-shopping-cart" class="cart-icon" />
+          Add to Cart
         </button>
         <button class="buy-now-btn">
           <Icon icon="mdi:flash" />
@@ -68,11 +68,13 @@ import { Icon } from '@iconify/vue'
 // eslint-disable-next-line no-unused-vars
 const props = defineProps({
   bike: { type: Object, required: true },
-  formatNumber: { type: Function, required: true },
-  getDiscountedPrice: { type: Function, required: true },
-  getSavings: { type: Function, required: true },
-  getBrandDescription: { type: Function, required: true },
+  formatNumber: Function,
+  getDiscountedPrice: Function,
+  getSavings: Function,
+  getBrandDescription: Function,
 })
+
+const emit = defineEmits(['addToCart'])
 </script>
 
 <style scoped>
