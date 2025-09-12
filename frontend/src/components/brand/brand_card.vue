@@ -1,14 +1,45 @@
-// Handles how a single brand looks (logo, hover effects, padding, etc.).
 <script setup>
-defineProps({
+import { useRouter } from 'vue-router'
+
+const props = defineProps({
   brand: Object,
 })
+
+const router = useRouter()
+
+const goToBrand = (id, brandName) => {
+  // const isSameBrand =
+  //   route.name === 'BrandPage' && route.params.brandName?.toLowerCase() === brandName.toLowerCase()
+  // if (isSameBrand) {
+  //   window.scrollTo(0, 0)
+  // } else {
+  //   router
+  //     .push({
+  //       name: 'BrandPage',
+  //       params: { id, brandName },
+  //     })
+  //     .then(() => {
+  //       window.scrollTo(0, 0)
+  //     })
+  // }
+  router
+    .push({
+      name: 'BrandPage',
+      params: { id, brandName },
+    })
+    .then(() => {
+      setTimeout(() => {
+        location.reload()
+        window.scrollTo(0, 0)
+      }, 100)
+    })
+}
 </script>
 
 <template>
-  <RouterLink :to="`/brands/${brand.id}`" class="brand-card">
+  <div class="brand-card" @click="goToBrand(brand.id, brand.name)">
     <img :src="brand.logo" :alt="brand.name" class="brand-card__logo" />
-  </RouterLink>
+  </div>
 </template>
 
 <style scoped>
@@ -22,6 +53,7 @@ defineProps({
   border: 1px solid #dee2e6;
   margin: 0 6px;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .brand-card__logo {

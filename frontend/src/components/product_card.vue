@@ -15,6 +15,14 @@ import { useRouter } from 'vue-router'
 // router instance
 const router = useRouter
 
+const props = defineProps({
+  brand: {
+    type: String,
+    required: false,
+    default: '',
+  },
+})
+
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
 
 function formatNumber(number) {
@@ -165,9 +173,13 @@ const hasDiscount = (bike) => {
   return bike.discount && (bike.discount.type === 'percent' || bike.discount.type === 'fixed')
 }
 
-// Filtered bikes computation
 const filteredBikes = computed(() => {
   return bikes.value.filter((bike) => {
+    // Brand prop filter
+    if (props.brand && bike.subtitle.toLowerCase() !== props.brand.toLowerCase()) {
+      return false
+    }
+
     const discountedPrice = getDiscountedPrice(bike)
 
     // Price filter
@@ -197,7 +209,7 @@ const filteredBikes = computed(() => {
       return false
     }
 
-    // Brand filter
+    // Brand filter (from filter UI)
     if (selectedBrands.value.length > 0 && !selectedBrands.value.includes(bike.subtitle)) {
       return false
     }
@@ -275,6 +287,11 @@ onMounted(() => {
 onUnmounted(() => {
   if (observer) observer.disconnect()
 })
+
+const filteredByBrand = computed(() => {
+  if (!props.brand) return bikes.value
+  return bikes.value.filter((bike) => bike.subtitle.toLowerCase() === props.brand.toLowerCase())
+})
 </script>
 
 <template>
@@ -304,7 +321,10 @@ onUnmounted(() => {
       <!-- Products Grid -->
       <div class="products-section">
         <div class="products-header">
-          <h2>Bikes ({{ filteredBikes.length }} results)</h2>
+          <h2>
+            {{ props.brand ? props.brand + ' Bikes' : 'All Bikes' }} ({{ filteredBikes.length }}
+            results)
+          </h2>
         </div>
 
         <div class="bikes-container">

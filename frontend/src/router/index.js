@@ -17,7 +17,7 @@ const routes = [
         component: Home_view,
       },
       {
-        path: '/brands/:id',
+        path: '/brands/:brandName',
         name: 'BrandPage',
         component: Brand_page,
         props: true,

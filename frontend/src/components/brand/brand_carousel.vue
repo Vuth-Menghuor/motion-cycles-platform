@@ -12,7 +12,7 @@ import brand7 from '@/assets/images/brands/brand_7.png'
 import brand8 from '@/assets/images/brands/brand_8.png'
 
 const brands = [
-  { id: 'connondale', name: 'Connondale', logo: brand1 },
+  { id: 'cannondale', name: 'Cannondale', logo: brand1 },
   { id: 'trek', name: 'Trek', logo: brand2 },
   { id: 'bianchi', name: 'Bianchi', logo: brand3 },
   { id: 'giant', name: 'Giant', logo: brand4 },
