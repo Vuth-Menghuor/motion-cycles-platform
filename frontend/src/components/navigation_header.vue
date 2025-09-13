@@ -102,10 +102,8 @@ onUnmounted(() => {
     class="header-slideshow"
     :style="{ backgroundColor: colors.headerBg || '', boxShadow: colors.boxShadowHeader || '' }"
   >
-    <!-- Main Navigation -->
     <nav class="main-navigation">
       <div class="nav-container">
-        <!-- Brand Logo Section -->
         <div class="brand-logo-wrapper">
           <Icon
             ref="menuIconRef"
@@ -115,12 +113,10 @@ onUnmounted(() => {
             :class="{ 'is-open': isSidebarOpen }"
             @click="toggleSidebar"
           />
-          <RouterLink to="/" class="brand-logo">
+          <RouterLink to="/" class="brand-logo" @click="log">
             <span class="brand-text" :style="{ color: colors.logoName || '' }">MOTION CYCLE</span>
           </RouterLink>
         </div>
-
-        <!-- Search Section -->
         <div class="search-container">
           <input
             type="search"
@@ -136,27 +132,22 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <!-- User Actions Section -->
+        <!-- user actions section -->
         <div class="user-actions">
-          <button
-            class="action-button cart-button"
-            :style="{
-              backgroundColor: colors.cartBgBtn || '',
-            }"
-          >
+          <button class="cart-button action-button" :style="{ borderColor: colors.userBorderBtn }">
             <Icon
               icon="ion:cart"
-              class="action-icon cart-icon"
+              class="cart-icon action-icon"
               :style="{ color: colors.cartIcon }"
             />
             <span class="cart-badge" v-if="count > 0">{{ count }}</span>
           </button>
-
           <router-link to="/authentication/sign_in">
             <button
-              class="action-button user-button"
+              class="user-account action-button"
               :style="{
                 backgroundColor: colors.userBgBtn || '',
+                borderColor: colors.userBorderBtn,
               }"
             >
               <Icon
@@ -173,7 +164,10 @@ onUnmounted(() => {
     <!-- Brand Navigation -->
     <nav
       class="brand-navigation"
-      :style="{ backgroundColor: colors.brandBg || '', borderColor: colors.brandBorder }"
+      :style="{
+        backgroundColor: colors.brandBg || '',
+        borderColor: colors.brandBorder,
+      }"
     >
       <div class="brand-nav-container">
         <ul class="brand-list">
