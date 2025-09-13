@@ -8,20 +8,6 @@ const props = defineProps({
 const router = useRouter()
 
 const goToBrand = (id, brandName) => {
-  // const isSameBrand =
-  //   route.name === 'BrandPage' && route.params.brandName?.toLowerCase() === brandName.toLowerCase()
-  // if (isSameBrand) {
-  //   window.scrollTo(0, 0)
-  // } else {
-  //   router
-  //     .push({
-  //       name: 'BrandPage',
-  //       params: { id, brandName },
-  //     })
-  //     .then(() => {
-  //       window.scrollTo(0, 0)
-  //     })
-  // }
   router
     .push({
       name: 'BrandPage',
@@ -29,7 +15,6 @@ const goToBrand = (id, brandName) => {
     })
     .then(() => {
       setTimeout(() => {
-        location.reload()
         window.scrollTo(0, 0)
       }, 100)
     })

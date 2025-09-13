@@ -4,8 +4,8 @@ import { Icon } from '@iconify/vue'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navigation_sidebar from './sidebar/navigation_sidebar.vue'
-import { useCartStore } from '@/stores/cart' // Import the cart store
-import { storeToRefs } from 'pinia' // Import storeToRefs
+import { useCartStore } from '@/stores/cart'
+import { storeToRefs } from 'pinia'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -32,9 +32,8 @@ const props = defineProps({
   },
 })
 
-// Access the cart store and its state
 const cartStore = useCartStore()
-const { count } = storeToRefs(cartStore) // Get the reactive count from the store
+const { count } = storeToRefs(cartStore)
 
 const isSidebarOpen = ref(false)
 const headerRef = ref(null)
@@ -103,8 +102,10 @@ onUnmounted(() => {
     class="header-slideshow"
     :style="{ backgroundColor: colors.headerBg || '', boxShadow: colors.boxShadowHeader || '' }"
   >
+    <!-- Main Navigation -->
     <nav class="main-navigation">
       <div class="nav-container">
+        <!-- Brand Logo Section -->
         <div class="brand-logo-wrapper">
           <Icon
             ref="menuIconRef"
@@ -114,10 +115,12 @@ onUnmounted(() => {
             :class="{ 'is-open': isSidebarOpen }"
             @click="toggleSidebar"
           />
-          <RouterLink to="/" class="brand-logo" @click="log">
+          <RouterLink to="/" class="brand-logo">
             <span class="brand-text" :style="{ color: colors.logoName || '' }">MOTION CYCLE</span>
           </RouterLink>
         </div>
+
+        <!-- Search Section -->
         <div class="search-container">
           <input
             type="search"
@@ -132,70 +135,69 @@ onUnmounted(() => {
             <Icon icon="ri:search-line" class="search-icon" />
           </button>
         </div>
-        <div class="cart-container">
-          <button class="cart-button">
-            <Icon icon="ion:cart" class="cart-icon" :style="{ color: colors.cartIcon }" />
+
+        <!-- User Actions Section -->
+        <div class="user-actions">
+          <button
+            class="action-button cart-button"
+            :style="{
+              backgroundColor: colors.cartBgBtn || '',
+            }"
+          >
+            <Icon
+              icon="ion:cart"
+              class="action-icon cart-icon"
+              :style="{ color: colors.cartIcon }"
+            />
             <span class="cart-badge" v-if="count > 0">{{ count }}</span>
           </button>
-          <div class="account-container">
-            <router-link to="/authentication/sign_in">
-              <button
-                class="user-account"
-                :style="{
-                  backgroundColor: colors.userBgBtn || '',
-                  borderColor: colors.userBorderBtn,
-                }"
-              >
-                <Icon icon="mdi:user" class="account-icon" :style="{ color: colors.userIcon }" />
-              </button>
-            </router-link>
-          </div>
+
+          <router-link to="/authentication/sign_in">
+            <button
+              class="action-button user-button"
+              :style="{
+                backgroundColor: colors.userBgBtn || '',
+              }"
+            >
+              <Icon
+                icon="mdi:user"
+                class="action-icon user-icon"
+                :style="{ color: colors.userIcon }"
+              />
+            </button>
+          </router-link>
         </div>
       </div>
     </nav>
+
+    <!-- Brand Navigation -->
     <nav
       class="brand-navigation"
       :style="{ backgroundColor: colors.brandBg || '', borderColor: colors.brandBorder }"
     >
       <div class="brand-nav-container">
         <ul class="brand-list">
-          <li class="brand-item">
-            <a href="/brands/cannondale" class="brand-link" :style="{ color: colors.brandName }"
-              >Cannondale</a
+          <li
+            class="brand-item"
+            v-for="brand in [
+              'Cannondale',
+              'Trek',
+              'Bianchi',
+              'Giant',
+              'Cervélo',
+              'Specialized',
+              'Shimano',
+              'Colnago',
+            ]"
+            :key="brand"
+          >
+            <a
+              :href="`/brands/${brand.toLowerCase()}`"
+              class="brand-link"
+              :style="{ color: colors.brandName }"
             >
-          </li>
-          <li class="brand-item">
-            <a href="/brands/trek" class="brand-link" :style="{ color: colors.brandName }">Trek</a>
-          </li>
-          <li class="brand-item">
-            <a href="/brands/bianchi" class="brand-link" :style="{ color: colors.brandName }"
-              >Bianchi</a
-            >
-          </li>
-          <li class="brand-item">
-            <a href="/brands/giant" class="brand-link" :style="{ color: colors.brandName }"
-              >Giant</a
-            >
-          </li>
-          <li class="brand-item">
-            <a href="/brands/cervelo" class="brand-link" :style="{ color: colors.brandName }"
-              >Cervélo</a
-            >
-          </li>
-          <li class="brand-item">
-            <a href="/brands/specialized" class="brand-link" :style="{ color: colors.brandName }"
-              >Specialized</a
-            >
-          </li>
-          <li class="brand-item">
-            <a href="/brands/shimano" class="brand-link" :style="{ color: colors.brandName }"
-              >Shimano</a
-            >
-          </li>
-          <li class="brand-item">
-            <a href="/brands/colnago" class="brand-link" :style="{ color: colors.brandName }"
-              >Colnago</a
-            >
+              {{ brand }}
+            </a>
           </li>
         </ul>
       </div>
@@ -204,6 +206,9 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* ================================
+   HEADER BASE STYLES
+   ================================ */
 .header-slideshow {
   position: fixed;
   top: 0;
@@ -214,130 +219,9 @@ onUnmounted(() => {
   transition: all 0.3s ease;
 }
 
-.header-slideshow.is-scrolled {
-  background-color: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-
-.header-slideshow.is-scrolled .main-navigation {
-  background: rgba(255, 255, 255, 0.9);
-}
-
-.header-slideshow.is-scrolled .brand-navigation {
-  background: rgba(255, 255, 255, 0.85);
-  border-color: #e5e5e5;
-}
-
-/* Menu icon color change on scroll */
-.header-slideshow.is-scrolled .menu-icon {
-  color: #333333;
-}
-
-/* Brand text color change on scroll */
-.header-slideshow.is-scrolled .brand-text {
-  color: #333333;
-  text-shadow: none;
-}
-
-/* Brand links color change on scroll */
-.header-slideshow.is-scrolled .brand-link {
-  color: #333333;
-}
-
-.header-slideshow.is-scrolled .brand-link:hover {
-  background: rgba(0, 0, 0, 0.05);
-  border-bottom-color: #333333;
-}
-
-/* Cart icon color change on scroll */
-.header-slideshow.is-scrolled .cart-icon {
-  color: #333333;
-}
-
-/* User account icon color change on scroll */
-.header-slideshow.is-scrolled .user-account {
-  background: white;
-  border-color: rgba(0, 0, 0, 0.2);
-  color: #333333;
-}
-
-/* Search input border change on scroll */
-.header-slideshow.is-scrolled .search-input {
-  border-color: rgba(0, 0, 0, 0.2);
-  background: rgba(255, 255, 255, 0.95);
-}
-
-.header-slideshow.is-scrolled .search-input:focus {
-  border-color: grey;
-  box-shadow: 0 0 0 2px rgba(51, 51, 51, 0.1);
-}
-
-.account-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.user-account {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  width: 42px;
-  height: 42px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: white;
-}
-
-.account-icon {
-  font-size: 22px;
-}
-
-.brand-navigation {
-  background: rgba(0, 0, 0, 0.15);
-  border-bottom: 1px solid #b9b1b1;
-  border-top: 1px solid #b9b1b1;
-  backdrop-filter: blur(5px);
-}
-
-.brand-nav-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-.brand-list {
-  display: flex;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  gap: 0;
-}
-
-.brand-item {
-  flex: 1;
-}
-
-.brand-link {
-  display: block;
-  padding: 1rem 1.5rem;
-  color: white;
-  text-decoration: none;
-  text-align: center;
-  font-weight: 400;
-  transition: all 0.3s ease;
-  font-size: 14px;
-  font-family: 'Poppins', sans-serif;
-  border-bottom: 2px solid transparent;
-}
-
-.brand-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-bottom-color: #b9b1b1;
-  transform: translateY(-1px);
-}
-
+/* ================================
+   NAVIGATION CONTAINERS
+   ================================ */
 .main-navigation,
 .brand-navigation {
   width: 100%;
@@ -353,6 +237,15 @@ onUnmounted(() => {
   flex-wrap: wrap;
 }
 
+.brand-nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* ================================
+   BRAND LOGO SECTION
+   ================================ */
 .brand-logo-wrapper {
   display: flex;
   align-items: center;
@@ -374,11 +267,6 @@ onUnmounted(() => {
   color: black;
 }
 
-.logo-image {
-  width: 45px;
-  height: auto;
-}
-
 .brand-text {
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
@@ -387,6 +275,9 @@ onUnmounted(() => {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
+/* ================================
+   SEARCH SECTION
+   ================================ */
 .search-container {
   flex: 1 1 500px;
   min-width: 200px;
@@ -436,45 +327,148 @@ onUnmounted(() => {
   font-size: 18px;
 }
 
-.cart-container {
-  position: relative;
-  margin-left: 0.5rem;
+/* ================================
+   USER ACTIONS SECTION
+   ================================ */
+.user-actions {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 14px;
+  margin-left: 0.5rem;
 }
 
-.cart-button {
-  background: none;
-  border: none;
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
   cursor: pointer;
-  position: relative;
-  padding-top: 0.5rem;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
 }
 
-.cart-icon {
-  width: 30px;
-  height: auto;
+.action-icon {
+  font-size: 1.5rem;
   color: white;
+}
+
+/* Cart specific styles */
+.cart-button {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .cart-badge {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: -8px;
+  right: -8px;
   background: #ef4444;
   color: white;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 30%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
+  font-size: 0.64rem;
   font-weight: 600;
   animation: pulse 2s infinite;
 }
+
+/* ================================
+   BRAND NAVIGATION
+   ================================ */
+.brand-navigation {
+  background: rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid #b9b1b1;
+  border-top: 1px solid #b9b1b1;
+  backdrop-filter: blur(5px);
+}
+
+.brand-list {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+
+.brand-item {
+  flex: 1;
+}
+
+.brand-link {
+  display: block;
+  padding: 1rem 1.5rem;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 400;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  border-bottom: 2px solid transparent;
+}
+
+.brand-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-bottom-color: #b9b1b1;
+  transform: translateY(-1px);
+}
+
+/* ================================
+   SCROLL STATE STYLES
+   ================================ */
+.header-slideshow.is-scrolled {
+  background-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.header-slideshow.is-scrolled .main-navigation {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.header-slideshow.is-scrolled .brand-navigation {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: #e5e5e5;
+}
+
+/* Scrolled state element color changes */
+.header-slideshow.is-scrolled .menu-icon,
+.header-slideshow.is-scrolled .brand-text,
+.header-slideshow.is-scrolled .brand-link,
+.header-slideshow.is-scrolled .action-icon {
+  color: #333333;
+  text-shadow: none;
+}
+
+.header-slideshow.is-scrolled .brand-link:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-bottom-color: #333333;
+}
+
+.header-slideshow.is-scrolled .action-button {
+  background: white;
+  border-color: rgba(0, 0, 0, 0.2);
+  color: #333333;
+}
+
+.header-slideshow.is-scrolled .search-input {
+  border-color: rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.header-slideshow.is-scrolled .search-input:focus {
+  border-color: grey;
+  box-shadow: 0 0 0 2px rgba(51, 51, 51, 0.1);
+}
+
+/* ================================
+   RESPONSIVE DESIGN
+   ================================ */
 @media (max-width: 768px) {
   .nav-container {
     flex-direction: column;
@@ -498,6 +492,25 @@ onUnmounted(() => {
   .brand-item {
     flex: 1 1 25%;
     min-width: 120px;
+  }
+
+  .user-actions {
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-item {
+    flex: 1 1 50%;
+  }
+
+  .action-button {
+    width: 38px;
+    height: 38px;
+  }
+
+  .action-icon {
+    font-size: 1.25rem;
   }
 }
 </style>
