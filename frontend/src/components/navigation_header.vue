@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navigation_sidebar from './sidebar/navigation_sidebar.vue'
 import { useCartStore } from '@/stores/cart'
 import { storeToRefs } from 'pinia'
+import router from '@/router'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -53,6 +54,14 @@ const closeSidebar = () => {
   if (menuTl) {
     menuTl.reverse()
   }
+}
+
+const log = () => {
+  router.push('/').then(() => {
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+    }, 100)
+  })
 }
 
 const handleClickOutside = (event) => {
@@ -113,9 +122,9 @@ onUnmounted(() => {
             :class="{ 'is-open': isSidebarOpen }"
             @click="toggleSidebar"
           />
-          <RouterLink to="/" class="brand-logo" @click="log">
+          <div class="brand-logo" @click="log">
             <span class="brand-text" :style="{ color: colors.logoName || '' }">MOTION CYCLE</span>
-          </RouterLink>
+          </div>
         </div>
         <div class="search-container">
           <input
@@ -132,7 +141,6 @@ onUnmounted(() => {
           </button>
         </div>
 
-        <!-- user actions section -->
         <div class="user-actions">
           <button class="cart-button action-button" :style="{ borderColor: colors.userBorderBtn }">
             <Icon
@@ -161,7 +169,6 @@ onUnmounted(() => {
       </div>
     </nav>
 
-    <!-- Brand Navigation -->
     <nav
       class="brand-navigation"
       :style="{
@@ -185,13 +192,13 @@ onUnmounted(() => {
             ]"
             :key="brand"
           >
-            <a
-              :href="`/brands/${brand.toLowerCase()}`"
+            <router-link
+              :to="{ name: 'BrandPage', params: { id: brand.toLowerCase(), brandName: brand } }"
               class="brand-link"
               :style="{ color: colors.brandName }"
             >
               {{ brand }}
-            </a>
+            </router-link>
           </li>
         </ul>
       </div>
@@ -259,6 +266,7 @@ onUnmounted(() => {
   gap: 0.5rem;
   text-decoration: none;
   color: black;
+  cursor: pointer;
 }
 
 .brand-text {
