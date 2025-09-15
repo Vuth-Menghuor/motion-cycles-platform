@@ -14,20 +14,21 @@
         <div class="app-sidebar__section">
           <h3 class="app-sidebar__section-title">MAIN</h3>
           <ul class="app-sidebar__menu">
-            <li class="app-sidebar__menu-item app-sidebar__menu-item--active">
-              <RouterLink to="/" class="app-sidebar__menu-link" @click="closeSidebar">
+            <li class="app-sidebar__menu-item">
+              <a href="#" class="app-sidebar__menu-link" @click="goToHome">
                 <Icon icon="mdi:home" class="app-sidebar__menu-icon" />
                 Home
-              </RouterLink>
-            </li>
-            <li class="app-sidebar__menu-item">
-              <a href="#" class="app-sidebar__menu-link" @click="closeSidebar">
-                <Icon icon="solar:heart-bold" class="app-sidebar__menu-icon" />
-                Favorites
               </a>
             </li>
             <li class="app-sidebar__menu-item">
-              <a href="#" class="app-sidebar__menu-link" @click="closeSidebar">
+              <a href="#" class="app-sidebar__menu-link" @click="goToFav">
+                <Icon icon="solar:heart-bold" class="app-sidebar__menu-icon" />
+                Favorites
+                <span class="count-fav">{{ favoritesStore.favorites.length }}</span>
+              </a>
+            </li>
+            <li class="app-sidebar__menu-item">
+              <a href="#" class="app-sidebar__menu-link" @click="goToProducts">
                 <Icon icon="mdi:shopping" class="app-sidebar__menu-icon" />
                 Products
               </a>
@@ -35,23 +36,24 @@
           </ul>
         </div>
 
+        <!-- SETTINGS -->
         <div class="app-sidebar__section">
           <h3 class="app-sidebar__section-title">SETTINGS</h3>
           <ul class="app-sidebar__menu">
             <li class="app-sidebar__menu-item">
-              <a href="#" class="app-sidebar__menu-link" @click="closeSidebar">
+              <a href="#" class="app-sidebar__menu-link" @click="goToAppearance">
                 <Icon icon="mdi:palette" class="app-sidebar__menu-icon" />
                 Appearance
               </a>
             </li>
             <li class="app-sidebar__menu-item">
-              <a href="#" class="app-sidebar__menu-link" @click="closeSidebar">
+              <a href="#" class="app-sidebar__menu-link" @click="goToNotification">
                 <Icon icon="mdi:bell" class="app-sidebar__menu-icon" />
                 Notification
               </a>
             </li>
             <li class="app-sidebar__menu-item">
-              <a href="#" class="app-sidebar__menu-link" @click="closeSidebar">
+              <a href="#" class="app-sidebar__menu-link" @click="goToHelp">
                 <Icon icon="mdi:help-circle" class="app-sidebar__menu-icon" />
                 Help & Support
               </a>
@@ -60,6 +62,7 @@
         </div>
       </nav>
 
+      <!-- FOOTER -->
       <div class="app-sidebar__footer">
         <div class="app-sidebar__user">
           <div class="app-sidebar__user-avatar">
@@ -79,7 +82,9 @@
 </template>
 
 <script setup>
+import { useFavoritesStore } from '@/stores/favorites'
 import { Icon } from '@iconify/vue'
+import { useRouter } from 'vue-router'
 
 defineProps({
   isOpen: {
@@ -87,15 +92,38 @@ defineProps({
     default: false,
   },
 })
-
+const favoritesStore = useFavoritesStore()
 const emit = defineEmits(['close'])
+const router = useRouter()
 
 const closeSidebar = () => {
   emit('close')
 }
+
+// helper: navigate, scroll top, close
+const navigate = (path) => {
+  router.push(path).then(() => {
+    setTimeout(() => window.scrollTo(0, 0), 100)
+    closeSidebar()
+  })
+}
+
+const goToHome = () => navigate('/')
+const goToFav = () => navigate('/favorites')
 </script>
 
 <style scoped>
+.count-fav {
+  margin-left: 5.5rem;
+  color: #14c9c9;
+  font-weight: 500;
+  padding: 2px 10px;
+  border: 1px solid #14c9c9;
+  border-radius: 10px;
+}
+.fav-product-count {
+  display: flex;
+}
 .sidebar-overlay {
   position: fixed;
   top: 0;
@@ -151,7 +179,7 @@ const closeSidebar = () => {
 .app-sidebar__logo-text {
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 18px;
   color: #1f2937;
 }
 
@@ -229,6 +257,7 @@ const closeSidebar = () => {
 .app-sidebar__menu-icon {
   font-size: 18px;
   flex-shrink: 0;
+  text-align: center;
 }
 
 .app-sidebar__footer {

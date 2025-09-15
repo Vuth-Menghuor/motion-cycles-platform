@@ -207,9 +207,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* ================================
-   HEADER BASE STYLES
-   ================================ */
 .header-slideshow {
   position: fixed;
   top: 0;
