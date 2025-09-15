@@ -5,6 +5,7 @@ import Brand_page from '@/views/brand_page.vue'
 import Bike_detail from '@/views/bike_detail.vue'
 import Default_layout from '@/layouts/Default_layout.vue'
 import Gallery_image from '@/components/bike_detail/gallery_image.vue'
+import Favorite_page from '@/views/favorite_page.vue'
 
 const routes = [
   {
@@ -33,6 +34,11 @@ const routes = [
         name: 'BikeGallery',
         component: Gallery_image,
         props: true,
+      },
+      {
+        path: '/favorites',
+        name: 'Favorites',
+        component: Favorite_page,
       },
     ],
   },
