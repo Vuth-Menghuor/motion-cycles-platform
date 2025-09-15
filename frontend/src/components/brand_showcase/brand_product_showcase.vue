@@ -44,7 +44,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import bike1 from '@/assets/images/product_showcase/image_1.png'
 import bike2 from '@/assets/images/product_showcase/image_2.png'
@@ -63,6 +63,7 @@ const router = useRouter()
 const brandName = ref(route.params.brandName)
 
 const brandConfig = {
+  // ... (brandConfig object remains the same)
   cannondale: {
     bgColor: 'linear-gradient(0deg, rgba(46, 32, 5, 0.7) 0%, rgba(255, 255, 255, 0.7) 50%)',
     textColor: '#2E2005',
@@ -170,12 +171,6 @@ const brandConfig = {
   },
 }
 
-const goBack = () => {
-  router.push('/').then(() => {
-    window.scrollTo(0, 0)
-  })
-}
-
 const currentBrand = computed(() => {
   return (
     brandConfig[brandName.value?.toLowerCase()] || {
@@ -185,6 +180,26 @@ const currentBrand = computed(() => {
     }
   )
 })
+
+const goBack = () => {
+  router.push('/').then(() => {
+    window.scrollTo(0, 0)
+  })
+}
+
+// Add a watcher to update the brandName when the route changes
+watch(
+  () => route.params.brandName,
+  (newBrandName) => {
+    if (newBrandName) {
+      brandName.value = newBrandName
+      // Optional: scroll to the top of the page after the new content loads
+      setTimeout(() => {
+        window.scrollTo(0, 0)
+      }, 100)
+    }
+  },
+)
 </script>
 
 <style scoped>
