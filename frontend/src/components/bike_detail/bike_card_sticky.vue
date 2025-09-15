@@ -52,7 +52,7 @@
 
       <!-- Buttons -->
       <div class="bike-summary-actions">
-        <button class="bike-summary-add-to-cart">
+        <button class="bike-summary-add-to-cart" @click="$emit('addToCart', bike)">
           <Icon icon="fa7-solid:cart-arrow-down" />
           <span>Add to Cart</span>
         </button>
@@ -69,6 +69,7 @@
 import { ref, computed } from 'vue'
 import { Icon } from '@iconify/vue'
 
+defineEmits(['addToCart'])
 const props = defineProps({
   bike: {
     type: Object,
@@ -124,12 +125,13 @@ const getSavings = (bike) => {
 
 /* Info */
 .bike-summary-info {
-  padding: 16px;
+  padding: 12px 16px 20px 16px;
 }
 
 .bike-summary-title {
   font-size: 20px;
   font-weight: 600;
+  margin: 4px 0;
 }
 
 .bike-summary-meta {

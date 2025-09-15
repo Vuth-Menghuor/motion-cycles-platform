@@ -39,7 +39,12 @@
             <Bike_specifications />
             <Reviews_page />
           </div>
-          <Bike_card_sticky :bike="bike" :image="bike.image" class="sticky-card" />
+          <Bike_card_sticky
+            :bike="bike"
+            :image="bike.image"
+            class="sticky-card"
+            @addToCart="handleAddToCart"
+          />
         </div>
         <div class="recommend-section">
           <Bike_suggestion_card />
