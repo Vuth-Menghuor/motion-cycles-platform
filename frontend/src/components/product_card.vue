@@ -10,6 +10,7 @@ import bike5 from '@/assets/images/product_card/road_2.png'
 import bike6 from '@/assets/images/product_card/road_3.png'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
+import { useFavoritesStore } from '@/stores/favorites'
 
 // router instance
 const router = useRouter()
@@ -235,17 +236,17 @@ const filteredBikes = computed(() => {
 })
 const favorites = ref(new Set())
 const visibleBikes = ref(new Set())
-const toggleFavorite = (bikeId) => {
-  if (favorites.value.has(bikeId)) {
-    favorites.value.delete(bikeId)
-  } else {
-    favorites.value.add(bikeId)
-  }
-  favorites.value = new Set(favorites.value)
+
+const favoritesStore = useFavoritesStore()
+
+const toggleFavorite = (bike) => {
+  favoritesStore.toggleFavorite(bike)
 }
+
 const isFavorited = (bikeId) => {
-  return favorites.value.has(bikeId)
+  return favoritesStore.isFavorited(bikeId)
 }
+
 const getDiscountLabel = (bike) => {
   if (!bike.discount) return null
   return bike.discount.type === 'percent'
@@ -291,10 +292,6 @@ onMounted(() => {
 onUnmounted(() => {
   if (observer) observer.disconnect()
 })
-// const filteredByBrand = computed(() => {
-//   if (!props.brand) return bikes.value
-//   return bikes.value.filter((bike) => bike.subtitle.toLowerCase() === props.brand.toLowerCase())
-// })
 </script>
 
 <template>
@@ -341,7 +338,7 @@ onUnmounted(() => {
               <button
                 class="favorite-btn"
                 :class="{ favorited: isFavorited(bike.id) }"
-                @click="toggleFavorite(bike.id)"
+                @click="toggleFavorite(bike)"
               >
                 <Icon
                   :icon="isFavorited(bike.id) ? 'solar:heart-bold' : 'solar:heart-linear'"
