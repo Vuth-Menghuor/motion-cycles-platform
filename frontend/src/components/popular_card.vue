@@ -68,21 +68,21 @@ const bikes = ref([
   },
 ])
 
-const favorites = ref(new Set())
+// const favorites = ref(new Set())
 const visibleBikes = ref(new Set()) // track which bikes are in view
 
-const toggleFavorite = (bikeId) => {
-  if (favorites.value.has(bikeId)) {
-    favorites.value.delete(bikeId)
-  } else {
-    favorites.value.add(bikeId)
-  }
-  favorites.value = new Set(favorites.value) // Trigger reactivity
-}
+// const toggleFavorite = (bikeId) => {
+//   if (favorites.value.has(bikeId)) {
+//     favorites.value.delete(bikeId)
+//   } else {
+//     favorites.value.add(bikeId)
+//   }
+//   favorites.value = new Set(favorites.value) // Trigger reactivity
+// }
 
-const isFavorited = (bikeId) => {
-  return favorites.value.has(bikeId)
-}
+// const isFavorited = (bikeId) => {
+//   return favorites.value.has(bikeId)
+// }
 
 let observer
 
@@ -125,7 +125,7 @@ onUnmounted(() => {
           <label class="product-title">{{ bike.title }}<br /></label>
           <span class="product-subtitle">{{ bike.subtitle }}</span>
         </div>
-        <button
+        <!-- <button
           class="favorite-btn"
           :class="{ favorited: isFavorited(bike.id) }"
           @click="toggleFavorite(bike.id)"
@@ -134,7 +134,7 @@ onUnmounted(() => {
             :icon="isFavorited(bike.id) ? 'solar:heart-bold' : 'solar:heart-linear'"
             class="fav-icon"
           />
-        </button>
+        </button> -->
       </div>
 
       <div class="product-image-container">
@@ -240,7 +240,7 @@ onUnmounted(() => {
   font-family: 'Poppins', sans-serif;
   line-height: 1.6;
 }
-.favorite-btn {
+/* .favorite-btn {
   display: flex;
   align-items: center;
   border: 1px solid #dee2e6;
@@ -259,7 +259,7 @@ onUnmounted(() => {
 
 .favorite-btn.favorited .fav-icon {
   color: #ff4d6d;
-}
+} */
 
 .product-title {
   font-size: 16px;
@@ -273,9 +273,9 @@ onUnmounted(() => {
   font-weight: 400;
   margin: 0;
 }
-.fav-icon {
+/* .fav-icon {
   font-size: 20px;
-}
+} */
 .product-image-container {
   position: relative;
   padding: 20px;
