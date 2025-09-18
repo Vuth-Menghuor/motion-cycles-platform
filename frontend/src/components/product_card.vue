@@ -188,11 +188,11 @@ const handleAddToCart = (bikeId) => {
     showToastMessage(message)
 
     // Call the action from the Pinia store to update the global count
-    cartStore.incrementCount()
+    // cartStore.incrementCount()
+    cartStore.addItem(bike)
   }
 }
 
-// ... (Keep the rest of your script setup)
 const selectedPriceRange = ref('')
 const selectedColors = ref([])
 const selectedBrands = ref([])

@@ -56,12 +56,24 @@ const closeSidebar = () => {
   }
 }
 
-const log = () => {
-  router.push('/').then(() => {
+const navigationAndScroll = (path) => {
+  router.push(path).then(() => {
     setTimeout(() => {
       window.scrollTo(0, 0)
     }, 100)
   })
+}
+
+const goToCart = () => {
+  navigationAndScroll('/cart')
+}
+
+const log = () => {
+  navigationAndScroll('/')
+}
+
+const goToAuth = () => {
+  navigationAndScroll('/authentication/sign_in')
 }
 
 const handleClickOutside = (event) => {
@@ -142,7 +154,11 @@ onUnmounted(() => {
         </div>
 
         <div class="user-actions">
-          <button class="cart-button action-button" :style="{ borderColor: colors.userBorderBtn }">
+          <button
+            class="cart-button action-button"
+            @click="goToCart"
+            :style="{ borderColor: colors.userBorderBtn }"
+          >
             <Icon
               icon="ion:cart"
               class="cart-icon action-icon"
@@ -150,13 +166,14 @@ onUnmounted(() => {
             />
             <span class="cart-badge" v-if="count > 0">{{ count }}</span>
           </button>
-          <router-link to="/authentication/sign_in">
+          <div>
             <button
               class="user-account action-button"
               :style="{
                 backgroundColor: colors.userBgBtn || '',
                 borderColor: colors.userBorderBtn,
               }"
+              @click="goToAuth"
             >
               <Icon
                 icon="mdi:user"
@@ -164,7 +181,7 @@ onUnmounted(() => {
                 :style="{ color: colors.userIcon }"
               />
             </button>
-          </router-link>
+          </div>
         </div>
       </div>
     </nav>

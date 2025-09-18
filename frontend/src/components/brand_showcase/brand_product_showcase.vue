@@ -54,7 +54,6 @@ import bike5 from '@/assets/images/product_showcase/image_5.png'
 import bike6 from '@/assets/images/product_showcase/image_6.png'
 import bike7 from '@/assets/images/product_showcase/image_7.png'
 import bike8 from '@/assets/images/product_showcase/image_8.png'
-import { Icon } from '@iconify/vue'
 
 const route = useRoute()
 const router = useRouter()

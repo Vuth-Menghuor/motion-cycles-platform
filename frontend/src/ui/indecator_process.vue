@@ -28,6 +28,9 @@ import { Icon } from '@iconify/vue'
 </template>
 
 <style scoped>
+.cart-header {
+  padding-bottom: 36px;
+}
 .icon {
   font-size: 18px;
 }

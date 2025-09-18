@@ -32,7 +32,7 @@
           :getDiscountedPrice="getDiscountedPrice"
           :getSavings="getSavings"
           :getBrandDescription="getBrandDescription"
-          @addToCart="handleAddToCart"
+          @addToCart="handleAddToCart(bike)"
         />
         <div class="spec-card-wrapper">
           <div class="specifications-section">
@@ -43,11 +43,11 @@
             :bike="bike"
             :image="bike.image"
             class="sticky-card"
-            @addToCart="handleAddToCart"
+            @addToCart="handleAddToCart(bike)"
           />
         </div>
         <div class="recommend-section">
-          <Bike_suggestion_card />
+          <Bike_suggestion_card :products="bikes" @add-to-cart="handleAddToCart" />
         </div>
       </div>
     </div>
@@ -62,7 +62,6 @@
 <script setup>
 import { ref, computed, watch, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-// ... (Keep existing imports)
 import bike1 from '@/assets/images/product_card/mount_1.png'
 import bike2 from '@/assets/images/product_card/mount_2/mount_2.png'
 import bike3 from '@/assets/images/product_card/mount_3.png'
@@ -76,8 +75,6 @@ import Bike_info from '@/components/bike_detail/bike_info.vue'
 import Bike_specifications from '@/components/bike_detail/bike_specifications.vue'
 import Reviews_page from '@/components/bike_detail/reviews/reviews_page.vue'
 import Bike_card_sticky from '@/components/bike_detail/bike_card_sticky.vue'
-import Bike_suggestion_card from '@/components/bike_detail/bike_suggestion_card.vue'
-
 import bike2_alt1 from '@/assets/images/product_card/mount_2/mount_2_alt1.png'
 import bike2_alt2 from '@/assets/images/product_card/mount_2/mount_2_alt2.png'
 import bike2_alt3 from '@/assets/images/product_card/mount_2/mount_2_alt3.png'
@@ -87,14 +84,15 @@ import bike2_alt6 from '@/assets/images/product_card/mount_2/mount_2_alt6.png'
 import bike2_alt7 from '@/assets/images/product_card/mount_2/mount_2_alt7.png'
 import bike2_alt8 from '@/assets/images/product_card/mount_2/mount_2_alt8.png'
 import { useCartStore } from '@/stores/cart'
+import Bike_suggestion_card from '@/ui/bike_suggestion_card.vue'
 
 const route = useRoute()
 const router = useRouter()
 
-const cartStore = useCartStore() // Use the store
+const cartStore = useCartStore()
 
-// ... (Keep the bikes data)
 const bikes = ref([
+  // ... (your existing bikes data)
   {
     id: 1,
     title: 'Bianchi T-Tronik C Type - Sunrace (2023)',
@@ -288,21 +286,21 @@ const showToastMessage = (message) => {
   }, 2000)
 }
 
-// Handle Add to Cart logic (New)
-const handleAddToCart = () => {
-  if (bike.value) {
-    const bikeId = bike.value.id
-    itemQuantities[bikeId] = (itemQuantities[bikeId] || 0) + 1
-    const quantityString = 'x' + itemQuantities[bikeId].toString().padStart(2, '0')
-    const message = `${bike.value.title} added to cart! ${quantityString} 🛒`
+// Handle Add to Cart logic (New and Corrected)
+const handleAddToCart = (product) => {
+  if (product) {
+    const productId = product.id
+    // Update local state for the toast message
+    itemQuantities[productId] = (itemQuantities[productId] || 0) + 1
+    const quantityString = 'x' + itemQuantities[productId].toString().padStart(2, '0')
+    const message = `${product.title} added to cart! ${quantityString} 🛒`
     showToastMessage(message)
 
-    // Call the action from the Pinia store to update the global count
-    cartStore.incrementCount()
+    // Call the correct Pinia store action
+    cartStore.addItem(product)
   }
 }
 
-// Find the current bike
 const bike = computed(() => {
   const bikeId = parseInt(route.params.id)
   return bikes.value.find((b) => b.id === bikeId)
