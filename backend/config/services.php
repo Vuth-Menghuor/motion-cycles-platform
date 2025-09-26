@@ -14,6 +14,13 @@ return [
     |
     */
 
+    'mailgun' => [
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+        'scheme' => 'https',
+    ],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
@@ -35,4 +42,10 @@ return [
         ],
     ],
 
+
+    // Bakong 
+    'bakong' => [
+        'base_url' => env('BAKONG_BASE_URL'),
+        'email' => env('BAKONG_EMAIL'),
+    ],
 ];

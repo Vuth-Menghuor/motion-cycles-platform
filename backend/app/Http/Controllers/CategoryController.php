@@ -6,21 +6,21 @@ use App\Models\Category;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
-{    
+{
     /**
      * --- Get /api/categories
-    */
+     */
     public function getCategories()
     {
         return Category::all();
     }
-    
+
     /**
      * --- Post /api/categories
      */
     public function createCategory(Request $request)
     {
-        $category = Category::create($request->all());        
+        $category = Category::create($request->all());
         return response()->json($category, 201);
     }
 
@@ -29,7 +29,7 @@ class CategoryController extends Controller
      */
     public function getCategory($categoryId)
     {
-        $category = Category::findOrfail($categoryId);        
+        $category = Category::findOrfail($categoryId);
         return response()->json($category);
     }
 
@@ -38,8 +38,8 @@ class CategoryController extends Controller
      */
     public function updateCategory(Request $request, $categoryId)
     {
-        $category = Category::findOrfail($categoryId);        
-        $category->update($request->all()); 
+        $category = Category::findOrfail($categoryId);
+        $category->update($request->all());
         return response()->json($category, 200);
     }
 
@@ -48,7 +48,7 @@ class CategoryController extends Controller
      */
     public function deleteCategory($categoryId)
     {
-        $category= Category::findOrfail($categoryId);
+        $category = Category::findOrfail($categoryId);
         $category->delete();
         return response()->json(null, 204);
     }
