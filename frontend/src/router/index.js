@@ -6,7 +6,12 @@ import Bike_detail from '@/views/bike_detail.vue'
 import Default_layout from '@/layouts/Default_layout.vue'
 import Gallery_image from '@/components/bike_detail/gallery_image.vue'
 import Favorite_page from '@/views/favorite_page.vue'
-import Shopping_cart from '@/views/shopping_cart.vue'
+import Checkout_cart from '@/views/checkout/checkout_cart.vue'
+import Checkout_address from '@/views/checkout/checkout_address.vue'
+import Checkout_payment from '@/views/checkout/checkout_payment.vue'
+import Checkout_purchase from '@/views/checkout/checkout_purchase.vue'
+import PaymentView from '@/views/PaymentView.vue'
+import Purchase_summary from '@/views/checkout/purchase_summary.vue' // ✅ move to views
 
 const routes = [
   {
@@ -42,74 +47,69 @@ const routes = [
         component: Favorite_page,
       },
       {
-        path: '/',
-        children: [
-          {
-            path: '/favorites',
-            name: 'Favorites',
-            component: Favorite_page,
-          },
-          // Cart Routes
-          {
-            path: '/cart',
-            name: 'ShoppingCart',
-            component: Shopping_cart,
-            meta: {
-              title: 'Shopping Cart',
-              step: 1,
-              requiresCart: true,
-            },
-          },
-          // Checkout Process Routes
-          // {
-          //   path: '/checkout',
-          //   redirect: '/checkout/address',
-          //   component: { template: '<router-view />' }, // A placeholder component for nested routes
-          //   children: [
-          //     {
-          //       path: 'address',
-          //       name: 'CheckoutAddress',
-          //       component: CheckoutAddress,
-          //       meta: {
-          //         title: 'Delivery Address',
-          //         step: 2,
-          //         requiresCart: true,
-          //         requiresAuth: true,
-          //       },
-          //     },
-          //     {
-          //       path: 'payment',
-          //       name: 'CheckoutPayment',
-          //       component: CheckoutPayment,
-          //       meta: {
-          //         title: 'Payment Method',
-          //         step: 3,
-          //         requiresCart: true,
-          //         requiresAuth: true,
-          //         requiresAddress: true,
-          //       },
-          //     },
-          //   ],
-          // },
-          // {
-          //   path: '/order-confirmation/:orderId?',
-          //   name: 'OrderConfirmation',
-          //   component: OrderConfirmation,
-          //   props: true,
-          //   meta: {
-          //     title: 'Order Confirmed',
-          //     requiresAuth: true,
-          //   },
-          // },
-          // ... (existing routes)
-        ],
+        path: '/payment/khqr',
+        name: 'KHQRPayment',
+        component: PaymentView,
+        meta: {
+          title: 'KHQR Payment',
+        },
       },
-      // Catch-all 404 route (if needed)
-      // {
-      //   path: '/:pathMatch(.*)*',
-      //   name: 'NotFound',
-      //   component: () => import('@/views/NotFound.vue'),
-      // },
+      {
+        path: '/checkout/cart',
+        name: 'ShoppingCart',
+        component: Checkout_cart,
+        meta: {
+          title: 'Shopping Cart',
+          step: 1,
+          requiresCart: true,
+        },
+      },
+      {
+        path: '/checkout/address',
+        name: 'CheckoutAddress',
+        component: Checkout_address,
+        meta: {
+          title: 'Delivery Address',
+          step: 2,
+          requiresCart: true,
+          requiresAuth: false,
+        },
+      },
+      {
+        path: '/checkout/payment',
+        name: 'CheckoutPayment',
+        component: Checkout_payment,
+        meta: {
+          title: 'Payment Method',
+          step: 3,
+          requiresCart: true,
+          requiresAddress: true,
+        },
+      },
+      {
+        path: '/checkout/purchase',
+        name: 'CheckoutPurchase',
+        component: Checkout_purchase,
+        meta: {
+          title: 'Purchase',
+          step: 4,
+          requiresCart: true,
+          requiresAddress: true,
+          requiresPayment: true,
+        },
+      },
+      {
+        path: '/checkout/purchase/summary',
+        name: 'PurchaseSummary',
+        component: Purchase_summary,
+        meta: {
+          title: 'Purchase Summary',
+          step: 4,
+          requiresCart: true,
+          requiresAddress: true,
+          requiresPayment: true,
+        },
+      },
     ],
   },
 
