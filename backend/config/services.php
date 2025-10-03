@@ -42,10 +42,4 @@ return [
         ],
     ],
 
-
-    // Bakong 
-    'bakong' => [
-        'base_url' => env('BAKONG_BASE_URL'),
-        'email' => env('BAKONG_EMAIL'),
-    ],
 ];

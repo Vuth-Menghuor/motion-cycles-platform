@@ -1,0 +1,30 @@
+meta {
+  name: Generate Deeplink
+  type: http
+  seq: 3
+}
+
+post {
+  url: https://api-bakong.nbc.gov.kh/v1/generate_deeplink_by_qr
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  { 
+   "qr": "0002010....",
+   "sourceInfo": { 
+           "appIconUrl": "https://bakong.nbc.gov.kh/images/logo.svg",
+           "appName": "Bakong", 
+          "appDeepLinkCallback": "https://bakong.nbc.gov.kh/"  
+     }
+   }
+}
+
+settings {
+  encodeUrl: true
+}

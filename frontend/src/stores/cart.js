@@ -53,6 +53,11 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
+  // Clear cart function
+  function clearCart() {
+    cartItems.value = []
+  }
+
   // Expose the state and actions you want to use in your components
-  return { cartItems, count, addItem, removeItem, increaseQuantity, decreaseQuantity }
+  return { cartItems, count, addItem, removeItem, increaseQuantity, decreaseQuantity, clearCart }
 })

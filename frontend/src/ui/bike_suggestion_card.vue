@@ -86,7 +86,7 @@
 <script setup>
 import router from '@/router'
 import { Icon } from '@iconify/vue'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFavoritesStore } from '@/stores/favorites'
 

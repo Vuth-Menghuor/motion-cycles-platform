@@ -1,63 +1,201 @@
-------------------------------------- Laravel with Docker -------------------------------------
+# Laravel with Docker Setup Guide
 
-1. Pull & Start your Laravel Project instance
+## 1. Initial Setup
 
-Clone the initial code from github here: 
-https://github.com/thavorac/gic2024/tree/laravel-docker
-
+### Clone and Start Project
+```bash
+# Clone the initial code from GitHub
+git clone https://github.com/thavorac/gic2024/tree/laravel-docker
 cd laravel-docker
+
+# Start Docker containers
 docker compose up -d
 docker compose exec -it app bash
-php artisan migrate 
+```
 
-- Note: if error is try to php aritsan migrate please try: 
+### Environment Configuration
+If you encounter migration errors, follow these steps:
 
-check .env.example
-change .env.example to .env
-DB_HOST=db -> DB_HOST=mysql_db  
-CACHE_STORE=database -> CACHE_STORE=file
+1. **Setup Environment File**
+   ```bash
+   # Copy environment example file
+   cp .env.example .env
+   ```
+
+2. **Update Environment Variables**
+   ```
+   DB_HOST=mysql_db        # Change from 'db' to 'mysql_db'
+   CACHE_STORE=file        # Change from 'database' to 'file'
+   ```
+
+3. **Clear Laravel Cache and Run Migration**
+   ```bash
+   php artisan migrate
+   php artisan config:clear
+   php artisan cache:clear
+   php artisan route:clear
+   php artisan view:clear
+   ```
+
+## 2. Database Setup
+
+### Create Migration Files
+```bash
+# Create categories table migration
+php artisan make:migration create_categories_table
+
+# Create products table migration
+php artisan make:migration create_products_table
+
+# Run migrations
 php artisan migrate
-php artisan config:clear
-php artisan cache:clear
-php artisan route:clear
-php artisan view:clear
 
-> create migration file for table categories: 
-php artisan make:migration create_categories
+# Run migration to drop table
+php artisan migrate:fresh
+```
 
-> create migration file for table products:
-php artisan make:migration create_products
+## 3. API Setup
 
-> Migrate 2 tables: 
-php artisan migrate
-
-> By default, routes/api.php is not yet created as Laravel consider stateless api is not usually needed to build a simple application so it is disabled.
-> We can enable it by simply run this command:
+### Enable API Routes
+By default, Laravel disables API routes. Enable them with:
+```bash
 php artisan install:api
+```
 
-> create the CategoryController (if missing the controller): 
+### Create Controllers
+```bash
+# Create API controller for categories
 php artisan make:controller CategoryController --api
 
-> Let's verify if you define your routes correctly, so go to app container and run this command:
-php artisan route:list
-
-> create the ProductController (if missing the controller): 
+# Create API controller for products
 php artisan make:controller ProductController --api
 
-> create model for Category and Product
-php artisan make:model Category
-php artisan make:model Product
+# Verify routes are correctly defined
+php artisan route:list
+```
 
-> Quick testing with artisan tinker: 
+### Create Models
+```bash
+# Create Category model
+php artisan make:model Category
+
+# Create Product model
+php artisan make:model Product
+```
+
+## 4. Testing
+Use Laravel's interactive shell for quick testing:
+```bash
+php artisan tinker
+```
+
+# Laravel Sanctum Authentication
+
+## 1. Installation
+
+### Install Sanctum Package
+```bash
+composer require laravel/sanctum
+```
+
+### Publish Sanctum Assets
+```bash
+# Publish Laravel assets
+php artisan vendor:publish --tag=laravel-assets --ansi --force
+
+# Publish Sanctum service provider
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+```
+
+## 2. User Management
+
+### Create User via Tinker
+```php
+// Access Laravel's interactive shell
 php artisan tinker
 
+// Create a new user
+use App\Models\User;
 
+$user = User::create([
+    'username' => 'vuthmenghuor',
+    'name' => 'Vuth Menghuor',
+    'email' => 'vuthmenghuor@example.com',
+    'password' => 'password123', // Auto-hashed due to 'hashed' cast
+]);
+```
 
-------------------------------------- Git -------------------------------------
+### Using Seeders (Recommended)
+```bash
+# Create user seeder
+php artisan make:seeder UserSeeder
+```
 
-> Add remote repository
-git remote add origin <url-repo>
+### User Query Examples
+```php
+// List all users
+User::all();
 
-> Delete branch from the remote repository
+// Count users
+User::count();
+
+// Get specific fields
+User::pluck('username');
+User::pluck('email');
+```
+
+## 3. Admin Setup
+
+### Create Admin Seeder
+```bash
+php artisan make:seeder AdminSeeder
+```
+
+**AdminSeeder Content:**
+```php
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+User::create([
+    'username' => 'admin',
+    'name' => 'Administrator',
+    'email' => 'admin@example.com',
+    'password' => Hash::make('admin123'), 
+    'role' => 'admin',
+]);
+```
+
+### Run Admin Seeder
+```bash
+php artisan db:seed --class=AdminSeeder
+```
+
+## 4. KHQR Payment Integration
+
+### Generate QR Code
+```bash
+curl -X POST http://localhost:8000/api/khqr/individual \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  -d '{
+    "bakong_account": "vuth_menghuor@aclb",
+    "account_name": "VUTH MENGHUOR",
+    "amount": 500,
+    "currency": "KHR"
+  }'
+```
+
+# Git Commands
+
+## Repository Management
+
+### Add Remote Repository
+```bash
+git remote add origin <repository-url>
+```
+
+### Delete Remote Branch
+```bash
 git push origin --delete <branch-name>
+```
 

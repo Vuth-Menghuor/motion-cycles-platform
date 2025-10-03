@@ -1,12 +1,47 @@
-// src/main.js
+// // src/main.js
+// import { createApp } from 'vue'
+// import App from './App.vue'
+// import router from './router'
+// import { createPinia } from 'pinia' // Import createPinia
+
+// const app = createApp(App)
+// const pinia = createPinia() // Create a Pinia instance
+
+// app.use(router)
+// app.use(pinia) // Use Pinia
+// app.mount('#app')
+
+// main.js
 import { createApp } from 'vue'
+import { createStore } from 'vuex' // Vuex
+import { createPinia } from 'pinia' // Pinia
 import App from './App.vue'
 import router from './router'
-import { createPinia } from 'pinia' // Import createPinia
+import adminStore from './stores/admin'
 
+// --- Vuex store setup ---
+const store = createStore({
+  modules: {
+    admin: adminStore,
+  },
+})
+
+// --- Create Vue app ---
 const app = createApp(App)
-const pinia = createPinia() // Create a Pinia instance
 
+// --- Use plugins ---
 app.use(router)
-app.use(pinia) // Use Pinia
+app.use(store) // Vuex
+app.use(createPinia()) // Pinia
+
+// --- Global error handler ---
+app.config.errorHandler = (err, instance, info) => {
+  console.error('Global error:', err)
+  console.error('Error info:', info)
+}
+
+// --- Mount app ---
 app.mount('#app')
+
+// --- Export for external use if needed ---
+export { app, store, router }

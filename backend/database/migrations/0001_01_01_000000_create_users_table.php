@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('provider')->nullable(); // for social login
             $table->string('provider_id')->nullable();
+            $table->string('role')->default('user'); // in your users migration
             $table->rememberToken();
             $table->timestamps();
         });

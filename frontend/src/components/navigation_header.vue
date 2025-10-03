@@ -65,7 +65,7 @@ const navigationAndScroll = (path) => {
 }
 
 const goToCart = () => {
-  navigationAndScroll('/cart')
+  navigationAndScroll('/checkout/cart')
 }
 
 const log = () => {

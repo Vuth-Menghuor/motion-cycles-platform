@@ -1,6 +1,53 @@
-<script setup lang="ts">
+<script setup>
 import { Icon } from '@iconify/vue'
 import Guest_button from './guest_button.vue'
+import { ref } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useRoute, useRouter } from 'vue-router'
+
+const router = useRouter()
+const route = useRoute()
+
+const email = ref('')
+const password = ref('')
+const errorMessage = ref('')
+const isLoading = ref(false)
+const showPassword = ref(false)
+const authStore = useAuthStore()
+
+const login = async () => {
+  if (isLoading.value) return
+
+  // Clear previous error
+  errorMessage.value = ''
+  isLoading.value = true
+
+  try {
+    await authStore.login(email.value, password.value)
+
+    const redirect = route.query.redirect
+
+    if (redirect) {
+      router.push(redirect)
+      return
+    }
+
+    router.push('/')
+  } catch (e) {
+    console.error('Login failed:', e)
+
+    // Set user-friendly error message
+    if (e.response?.status === 401) {
+      errorMessage.value = 'Invalid email or password. Please try again.'
+    } else if (e.response?.status === 422) {
+      errorMessage.value = 'Please check your email and password format.'
+    } else {
+      errorMessage.value = 'Login failed. Please try again later.'
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -14,17 +61,37 @@ import Guest_button from './guest_button.vue'
           <router-link to="/authentication/sign_up">Sign up</router-link>
         </div>
       </div>
+
+      <!-- Error Message -->
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
       <!-- Form Section -->
-      <form action="auth-form">
+      <form @submit.prevent="login" action="auth-form">
         <div class="form-group">
-          <input type="text" placeholder="Email" class="input-text" />
+          <input v-model="email" type="email" placeholder="Email" class="input-text" required />
           <Icon icon="ic:baseline-email" class="input-icon" />
         </div>
         <div class="form-group">
-          <input type="password" placeholder="Password" class="input-text" />
-          <Icon icon="mdi:password" class="input-icon" />
+          <input
+            v-model="password"
+            :type="showPassword ? 'text' : 'password'"
+            placeholder="Password"
+            class="input-text"
+            required
+          />
+          <button
+            type="button"
+            @click="showPassword = !showPassword"
+            class="password-toggle"
+            :title="showPassword ? 'Hide password' : 'Show password'"
+          >
+            <Icon :icon="showPassword ? 'mdi:eye-off' : 'mdi:eye'" class="toggle-icon" />
+          </button>
         </div>
       </form>
+
       <!-- Form Option -->
       <div class="form-option">
         <div class="checkbox-wrapper">
@@ -33,15 +100,21 @@ import Guest_button from './guest_button.vue'
         </div>
         <a href="#" class="link">Forgot Password?</a>
       </div>
+
       <!-- Submit Button -->
       <div class="button-wrapper">
-        <button type="submit" class="submit-button">Sign In</button>
+        <button @click="login" type="submit" class="submit-button" :disabled="isLoading">
+          <span v-if="isLoading">Signing In...</span>
+          <span v-else>Sign In</span>
+        </button>
         <Guest_button />
       </div>
+
       <!-- Divider -->
       <div class="form-divider">
         <span class="divider-text">or sign in</span>
       </div>
+
       <!-- Social Section -->
       <div class="social-login">
         <button type="button" class="social-button">
@@ -59,6 +132,52 @@ import Guest_button from './guest_button.vue'
 </template>
 
 <style scoped>
+.error-message {
+  background-color: #fee;
+  color: #c33;
+  padding: 10px;
+  margin: 10px 80px;
+  border-radius: 4px;
+  border: 1px solid #fcc;
+  font-size: 14px;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+.submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.password-toggle {
+  position: relative;
+  right: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.password-toggle:hover {
+  opacity: 1;
+}
+
+.toggle-icon {
+  width: 18px;
+  height: 18px;
+  color: #666;
+}
+
+.form-group {
+  position: relative;
+}
+
+/* ... rest of your existing styles ... */
 .soical-icon {
   height: 22px;
   width: 22px;

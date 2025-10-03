@@ -1,5 +1,39 @@
 <template>
-  <div class="payment-success">
+  <Navigation_header
+    :disableAnimation="true"
+    :colors="{
+      headerBg: 'white',
+      boxShadowHeader: '0 4px 20px rgba(0, 0, 0, 0.1)',
+      menuIcon: 'black',
+      logoName: 'black',
+      searchBorder: 'rgba(0, 0, 0, 0.2)',
+      searchBg: 'white',
+      cartIcon: 'black',
+      userIcon: 'black',
+      userBorderBtn: 'rgba(0, 0, 0, 0.2)',
+      userBgBtn: 'white',
+      brandName: 'black',
+      brandBorder: '#e5e5e5',
+      brandBg: 'white',
+    }"
+  />
+  <!-- Loading State -->
+  <div v-if="isLoading" class="loading-state">
+    <div class="loading-spinner-large"></div>
+    <h2>Loading your order details...</h2>
+    <p>Please wait while we prepare your invoice.</p>
+  </div>
+
+  <!-- Error State -->
+  <div v-else-if="hasError" class="error-state">
+    <div class="error-icon">❌</div>
+    <h2>Order Not Found</h2>
+    <p>We couldn't find your order details. Please try again or contact support.</p>
+    <button @click="router.push('/')" class="btn-continue">Return to Home</button>
+  </div>
+
+  <!-- Success State -->
+  <div v-else class="payment-success">
     <div class="success-icon">
       <svg viewBox="0 0 24 24" class="checkmark">
         <path fill="none" stroke="white" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -8,16 +42,30 @@
 
     <h2 class="success-title">Payment successful!</h2>
     <p class="success-subtitle">
-      The ordered confirmation has been sent to <strong>{{ recipient }}</strong>
+      The ordered confirmation has been sent to
+      <strong>{{ formData?.buyerName || recipient }}</strong>
     </p>
 
     <div class="order-card">
+      <!-- Invoice Header -->
+      <div class="invoice-header">
+        <h2 class="invoice-title">Invoice</h2>
+        <div class="invoice-info">
+          <p><strong>Bill To:</strong> {{ formData?.buyerName || recipient }}</p>
+          <p><strong>Phone:</strong> {{ formData?.buyerPhone || 'N/A' }}</p>
+          <p><strong>Date:</strong> {{ transactionDate }}</p>
+          <p><strong>Invoice #:</strong> {{ orderData?.invoiceNumber || `INV-${Date.now()}` }}</p>
+        </div>
+      </div>
       <div v-for="item in cartItems" :key="item.id" class="order-item">
         <img :src="item.image" :alt="item.name || item.title" class="order-item-image" />
         <div class="order-item-details">
           <p class="order-item-name">{{ item.name || item.title }}</p>
-          <p class="order-item-brand">{{ item.subtitle }}</p>
-          <p class="order-item-color">Color: {{ item.color }}</p>
+          <div class="brand-color-row">
+            <p class="order-item-brand">{{ item.subtitle }}</p>
+            <span class="separator">|</span>
+            <p class="order-item-color">Color: {{ item.color }}</p>
+          </div>
           <p class="order-item-quantity">Quantity: {{ item.quantity }}</p>
           <div class="order-item-price-container">
             <span v-if="hasDiscount(item)" class="original-price"
@@ -65,10 +113,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useCartStore } from '@/stores/cart'
-import { storeToRefs } from 'pinia'
+import Navigation_header from '@/components/navigation_header.vue'
 
 const props = defineProps({
   recipient: {
@@ -82,13 +129,54 @@ const props = defineProps({
 })
 
 const router = useRouter()
-const cartStore = useCartStore()
-const { cartItems } = storeToRefs(cartStore)
+
+// Dynamic order data from localStorage
+const orderData = ref(null)
+const cartItems = ref([])
+const formData = ref({})
+const actualPromoCode = ref('')
+const actualPaymentMethod = ref('Bakong KHQR')
+const storedSummaryBreakdown = ref(null)
+const isLoading = ref(true)
+const hasError = ref(false)
+
+// Load order data on component mount
+onMounted(() => {
+  // Try to get order data from localStorage (check both possible keys for backward compatibility)
+  let storedOrderData =
+    localStorage.getItem('lastOrderData') || localStorage.getItem('orderDetails')
+
+  if (storedOrderData) {
+    try {
+      const parsedData = JSON.parse(storedOrderData)
+      console.log('✅ Order data loaded:', parsedData)
+
+      orderData.value = parsedData
+      cartItems.value = parsedData.cartItems || []
+      formData.value = parsedData.formData || {}
+      actualPromoCode.value = parsedData.promoCode || ''
+      actualPaymentMethod.value = parsedData.paymentMethod || 'Bakong KHQR'
+      storedSummaryBreakdown.value = parsedData.summaryBreakdown || null
+      isLoading.value = false
+
+      // Clean up old data after successful load
+      localStorage.removeItem('orderDetails') // Remove old key if it exists
+    } catch (error) {
+      console.error('❌ Error parsing order data:', error)
+      hasError.value = true
+      isLoading.value = false
+    }
+  } else {
+    console.warn('⚠️ No order data found in localStorage')
+    hasError.value = true
+    isLoading.value = false
+  }
+})
 
 // Constants
 const CORRECT_PROMO = 'BOOKRIDE50'
-const PROMO_DISCOUNT = 1250.0
-const SHIPPING_AMOUNT = 5.0
+const PROMO_DISCOUNT = 5.0
+const SHIPPING_AMOUNT = 2.0
 
 // Helper functions for discount calculation (same as cart_item_card)
 const hasDiscount = (item) => {
@@ -113,12 +201,16 @@ const formatPrice = (price) => {
   return price.toLocaleString()
 }
 
-// Computed properties for dynamic calculations
+// Computed properties - use stored breakdown if available, otherwise calculate
 const totalMRP = computed(() => {
+  // Use stored breakdown data if available (from checkout_summary)
+  if (storedSummaryBreakdown.value?.totalMRP) {
+    return storedSummaryBreakdown.value.totalMRP
+  }
+
+  // Fallback calculation
   return cartItems.value.reduce((total, item) => {
-    // Use original price for items with discount, discounted price for items without
-    const priceToUse = hasDiscount(item) ? item.price : getDiscountedPrice(item)
-    return total + priceToUse * item.quantity
+    return total + item.price * item.quantity
   }, 0)
 })
 
@@ -135,23 +227,67 @@ const itemDiscountAmount = computed(() => {
 })
 
 const promoDiscountAmount = computed(() => {
-  return props.promoCode.trim().toUpperCase() === CORRECT_PROMO ? PROMO_DISCOUNT : 0
+  // Use stored breakdown if available
+  if (storedSummaryBreakdown.value?.promoDiscount !== undefined) {
+    return storedSummaryBreakdown.value.promoDiscount
+  }
+
+  // Fallback calculation
+  return actualPromoCode.value.trim().toUpperCase() === CORRECT_PROMO ? PROMO_DISCOUNT : 0
 })
 
 const discountAmount = computed(() => {
+  // Use stored breakdown if available
+  if (storedSummaryBreakdown.value?.discountAmount !== undefined) {
+    return storedSummaryBreakdown.value.discountAmount
+  }
+
+  // Fallback calculation
   return itemDiscountAmount.value + promoDiscountAmount.value
 })
 
 const netPrice = computed(() => {
+  // Use stored breakdown if available
+  if (storedSummaryBreakdown.value?.netPrice !== undefined) {
+    return storedSummaryBreakdown.value.netPrice
+  }
+
+  // Fallback calculation
   const calculatedNet = totalMRP.value - discountAmount.value
   return calculatedNet > 0 ? calculatedNet : 0
 })
 
-const totalPrice = computed(() => netPrice.value + SHIPPING_AMOUNT)
+const totalPrice = computed(() => {
+  // Use stored breakdown if available
+  if (storedSummaryBreakdown.value?.finalTotal !== undefined) {
+    return storedSummaryBreakdown.value.finalTotal
+  }
 
-const shippingCharge = computed(() => SHIPPING_AMOUNT)
+  // Fallback calculation
+  return netPrice.value + SHIPPING_AMOUNT
+})
+
+const shippingCharge = computed(() => {
+  // Use stored breakdown if available
+  if (storedSummaryBreakdown.value?.shippingAmount !== undefined) {
+    return storedSummaryBreakdown.value.shippingAmount
+  }
+
+  // Fallback value
+  return SHIPPING_AMOUNT
+})
 
 const transactionDate = computed(() => {
+  if (orderData.value?.timestamp) {
+    const date = new Date(orderData.value.timestamp)
+    const options = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }
+    return date.toLocaleDateString('en-US', options)
+  }
   const date = new Date()
   const options = {
     weekday: 'long',
@@ -162,12 +298,18 @@ const transactionDate = computed(() => {
   return date.toLocaleDateString('en-US', options)
 })
 
-const paymentMethod = 'Bakong KHQR'
+const paymentMethod = computed(() => actualPaymentMethod.value)
 
 const downloadTransaction = () => {
   // Generate transaction receipt data
   const transactionData = {
+    invoiceNumber: orderData.value?.invoiceNumber || `INV-${Date.now()}`,
+    transactionId: orderData.value?.transactionId || `TXN-${Date.now()}`,
     date: transactionDate.value,
+    customerInfo: {
+      name: formData.value?.buyerName || props.recipient,
+      phone: formData.value?.buyerPhone || 'N/A',
+    },
     items: cartItems.value.map((item) => ({
       name: item.name || item.title,
       brand: item.subtitle,
@@ -186,8 +328,8 @@ const downloadTransaction = () => {
       shipping: shippingCharge.value,
       total: totalPrice.value,
     },
-    paymentMethod: paymentMethod,
-    recipient: props.recipient,
+    paymentMethod: paymentMethod.value,
+    timestamp: orderData.value?.timestamp || new Date().toISOString(),
   }
 
   // Create and download JSON file
@@ -196,14 +338,15 @@ const downloadTransaction = () => {
   const url = URL.createObjectURL(dataBlob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `transaction_${Date.now()}.json`
+  link.download = `transaction_${orderData.value?.transactionId || Date.now()}.json`
   link.click()
   URL.revokeObjectURL(url)
 }
 
 const continueShopping = () => {
-  // Clear the cart after successful purchase
-  cartStore.clearCart()
+  // Clear all order data from localStorage
+  localStorage.removeItem('lastOrderData')
+  localStorage.removeItem('orderDetails') // Clean up any old data
   // Navigate to home page
   router.push('/')
 }
@@ -214,6 +357,7 @@ const continueShopping = () => {
   text-align: center;
   padding: 2rem;
   font-family: 'Poppins', sans-serif;
+  margin-top: 150px;
 }
 
 .success-icon {
@@ -225,27 +369,29 @@ const continueShopping = () => {
 }
 
 .checkmark {
-  width: 2rem;
-  height: 2rem;
+  width: 4rem;
+  height: 4rem;
 }
 
 .success-title {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   margin-bottom: 0.5rem;
+  font-weight: 600;
   color: #333;
+  font-family: 'Poppins', sans-serif;
 }
 
 .success-subtitle {
-  color: #555;
+  color: #808080;
   margin-bottom: 2rem;
 }
 
 .order-card {
-  max-width: 600px;
+  max-width: 1000px;
   margin: auto;
   border: 1px solid #eee;
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 2rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -263,8 +409,8 @@ const continueShopping = () => {
 }
 
 .order-item-image {
-  width: 80px;
-  height: 80px;
+  width: auto;
+  height: 120px;
   object-fit: cover;
   border-radius: 8px;
   flex-shrink: 0;
@@ -277,27 +423,28 @@ const continueShopping = () => {
 
 .order-item-name {
   font-weight: 600;
-  margin-bottom: 0.25rem;
   color: #333;
+  margin: 0;
   font-size: 14px;
 }
 
 .order-item-brand {
   color: #666;
   font-size: 12px;
-  margin-bottom: 0.25rem;
+  margin: 0;
 }
 
 .order-item-color {
   color: #666;
   font-size: 12px;
-  margin-bottom: 0.25rem;
+  margin: 0;
 }
 
 .order-item-quantity {
   color: #666;
   font-size: 12px;
-  margin-bottom: 0.5rem;
+  margin: 0;
+  padding: 24px 0 8px 0;
 }
 
 .order-item-price-container {
@@ -326,18 +473,18 @@ const continueShopping = () => {
 .summary-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
   font-size: 14px;
 }
 
 .summary-row.total {
-  font-weight: bold;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 1.2rem;
   color: #333;
 }
 
 .discount {
-  color: #4caf50;
+  color: #72c15e;
   font-weight: 500;
 }
 
@@ -349,6 +496,7 @@ hr {
 
 .order-actions {
   display: flex;
+  flex-direction: column;
   gap: 1rem;
   margin-top: 1.5rem;
   justify-content: center;
@@ -357,18 +505,55 @@ hr {
 
 .btn-download,
 .btn-continue {
-  padding: 0.75rem 1.5rem;
+  padding: 1rem;
   border-radius: 6px;
   border: none;
+  font-family: 'Poppins', sans-serif;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 14px;
 }
 
+.separator {
+  color: grey;
+}
+
+.brand-color-row {
+  display: flex;
+  align-items: center;
+  margin-top: 4px;
+  gap: 10px;
+}
+
 .btn-download {
-  background-color: #4a90e2;
+  background-color: #428fc0;
   color: white;
+}
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 1rem;
+}
+
+.invoice-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.invoice-info {
+  text-align: right;
+  font-size: 14px;
+  color: #555;
+}
+
+.invoice-info p {
+  margin: 2px 0;
 }
 
 .btn-download:hover {
@@ -376,12 +561,74 @@ hr {
 }
 
 .btn-continue {
-  background-color: #1abc9c;
+  background-color: #14c9c9;
   color: white;
 }
 
 .btn-continue:hover {
-  background-color: #16a085;
+  background-color: rgb(11, 184, 184);
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 150px;
+}
+
+.loading-spinner-large {
+  display: inline-block;
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(20, 201, 201, 0.2);
+  border-radius: 50%;
+  border-top-color: #14c9c9;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 2rem;
+}
+
+.loading-state h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.loading-state p {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+/* Error State */
+.error-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 150px;
+}
+
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: 2rem;
+}
+
+.error-state h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: #dc3545;
+}
+
+.error-state p {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {

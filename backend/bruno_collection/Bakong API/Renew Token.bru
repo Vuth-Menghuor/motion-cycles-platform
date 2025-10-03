@@ -1,0 +1,25 @@
+meta {
+  name: Renew Token
+  type: http
+  seq: 1
+}
+
+post {
+  url: https://api-bakong.nbc.gov.kh/v1/renew_token
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "hourousa9@gmail.com"
+  }
+}
+
+settings {
+  encodeUrl: true
+}
