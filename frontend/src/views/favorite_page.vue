@@ -145,10 +145,11 @@ const getDiscountedPrice = (bike) => {
   align-items: center;
   flex-direction: column;
   justify-content: center;
-  background: #f7f7f7;
+  background: #f8fafc;
   height: 40vh;
   border-radius: 10px;
   font-family: 'Poppins', sans-serif;
+  border: 2px solid #e5e7eb;
 }
 .rating-section {
   display: flex;
@@ -218,15 +219,6 @@ const getDiscountedPrice = (bike) => {
   flex-direction: column;
   gap: 8px;
 }
-.favorite-card {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
-  padding: 1rem;
-  background-color: #fff;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-}
 
 .info-section {
   display: flex;
@@ -283,12 +275,18 @@ const getDiscountedPrice = (bike) => {
   transition: 0.2s;
 }
 .view-btn {
-  border: 1px solid #b8b8b8;
+  border: 2px solid #e5e7eb;
   background-color: white;
+  color: #374151;
 }
+
 .remove-btn {
-  background-color: red;
+  background-color: #dc2626;
   color: white;
+}
+
+.remove-btn:hover {
+  background-color: #b91c1c;
 }
 .favorites-container {
   display: flex;
@@ -308,7 +306,7 @@ const getDiscountedPrice = (bike) => {
   align-items: center;
   font-size: 16px;
   padding-bottom: 24px;
-  border-bottom: 1px solid #b9b1b1;
+  border-bottom: 2px solid #e5e7eb;
   color: grey;
   gap: 10px;
 }
@@ -316,8 +314,9 @@ const getDiscountedPrice = (bike) => {
 .length-saved {
   padding: 2px 12px;
   border-radius: 14px;
-  border: 1px solid #14c9c9;
-  color: #14c9c9;
+  border: 2px solid #3491fa;
+  color: #3491fa;
+  font-weight: 500;
 }
 
 .favorites-page {

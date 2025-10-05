@@ -406,7 +406,11 @@ const updateSummaryBreakdown = (breakdown) => {
             <div class="qr-section">
               <div class="khqr-card">
                 <div class="khqr-header">
-                  <span class="khqr-logo">KHQR</span>
+                  <img
+                    src="@/assets/images/payment_method/bakong_khqr_white.png"
+                    alt="KHQR Logo"
+                    class="khqr-logo"
+                  />
                 </div>
                 <div class="khqr-merchant">
                   <div class="merchant-name">MOTION CYCLE</div>
@@ -462,15 +466,8 @@ const updateSummaryBreakdown = (breakdown) => {
     <div v-if="paymentStatus === 'success'" class="payment-success">
       <div class="success-content">
         <div class="success-icon">
-          <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="12" fill="#10B981" />
-            <path
-              d="M8 12.5l3 3 5-6"
-              stroke="white"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
+          <svg viewBox="0 0 24 24" class="checkmark">
+            <path fill="none" stroke="white" stroke-width="2" d="M5 13l4 4L19 7" />
           </svg>
         </div>
         <h3>Payment Successful!</h3>
@@ -505,7 +502,7 @@ const updateSummaryBreakdown = (breakdown) => {
 
 .bakong-payment-content {
   background: white;
-  border-radius: 6px;
+  border-radius: 20px;
   padding: 32px;
   max-width: 380px;
   width: 90%;
@@ -673,7 +670,7 @@ const updateSummaryBreakdown = (breakdown) => {
 
 .khqr-card {
   background: white;
-  border-radius: 6px;
+  border-radius: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   margin-bottom: 16px;
@@ -681,16 +678,15 @@ const updateSummaryBreakdown = (breakdown) => {
 }
 
 .khqr-header {
-  background: #dc2626;
+  background: #f90000;
   padding: 12px 20px;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .khqr-logo {
-  color: white;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 1px;
+  height: 24px;
 }
 
 .khqr-merchant {
@@ -702,15 +698,16 @@ const updateSummaryBreakdown = (breakdown) => {
 
 .merchant-name {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: #111827;
   margin-bottom: 4px;
 }
 
 .amount-display {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: bold;
   color: #111827;
+  padding: 4px 0;
 }
 
 .qr-code-container {
@@ -795,6 +792,19 @@ const updateSummaryBreakdown = (breakdown) => {
   z-index: 9999;
   backdrop-filter: blur(2px);
   transition: opacity 0.3s ease-out;
+}
+
+.success-icon {
+  background-color: #4caf50;
+  border-radius: 50%;
+  display: inline-flex;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.checkmark {
+  width: 4rem;
+  height: 4rem;
 }
 
 .success-content {

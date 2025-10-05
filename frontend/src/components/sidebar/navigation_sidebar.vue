@@ -115,10 +115,10 @@ const goToFav = () => navigate('/favorites')
 <style scoped>
 .count-fav {
   margin-left: 5.5rem;
-  color: #14c9c9;
+  color: #3491fa;
   font-weight: 500;
   padding: 2px 10px;
-  border: 1px solid #14c9c9;
+  border: 1px solid #3491fa;
   border-radius: 10px;
 }
 .fav-product-count {
@@ -149,7 +149,7 @@ const goToFav = () => navigate('/favorites')
   width: 280px;
   height: 100vh;
   background: #ffffff;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  border-right: 2px solid #e5e7eb;
   transform: translateX(-100%);
   transition: transform 0.3s ease;
   display: flex;
@@ -166,8 +166,8 @@ const goToFav = () => navigate('/favorites')
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border-bottom: 2px solid #e5e7eb;
+  background: #f8fafc;
 }
 
 .app-sidebar__logo {
@@ -180,7 +180,7 @@ const goToFav = () => navigate('/favorites')
   font-family: 'Poppins', sans-serif;
   font-weight: 600;
   font-size: 18px;
-  color: #1f2937;
+  color: #3491fa;
 }
 
 .app-sidebar__close-btn {
@@ -242,15 +242,15 @@ const goToFav = () => navigate('/favorites')
 }
 
 .app-sidebar__menu-link:hover {
-  background: #e8fffb;
-  color: #07828b;
-  border-left-color: #07828b;
+  background: #eff6ff;
+  color: #3491fa;
+  border-left-color: #3491fa;
 }
 
 .app-sidebar__menu-item--active .app-sidebar__menu-link {
-  background: #e8fffb;
-  color: #07828b;
-  border-left-color: #07828b;
+  background: #eff6ff;
+  color: #3491fa;
+  border-left-color: #3491fa;
   font-weight: 500;
 }
 
@@ -261,9 +261,9 @@ const goToFav = () => navigate('/favorites')
 }
 
 .app-sidebar__footer {
-  border-top: 1px solid #e5e7eb;
+  border-top: 2px solid #e5e7eb;
   padding: 1rem;
-  background: #f9fafb;
+  background: #f8fafc;
 }
 
 .app-sidebar__user {

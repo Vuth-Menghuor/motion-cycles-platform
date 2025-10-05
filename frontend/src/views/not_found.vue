@@ -1,41 +1,6 @@
 <template>
   <div class="error-page">
     <div class="error-container">
-      <!-- 404 Illustration -->
-      <div class="illustration">
-        <svg class="bike-icon" viewBox="0 0 200 120" fill="none">
-          <!-- Bike Frame -->
-          <path
-            d="M60 80 L80 50 L110 50 L130 80"
-            stroke="#42A5F5"
-            stroke-width="4"
-            stroke-linecap="round"
-          />
-          <path
-            d="M80 50 L90 30 L110 30"
-            stroke="#42A5F5"
-            stroke-width="4"
-            stroke-linecap="round"
-          />
-          <path d="M110 30 L120 50" stroke="#42A5F5" stroke-width="4" stroke-linecap="round" />
-
-          <!-- Wheels -->
-          <circle cx="60" cy="90" r="20" stroke="#42A5F5" stroke-width="4" fill="none" />
-          <circle cx="60" cy="90" r="3" fill="#42A5F5" />
-          <circle cx="130" cy="90" r="20" stroke="#42A5F5" stroke-width="4" fill="none" />
-          <circle cx="130" cy="90" r="3" fill="#42A5F5" />
-
-          <!-- Spokes -->
-          <line x1="60" y1="90" x2="75" y2="75" stroke="#42A5F5" stroke-width="2" />
-          <line x1="60" y1="90" x2="45" y2="75" stroke="#42A5F5" stroke-width="2" />
-          <line x1="130" y1="90" x2="145" y2="75" stroke="#42A5F5" stroke-width="2" />
-          <line x1="130" y1="90" x2="115" y2="75" stroke="#42A5F5" stroke-width="2" />
-
-          <!-- Question Mark -->
-          <text x="95" y="15" font-size="24" font-weight="bold" fill="#EF5350">?</text>
-        </svg>
-      </div>
-
       <!-- Error Code -->
       <h1 class="error-code">404</h1>
 
@@ -131,14 +96,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Background Decoration -->
-    <div class="decoration-lines">
-      <div class="line line-1"></div>
-      <div class="line line-2"></div>
-      <div class="line line-3"></div>
-      <div class="line line-4"></div>
-    </div>
   </div>
 </template>
 
@@ -179,7 +136,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f8fafc;
   position: relative;
   overflow: hidden;
   padding: 20px;
@@ -192,7 +149,7 @@ export default {
   max-width: 700px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid #e5e7eb;
   position: relative;
   z-index: 1;
   animation: slideUp 0.6s ease-out;
@@ -209,34 +166,10 @@ export default {
   }
 }
 
-.illustration {
-  margin-bottom: 30px;
-}
-
-.bike-icon {
-  width: 200px;
-  height: 120px;
-  margin: 0 auto;
-  animation: wobble 3s ease-in-out infinite;
-}
-
-@keyframes wobble {
-  0%,
-  100% {
-    transform: rotate(-2deg);
-  }
-  50% {
-    transform: rotate(2deg);
-  }
-}
-
 .error-code {
   font-size: 100px;
   font-weight: bold;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #3b82f6;
   margin: 0 0 20px 0;
   line-height: 1;
 }
@@ -275,7 +208,7 @@ export default {
 }
 
 .search-bar:focus-within {
-  border-color: #667eea;
+  border-color: #3b82f6;
 }
 
 .search-icon {
@@ -298,7 +231,7 @@ export default {
 }
 
 .search-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #3b82f6;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -335,14 +268,14 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #3b82f6;
   color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
 }
 
 .btn-secondary {
@@ -390,64 +323,9 @@ export default {
 }
 
 .link-item:hover {
-  background: #667eea;
+  background: #3b82f6;
   color: white;
   transform: translateY(-2px);
-}
-
-/* Background Decoration */
-.decoration-lines {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-  z-index: 0;
-}
-
-.line {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.1);
-  transform: rotate(45deg);
-  animation: slide 15s linear infinite;
-}
-
-.line-1 {
-  width: 2px;
-  height: 200%;
-  left: 10%;
-  animation-delay: 0s;
-}
-
-.line-2 {
-  width: 2px;
-  height: 200%;
-  left: 40%;
-  animation-delay: 5s;
-}
-
-.line-3 {
-  width: 2px;
-  height: 200%;
-  left: 70%;
-  animation-delay: 10s;
-}
-
-.line-4 {
-  width: 2px;
-  height: 200%;
-  left: 90%;
-  animation-delay: 2.5s;
-}
-
-@keyframes slide {
-  from {
-    transform: translateY(-100%) rotate(45deg);
-  }
-  to {
-    transform: translateY(100%) rotate(45deg);
-  }
 }
 
 /* Responsive */

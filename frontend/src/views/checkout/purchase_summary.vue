@@ -26,7 +26,13 @@
 
   <!-- Error State -->
   <div v-else-if="hasError" class="error-state">
-    <div class="error-icon">❌</div>
+    <div class="error-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+    </div>
     <h2>Order Not Found</h2>
     <p>We couldn't find your order details. Please try again or contact support.</p>
     <button @click="router.push('/')" class="btn-continue">Return to Home</button>
@@ -49,12 +55,12 @@
     <div class="order-card">
       <!-- Invoice Header -->
       <div class="invoice-header">
-        <h2 class="invoice-title">Invoice</h2>
+        <h2 class="invoice-title">Purchase Summary</h2>
         <div class="invoice-info">
           <p><strong>Bill To:</strong> {{ formData?.buyerName || recipient }}</p>
           <p><strong>Phone:</strong> {{ formData?.buyerPhone || 'N/A' }}</p>
           <p><strong>Date:</strong> {{ transactionDate }}</p>
-          <p><strong>Invoice #:</strong> {{ orderData?.invoiceNumber || `INV-${Date.now()}` }}</p>
+          <p><strong>Order #:</strong> {{ orderData?.invoiceNumber || `ORD-${Date.now()}` }}</p>
         </div>
       </div>
       <div v-for="item in cartItems" :key="item.id" class="order-item">
@@ -105,7 +111,7 @@
       </div>
 
       <div class="order-actions">
-        <button class="btn-download" @click="downloadTransaction">Download Transaction</button>
+        <button class="btn-download" @click="downloadInvoice">Download Invoice</button>
         <button class="btn-continue" @click="continueShopping">Continue Shopping</button>
       </div>
     </div>
@@ -116,6 +122,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Navigation_header from '@/components/navigation_header.vue'
+import jsPDF from 'jspdf'
 
 const props = defineProps({
   recipient: {
@@ -178,6 +185,10 @@ const CORRECT_PROMO = 'BOOKRIDE50'
 const PROMO_DISCOUNT = 5.0
 const SHIPPING_AMOUNT = 2.0
 
+const formatPrice = (price) => {
+  return price.toLocaleString()
+}
+
 // Helper functions for discount calculation (same as cart_item_card)
 const hasDiscount = (item) => {
   return item.discount && (item.discount.type === 'percent' || item.discount.type === 'fixed')
@@ -195,10 +206,6 @@ const getDiscountedPrice = (item) => {
   }
 
   return item.price
-}
-
-const formatPrice = (price) => {
-  return price.toLocaleString()
 }
 
 // Computed properties - use stored breakdown if available, otherwise calculate
@@ -300,47 +307,158 @@ const transactionDate = computed(() => {
 
 const paymentMethod = computed(() => actualPaymentMethod.value)
 
-const downloadTransaction = () => {
-  // Generate transaction receipt data
-  const transactionData = {
-    invoiceNumber: orderData.value?.invoiceNumber || `INV-${Date.now()}`,
-    transactionId: orderData.value?.transactionId || `TXN-${Date.now()}`,
-    date: transactionDate.value,
-    customerInfo: {
-      name: formData.value?.buyerName || props.recipient,
-      phone: formData.value?.buyerPhone || 'N/A',
-    },
-    items: cartItems.value.map((item) => ({
-      name: item.name || item.title,
-      brand: item.subtitle,
-      color: item.color,
-      quantity: item.quantity,
-      originalPrice: hasDiscount(item) ? item.price : null,
-      finalPrice: getDiscountedPrice(item),
-      discount: item.discount || null,
-    })),
-    summary: {
-      subtotal: totalMRP.value,
-      itemDiscounts: itemDiscountAmount.value,
-      promoDiscount: promoDiscountAmount.value,
-      totalDiscount: discountAmount.value,
-      netPrice: netPrice.value,
-      shipping: shippingCharge.value,
-      total: totalPrice.value,
-    },
-    paymentMethod: paymentMethod.value,
-    timestamp: orderData.value?.timestamp || new Date().toISOString(),
-  }
+const downloadInvoice = () => {
+  const doc = new jsPDF()
 
-  // Create and download JSON file
-  const dataStr = JSON.stringify(transactionData, null, 2)
-  const dataBlob = new Blob([dataStr], { type: 'application/json' })
-  const url = URL.createObjectURL(dataBlob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `transaction_${orderData.value?.transactionId || Date.now()}.json`
-  link.click()
-  URL.revokeObjectURL(url)
+  // Colors
+  const primaryColor = [66, 143, 192] // #428fc0
+  const textColor = [51, 51, 51] // #333
+  const lightGray = [102, 102, 102] // #666
+
+  // Set up fonts
+  doc.setFont('helvetica', 'bold')
+
+  // Company Header
+  doc.setFontSize(24)
+  doc.setTextColor(...primaryColor)
+  doc.text('MOTION CYCLE', 20, 30)
+
+  doc.setFontSize(10)
+  doc.setTextColor(...lightGray)
+  doc.setFont('helvetica', 'normal')
+  doc.text('Phnom Penh, Cambodia', 20, 38)
+  doc.text('+855 12 345 678 | info@motioncycle.com', 20, 44)
+
+  // Invoice Title
+  doc.setFontSize(18)
+  doc.setTextColor(...textColor)
+  doc.setFont('helvetica', 'bold')
+  doc.text('INVOICE', 150, 30)
+
+  // Invoice Details
+  const invoiceNumber = orderData.value?.invoiceNumber || `INV-${Date.now()}`
+  doc.setFontSize(10)
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Invoice #: ${invoiceNumber}`, 150, 40)
+  doc.text(`Date: ${transactionDate.value}`, 150, 46)
+  doc.text(`Payment Method: ${paymentMethod.value}`, 150, 52)
+
+  // Customer Information
+  doc.setFont('helvetica', 'bold')
+  doc.text('Bill To:', 20, 65)
+  doc.setFont('helvetica', 'normal')
+  doc.text(formData.value?.buyerName || props.recipient, 20, 72)
+  doc.text(`Phone: ${formData.value?.buyerPhone || 'N/A'}`, 20, 78)
+
+  // Items Table Header
+  let yPosition = 95
+  doc.setFillColor(...primaryColor)
+  doc.rect(20, yPosition - 5, 170, 8, 'F')
+
+  doc.setTextColor(255, 255, 255)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(9)
+  doc.text('Item', 25, yPosition)
+  doc.text('Qty', 120, yPosition)
+  doc.text('Unit Price', 140, yPosition)
+  doc.text('Total', 165, yPosition)
+
+  // Items
+  yPosition += 10
+  doc.setTextColor(...textColor)
+  doc.setFont('helvetica', 'normal')
+
+  cartItems.value.forEach((item) => {
+    const itemName = item.name || item.title
+    const quantity = item.quantity
+    const unitPrice = getDiscountedPrice(item)
+    const total = unitPrice * quantity
+
+    // Item name (truncate if too long)
+    const truncatedName = itemName.length > 30 ? itemName.substring(0, 27) + '...' : itemName
+    doc.text(truncatedName, 25, yPosition)
+
+    // Brand and color
+    if (item.subtitle || item.color) {
+      const brandColor = `${item.subtitle || ''}${item.color ? ` | ${item.color}` : ''}`
+      doc.setFontSize(8)
+      doc.setTextColor(...lightGray)
+      doc.text(brandColor, 25, yPosition + 4)
+      doc.setFontSize(9)
+      doc.setTextColor(...textColor)
+    }
+
+    // Quantity, Unit Price, Total
+    doc.text(quantity.toString(), 125, yPosition)
+    doc.text(`$${unitPrice.toFixed(2)}`, 145, yPosition)
+    doc.text(`$${total.toFixed(2)}`, 170, yPosition)
+
+    yPosition += 12
+
+    // Check if we need a new page
+    if (yPosition > 250) {
+      doc.addPage()
+      yPosition = 30
+    }
+  })
+
+  // Summary Section
+  yPosition += 10
+  doc.setDrawColor(200, 200, 200)
+  doc.line(20, yPosition, 190, yPosition)
+  yPosition += 10
+
+  // Summary items
+  const summaryItems = [
+    { label: 'Subtotal:', value: `$${totalMRP.value.toFixed(2)}` },
+    {
+      label: 'Item Discounts:',
+      value: `-$${itemDiscountAmount.value.toFixed(2)}`,
+      color: [114, 193, 94],
+    },
+    {
+      label: 'Promo Discount:',
+      value: `-$${promoDiscountAmount.value.toFixed(2)}`,
+      color: [114, 193, 94],
+    },
+    { label: 'Net Price:', value: `$${netPrice.value.toFixed(2)}` },
+    { label: 'Shipping:', value: `$${shippingCharge.value.toFixed(2)}` },
+  ]
+
+  summaryItems.forEach((item) => {
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(...textColor)
+    doc.text(item.label, 120, yPosition)
+
+    if (item.color) {
+      doc.setTextColor(...item.color)
+    }
+    doc.text(item.value, 170, yPosition)
+    yPosition += 6
+  })
+
+  // Total
+  yPosition += 5
+  doc.setDrawColor(200, 200, 200)
+  doc.line(120, yPosition, 190, yPosition)
+  yPosition += 8
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(12)
+  doc.setTextColor(...primaryColor)
+  doc.text('TOTAL:', 120, yPosition)
+  doc.text(`$${totalPrice.value.toFixed(2)}`, 170, yPosition)
+
+  // Footer
+  yPosition += 20
+  doc.setFontSize(8)
+  doc.setTextColor(...lightGray)
+  doc.setFont('helvetica', 'normal')
+  doc.text('Thank you for your business!', 20, yPosition)
+  doc.text('For any questions, please contact us at info@motioncycle.com', 20, yPosition + 5)
+
+  // Save the PDF
+  doc.save(`invoice_${invoiceNumber}.pdf`)
 }
 
 const continueShopping = () => {
@@ -609,8 +727,20 @@ hr {
 }
 
 .error-icon {
-  font-size: 4rem;
-  margin-bottom: 2rem;
+  width: 4rem;
+  height: 4rem;
+  margin: 0 auto 2rem;
+  color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-icon svg {
+  width: 2rem;
+  height: 2rem;
 }
 
 .error-state h2 {

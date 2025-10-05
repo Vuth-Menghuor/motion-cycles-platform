@@ -1,15 +1,6 @@
 <template>
   <div class="error-page">
     <div class="error-container">
-      <!-- Lock Icon -->
-      <div class="icon-container">
-        <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <rect x="5" y="11" width="14" height="10" rx="2" stroke-width="2" />
-          <path d="M7 11V7a5 5 0 0110 0v4" stroke-width="2" stroke-linecap="round" />
-          <circle cx="12" cy="16" r="1" fill="currentColor" />
-        </svg>
-      </div>
-
       <!-- Error Code -->
       <h1 class="error-code">403</h1>
 
@@ -49,13 +40,6 @@
         </p>
       </div>
     </div>
-
-    <!-- Background Decoration -->
-    <div class="decoration-circles">
-      <div class="circle circle-1"></div>
-      <div class="circle circle-2"></div>
-      <div class="circle circle-3"></div>
-    </div>
   </div>
 </template>
 
@@ -82,7 +66,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f8fafc;
   position: relative;
   overflow: hidden;
   padding: 20px;
@@ -95,7 +79,7 @@ export default {
   max-width: 600px;
   width: 100%;
   text-align: center;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 2px solid #e5e7eb;
   position: relative;
   z-index: 1;
   animation: slideUp 0.6s ease-out;
@@ -112,42 +96,10 @@ export default {
   }
 }
 
-.icon-container {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 120px;
-  height: 120px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 50%;
-  margin-bottom: 30px;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-.lock-icon {
-  width: 60px;
-  height: 60px;
-  color: white;
-  stroke-width: 2;
-}
-
 .error-code {
   font-size: 80px;
   font-weight: bold;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #3b82f6;
   margin: 0 0 20px 0;
   line-height: 1;
 }
@@ -192,14 +144,14 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #3b82f6;
   color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
 }
 
 .btn-secondary {
@@ -221,58 +173,6 @@ export default {
   font-size: 14px;
   color: #a0aec0;
   margin: 0;
-}
-
-/* Background Decoration */
-.decoration-circles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
-  z-index: 0;
-}
-
-.circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  animation: float 20s ease-in-out infinite;
-}
-
-.circle-1 {
-  width: 300px;
-  height: 300px;
-  top: -100px;
-  left: -100px;
-  animation-delay: 0s;
-}
-
-.circle-2 {
-  width: 200px;
-  height: 200px;
-  bottom: -50px;
-  right: -50px;
-  animation-delay: 7s;
-}
-
-.circle-3 {
-  width: 150px;
-  height: 150px;
-  top: 50%;
-  left: -75px;
-  animation-delay: 14s;
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-20px) rotate(180deg);
-  }
 }
 
 /* Responsive */
