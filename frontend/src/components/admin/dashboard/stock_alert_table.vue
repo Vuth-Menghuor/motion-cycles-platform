@@ -1,7 +1,9 @@
 <template>
+  <!-- Stock Alert Table Component -->
   <div class="stock-alert-table">
     <div class="table-header">
       <h3>Stock Alert Breakdown</h3>
+      <!-- Category Filter Dropdown -->
       <select v-model="filterCategory" class="filter-select">
         <option value="all">Filter Category</option>
         <option value="mountain">Mountain Bikes</option>
@@ -20,8 +22,10 @@
           </tr>
         </thead>
         <tbody>
+          <!-- Loop through stock data and display each row -->
           <tr v-for="(item, index) in stockData" :key="index">
             <td>
+              <!-- Status Badge with colored dot -->
               <span class="status-badge" :class="`status-${item.status.toLowerCase()}`">
                 <span class="status-dot"></span>
                 {{ item.status }}
@@ -31,6 +35,7 @@
             <td>${{ item.totalValue.toLocaleString() }}</td>
             <td>{{ item.percentage }}%</td>
             <td>
+              <!-- Action Badge -->
               <span
                 class="action-badge"
                 :class="`action-${item.action.toLowerCase().replace(' ', '-')}`"
@@ -50,7 +55,9 @@ export default {
   name: 'StockAlertTable',
   data() {
     return {
+      // Current filter selection
       filterCategory: 'all',
+      // Sample stock data (replace with real data from API)
       stockData: [
         {
           status: 'LOW',
@@ -81,82 +88,91 @@ export default {
 
 <style scoped>
 .stock-alert-table {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 18px;
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
+  font-family: 'Poppins', sans-serif;
 }
 
 .table-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+  gap: 12px;
 }
 
 .table-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
+  font-size: 16px;
+  font-weight: 400;
+  color: #0f172a;
 }
 
 .filter-select {
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  background: white;
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 400;
   outline: none;
-}
-
-.filter-select:hover {
-  border-color: #42a5f5;
+  font-family: 'Poppins', sans-serif !important;
+  color: #374151;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 .table-container {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 400px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 720px;
+  height: auto;
 }
 
 thead {
-  background: #f8f9fa;
+  background: #fbfdff;
 }
 
 th {
-  padding: 12px 16px;
+  padding: 10px 12px;
   text-align: left;
   font-size: 12px;
-  font-weight: 600;
-  color: #666;
+  font-weight: 700;
+  color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
 }
 
 td {
-  padding: 16px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
   font-size: 14px;
-  color: #333;
+  color: #111827;
 }
 
 tbody tr:hover {
-  background: #f8f9fa;
+  background: #f8fafc;
 }
 
 .status-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .status-dot {
@@ -166,52 +182,46 @@ tbody tr:hover {
 }
 
 .status-low {
-  background: #ffebee;
-  color: #c62828;
+  background: #fff1f2;
+  color: #be123c;
 }
-
 .status-low .status-dot {
-  background: #ef5350;
+  background: #fb7185;
 }
 
 .status-full {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: #ecfdf5;
+  color: #065f46;
 }
-
 .status-full .status-dot {
-  background: #66bb6a;
+  background: #34d399;
 }
 
 .status-normal {
-  background: #fff8e1;
-  color: #f57c00;
+  background: #fffbeb;
+  color: #b45309;
 }
-
 .status-normal .status-dot {
-  background: #ffa726;
+  background: #f59e0b;
 }
 
 .action-badge {
   display: inline-block;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
 }
-
 .action-restock-needed {
-  background: #ffebee;
-  color: #c62828;
+  background: #fff1f2;
+  color: #be123c;
 }
-
 .action-well-stock {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: #ecfdf5;
+  color: #065f46;
 }
-
 .action-monitor {
-  background: #fff8e1;
-  color: #f57c00;
+  background: #fffbeb;
+  color: #b45309;
 }
 </style>

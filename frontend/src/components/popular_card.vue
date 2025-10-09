@@ -21,7 +21,7 @@ const bikes = ref([
     bgPrice: 'linear-gradient(272deg, #3E4F62 100%, rgba(255, 255, 255, 1) 100%)',
     specs: [
       { label: 'Travel', text: '160mm / 170mm', icon: 'mdi:bike' },
-      { label: 'Wheels', text: '29\" DT Swiss EX1700', icon: 'mdi:wheel' },
+      { label: 'Wheels', text: '29" DT Swiss EX1700', icon: 'mdi:wheel' },
       { label: 'Weight', text: '33.3 lb (15.1 kg)', icon: 'mdi:scale-bathroom' },
     ],
     image: bike1,
@@ -41,7 +41,7 @@ const bikes = ref([
     bgPrice: 'linear-gradient(272deg, #2E2005 100%, rgba(255, 255, 255, 1) 100%)',
     specs: [
       { label: 'Travel', text: '150mm / 160mm', icon: 'mdi:bike' },
-      { label: 'Wheels', text: '29\" Bontrager Line Comp', icon: 'mdi:wheel' },
+      { label: 'Wheels', text: '29" Bontrager Line Comp', icon: 'mdi:wheel' },
       { label: 'Weight', text: '31.2 lb (14.1 kg)', icon: 'mdi:scale-bathroom' },
     ],
     image: bike2,
@@ -61,7 +61,7 @@ const bikes = ref([
     bgPrice: 'linear-gradient(272deg, #6A0008 100%, rgba(255, 255, 255, 1) 100%)',
     specs: [
       { label: 'Travel', text: '140mm / 150mm', icon: 'mdi:bike' },
-      { label: 'Wheels', text: '29\" Reserve 30', icon: 'mdi:wheel' },
+      { label: 'Wheels', text: '29" Reserve 30', icon: 'mdi:wheel' },
       { label: 'Weight', text: '29.8 lb (13.5 kg)', icon: 'mdi:scale-bathroom' },
     ],
     image: bike3,

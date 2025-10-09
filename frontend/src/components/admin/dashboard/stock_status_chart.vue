@@ -1,70 +1,221 @@
 <template>
+  <!-- Stock Status Bar Chart with Filters -->
   <div class="stock-status-chart">
     <div class="chart-header">
-      <h3>Stock Alert Status</h3>
+      <h3>Stock Status Overview</h3>
+      <div class="chart-filters">
+        <!-- Period Filter -->
+        <select v-model="selectedPeriod" class="filter-select" @change="updateChart">
+          <option value="current">Current Stock</option>
+          <option value="weekly">Weekly Trend</option>
+          <option value="monthly">Monthly Trend</option>
+        </select>
+        <!-- Category Filter -->
+        <select v-model="selectedCategory" class="filter-select" @change="updateChart">
+          <option value="all">All Categories</option>
+          <option value="mountain">Mountain Bike</option>
+          <option value="road">Road Bike</option>
+        </select>
+      </div>
     </div>
     <div class="chart-container">
       <canvas ref="statusCanvas"></canvas>
-    </div>
-    <div class="chart-legend">
-      <div v-for="(item, index) in statusData" :key="index" class="legend-item">
-        <span class="legend-color" :style="{ backgroundColor: item.color }"></span>
-        <span class="legend-label">{{ item.name }} {{ item.percentage }}%</span>
-      </div>
     </div>
   </div>
 </template>
 
 <script>
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  BarController,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js'
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, BarController, Title, Tooltip, Legend)
+
 export default {
   name: 'StockStatusChart',
   data() {
     return {
-      statusData: [
-        { name: 'FULL', percentage: 40, color: '#42A5F5' },
-        { name: 'Normal', percentage: 30, color: '#FFA726' },
-        { name: 'LOW', percentage: 30, color: '#EF5350' },
-      ],
+      selectedPeriod: 'current',
+      selectedType: 'count',
+      selectedCategory: 'all',
+      chart: null,
+      // Sample data for different periods and categories
+      chartData: {
+        current: {
+          all: {
+            labels: ['FULL', 'Normal', 'LOW'],
+            count: [40, 30, 30],
+          },
+          mountain: {
+            labels: ['FULL', 'Normal', 'LOW'],
+            count: [25, 20, 15],
+          },
+          road: {
+            labels: ['FULL', 'Normal', 'LOW'],
+            count: [15, 10, 15],
+          },
+        },
+        weekly: {
+          all: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            full: [20, 25, 22, 28],
+            normal: [10, 12, 11, 12],
+            low: [5, 5, 5, 5],
+          },
+          mountain: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            full: [12, 15, 13, 17],
+            normal: [6, 7, 6, 7],
+            low: [2, 3, 3, 4],
+          },
+          road: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            full: [8, 10, 9, 11],
+            normal: [4, 5, 5, 5],
+            low: [3, 2, 2, 1],
+          },
+        },
+        monthly: {
+          all: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            full: [22, 25, 20, 30, 24, 28],
+            normal: [10, 12, 10, 12, 11, 12],
+            low: [6, 5, 5, 6, 6, 6],
+          },
+          mountain: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            full: [13, 15, 12, 18, 14, 17],
+            normal: [6, 7, 6, 8, 7, 8],
+            low: [3, 3, 2, 4, 3, 3],
+          },
+          road: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            full: [9, 10, 8, 12, 10, 11],
+            normal: [4, 5, 4, 4, 4, 4],
+            low: [3, 2, 3, 2, 3, 3],
+          },
+        },
+      },
     }
   },
   mounted() {
-    this.drawDonutChart()
+    this.initChart()
+  },
+  beforeUnmount() {
+    if (this.chart) {
+      this.chart.destroy()
+    }
   },
   methods: {
-    drawDonutChart() {
-      const canvas = this.$refs.statusCanvas
-      const ctx = canvas.getContext('2d')
+    initChart() {
+      this.updateChart()
+    },
+    updateChart() {
+      const ctx = this.$refs.statusCanvas.getContext('2d')
+      const currentData = this.chartData[this.selectedPeriod][this.selectedCategory]
 
-      // Set canvas size
-      canvas.width = 240
-      canvas.height = 240
+      let data
+      if (this.selectedPeriod === 'current') {
+        data = {
+          labels: currentData.labels,
+          datasets: [
+            {
+              label: this.getDataLabel(),
+              data: currentData.count,
+              backgroundColor: this.getBarColors(),
+              borderColor: this.getBarColors(),
+              borderWidth: 1,
+              barPercentage: 0.2,
+            },
+          ],
+        }
+      } else {
+        data = {
+          labels: currentData.labels,
+          datasets: [
+            {
+              label: 'FULL',
+              data: currentData.full,
+              backgroundColor: '#42A5F5',
+              borderColor: '#42A5F5',
+              borderWidth: 1,
+              barPercentage: 0.6,
+            },
+            {
+              label: 'Normal',
+              data: currentData.normal,
+              backgroundColor: '#FFA726',
+              borderColor: '#FFA726',
+              borderWidth: 1,
+              barPercentage: 0.6,
+            },
+            {
+              label: 'LOW',
+              data: currentData.low,
+              backgroundColor: '#EF5350',
+              borderColor: '#EF5350',
+              borderWidth: 1,
+              barPercentage: 0.6,
+            },
+          ],
+        }
+      }
 
-      const centerX = canvas.width / 2
-      const centerY = canvas.height / 2
-      const radius = 80
-      const innerRadius = 50
+      if (this.chart) {
+        this.chart.destroy()
+      }
 
-      let currentAngle = -Math.PI / 2
-
-      this.statusData.forEach((status) => {
-        const sliceAngle = (status.percentage / 100) * 2 * Math.PI
-
-        // Draw outer arc
-        ctx.beginPath()
-        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
-        ctx.arc(centerX, centerY, innerRadius, currentAngle + sliceAngle, currentAngle, true)
-        ctx.closePath()
-        ctx.fillStyle = status.color
-        ctx.fill()
-
-        currentAngle += sliceAngle
+      this.chart = new ChartJS(ctx, {
+        type: 'bar',
+        data: data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: this.selectedPeriod !== 'current',
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const value = context.parsed.y
+                  return `${context.dataset.label}: ${value} items`
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              categoryPercentage: 0.4,
+              barPercentage: 0.4,
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: (value) => {
+                  return value
+                },
+              },
+            },
+          },
+          animation: {
+            duration: 800,
+          },
+        },
       })
-
-      // Draw center circle
-      ctx.beginPath()
-      ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI)
-      ctx.fillStyle = 'white'
-      ctx.fill()
+    },
+    getDataLabel() {
+      return 'Product Count'
+    },
+    getBarColors() {
+      return ['#42A5F5', '#FFA726', '#EF5350']
     },
   },
 }
@@ -72,56 +223,63 @@ export default {
 
 <style scoped>
 .stock-status-chart {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 18px;
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
   display: flex;
   flex-direction: column;
+  font-family: 'Poppins', sans-serif;
 }
 
 .chart-header {
-  margin-bottom: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .chart-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
+  font-size: 16px;
+  font-weight: 400;
+  color: black;
+}
+
+.chart-filters {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.filter-select {
+  padding: 10px 14px;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 400;
+  outline: none;
+  font-family: 'Poppins', sans-serif !important;
+  color: #374151;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 .chart-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 12px;
+  height: 300px;
+  width: 100%;
 }
 
 canvas {
-  max-width: 100%;
-}
-
-.chart-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-}
-
-.legend-color {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-}
-
-.legend-label {
-  color: #666;
+  max-width: 500%;
+  max-height: 100%;
 }
 </style>

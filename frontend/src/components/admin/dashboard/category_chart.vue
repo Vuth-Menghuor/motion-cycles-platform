@@ -1,4 +1,5 @@
 <template>
+  <!-- Category Distribution Donut Chart -->
   <div class="category-chart">
     <div class="chart-header">
       <h3>Product Category Distribution</h3>
@@ -9,61 +10,75 @@
     <div class="chart-legend">
       <div v-for="(item, index) in categories" :key="index" class="legend-item">
         <span class="legend-color" :style="{ backgroundColor: item.color }"></span>
-        <span class="legend-label">{{ item.name }} {{ item.percentage }}%</span>
+        <span class="legend-label">{{ item.name }} - {{ item.percentage }}%</span>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, DoughnutController } from 'chart.js'
+
+ChartJS.register(ArcElement, Tooltip, Legend, DoughnutController)
+
 export default {
   name: 'CategoryChart',
   data() {
     return {
+      chart: null,
       categories: [
-        { name: 'Mountain Bikes', percentage: 40, color: '#42A5F5' },
-        { name: 'Road Bikes', percentage: 60, color: '#EF5350' },
+        { name: 'Mountain Bike', percentage: 65, color: '#42A5F5' },
+        { name: 'Road Bike', percentage: 35, color: '#EF5350' },
       ],
     }
   },
   mounted() {
-    this.drawDonutChart()
+    this.initChart()
+  },
+  beforeUnmount() {
+    if (this.chart) {
+      this.chart.destroy()
+    }
   },
   methods: {
-    drawDonutChart() {
-      const canvas = this.$refs.donutCanvas
-      const ctx = canvas.getContext('2d')
+    initChart() {
+      const ctx = this.$refs.donutCanvas.getContext('2d')
 
-      // Set canvas size
-      canvas.width = 240
-      canvas.height = 240
+      const data = {
+        labels: this.categories.map((cat) => cat.name),
+        datasets: [
+          {
+            data: this.categories.map((cat) => cat.percentage),
+            backgroundColor: this.categories.map((cat) => cat.color),
+            borderColor: this.categories.map((cat) => cat.color),
+            borderWidth: 2,
+          },
+        ],
+      }
 
-      const centerX = canvas.width / 2
-      const centerY = canvas.height / 2
-      const radius = 80
-      const innerRadius = 50
-
-      let currentAngle = -Math.PI / 2
-
-      this.categories.forEach((category) => {
-        const sliceAngle = (category.percentage / 100) * 2 * Math.PI
-
-        // Draw outer arc
-        ctx.beginPath()
-        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
-        ctx.arc(centerX, centerY, innerRadius, currentAngle + sliceAngle, currentAngle, true)
-        ctx.closePath()
-        ctx.fillStyle = category.color
-        ctx.fill()
-
-        currentAngle += sliceAngle
+      this.chart = new ChartJS(ctx, {
+        type: 'doughnut',
+        data: data,
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '60%',
+          hover: {
+            mode: null,
+          },
+          plugins: {
+            legend: { display: false },
+            // tooltip: {
+            //   enabled: false,
+            // },
+          },
+          animation: {
+            animateScale: false,
+            animateRotate: false,
+            duration: 800,
+          },
+        },
       })
-
-      // Draw center circle
-      ctx.beginPath()
-      ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI)
-      ctx.fillStyle = 'white'
-      ctx.fill()
     },
   },
 }
@@ -71,56 +86,62 @@ export default {
 
 <style scoped>
 .category-chart {
-  background: white;
+  background: #ffffff;
   border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 18px;
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
   display: flex;
   flex-direction: column;
+  font-family: 'Poppins', sans-serif;
 }
 
 .chart-header {
-  margin-bottom: 25px;
+  margin: 8px 0 28px;
 }
 
 .chart-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
+  font-size: 16px;
+  font-weight: 400;
+  color: black;
 }
 
 .chart-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 25px;
+  margin-bottom: 12px;
+  height: 230px;
+  width: 100%;
 }
 
 canvas {
   max-width: 100%;
+  max-height: 100%;
 }
 
 .chart-legend {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: space-around;
+  gap: 10px;
+  position: relative;
+  top: 24px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
+  gap: 8px;
+  font-size: 13px;
 }
 
 .legend-color {
   width: 16px;
   height: 16px;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .legend-label {
-  color: #666;
+  color: #475569;
 }
 </style>
