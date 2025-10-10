@@ -13,13 +13,13 @@
         <p class="user-name">{{ user.name }}</p>
         <div class="user-actions">
           <div class="action-item">
-            <button class="action-btn" title="Password">
+            <button class="action-btn" title="Password" @click="showPasswordModal = true">
               <Icon icon="charm:key" class="action" />
             </button>
             <span class="action-label">Password</span>
           </div>
           <div class="action-item">
-            <button class="action-btn" title="My Profile">
+            <button class="action-btn" title="My Profile" @click="showProfileModal = true">
               <Icon icon="solar:user-linear" class="action" />
             </button>
             <span class="action-label">My Profile</span>
@@ -156,6 +156,150 @@
         <router-view />
       </div>
     </main>
+
+    <!-- Password Change Modal -->
+    <div v-if="showPasswordModal" class="modal-overlay" @click="closePasswordModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Change Password</h3>
+          <button class="modal-close" @click="closePasswordModal">
+            <Icon icon="charm:cross" />
+          </button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="changePassword" class="password-form">
+            <div class="form-group">
+              <label for="oldPassword">Current Password</label>
+              <input
+                id="oldPassword"
+                v-model="passwordForm.oldPassword"
+                type="password"
+                class="form-input"
+                placeholder="Enter current password"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="newPassword">New Password</label>
+              <input
+                id="newPassword"
+                v-model="passwordForm.newPassword"
+                type="password"
+                class="form-input"
+                placeholder="Enter new password"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm New Password</label>
+              <input
+                id="confirmPassword"
+                v-model="passwordForm.confirmPassword"
+                type="password"
+                class="form-input"
+                placeholder="Confirm new password"
+                required
+              />
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" @click="closePasswordModal">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">Change Password</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Update Modal -->
+    <div v-if="showProfileModal" class="modal-overlay" @click="closeProfileModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Update Profile</h3>
+          <button class="modal-close" @click="closeProfileModal">
+            <Icon icon="charm:cross" />
+          </button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="updateProfile" class="profile-form">
+            <div class="avatar-section">
+              <div class="current-avatar">
+                <img
+                  :src="profileForm.avatar || user.avatar"
+                  :alt="profileForm.name"
+                  class="avatar-preview"
+                />
+              </div>
+              <div class="avatar-upload">
+                <input
+                  id="avatarInput"
+                  type="file"
+                  accept="image/*"
+                  @change="handleAvatarChange"
+                  class="avatar-input"
+                />
+                <label for="avatarInput" class="avatar-label">
+                  <Icon icon="material-symbols:edit" />
+                  Change Avatar
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="accountName">Account Name</label>
+              <input
+                id="accountName"
+                v-model="profileForm.name"
+                type="text"
+                class="form-input"
+                placeholder="Enter account name"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input
+                id="username"
+                v-model="profileForm.username"
+                type="text"
+                class="form-input"
+                placeholder="Enter username"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                id="email"
+                v-model="profileForm.email"
+                type="email"
+                class="form-input"
+                placeholder="Enter email address"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="contactAddress">Contact Address</label>
+              <textarea
+                id="contactAddress"
+                v-model="profileForm.address"
+                class="form-textarea"
+                placeholder="Enter contact address"
+                rows="3"
+                required
+              ></textarea>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" @click="closeProfileModal">
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">Update Profile</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -200,12 +344,12 @@ const TAB_CONFIG = {
   },
   discount: {
     path: '/admin/products/discount',
-    icon: 'material-symbols:discount',
+    icon: 'ic:outline-discount',
     label: 'Manage Discount',
   },
   feedback: {
     path: '/admin/products/feedback',
-    icon: 'material-symbols:feedback',
+    icon: 'material-symbols:feedback-outline',
     label: 'Manage Feedback',
   },
   stock: {
@@ -215,12 +359,12 @@ const TAB_CONFIG = {
   },
   orders: {
     path: '/admin/orders',
-    icon: 'material-symbols:orders-outline',
+    icon: 'lets-icons:order',
     label: 'Orders',
   },
   orderList: {
     path: '/admin/orders/list',
-    icon: 'material-symbols:list-alt',
+    icon: 'lets-icons:order',
     label: 'Order List',
   },
   viewOrder: {
@@ -240,7 +384,7 @@ const TAB_CONFIG = {
   },
   customerList: {
     path: '/admin/customers/list',
-    icon: 'material-symbols:list-alt',
+    icon: 'lets-icons:order',
     label: 'Customer List',
   },
   viewCustomer: {
@@ -273,6 +417,25 @@ const searchQuery = ref('')
 const sidebarOpen = ref(true)
 const productsDropdownOpen = ref(false)
 const activeNav = ref('dashboard')
+
+// Modal states
+const showPasswordModal = ref(false)
+const showProfileModal = ref(false)
+
+// Form data
+const passwordForm = ref({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+})
+
+const profileForm = ref({
+  name: '',
+  username: '',
+  email: '',
+  address: '',
+  avatar: null,
+})
 
 // User information
 const user = ref({
@@ -501,11 +664,116 @@ const closeTab = (tabPath) => {
 }
 
 // ===========================================
+// MODAL METHODS
+// ===========================================
+
+/**
+ * Close password modal and reset form
+ */
+const closePasswordModal = () => {
+  showPasswordModal.value = false
+  passwordForm.value = {
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  }
+}
+
+/**
+ * Close profile modal and reset form
+ */
+const closeProfileModal = () => {
+  showProfileModal.value = false
+  profileForm.value = {
+    name: user.value.name,
+    username: '',
+    email: '',
+    address: '',
+    avatar: null,
+  }
+}
+
+/**
+ * Handle password change form submission
+ */
+const changePassword = () => {
+  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+    alert('New passwords do not match!')
+    return
+  }
+
+  if (passwordForm.value.newPassword.length < 6) {
+    alert('New password must be at least 6 characters long!')
+    return
+  }
+
+  // Here you would typically make an API call to change the password
+  console.log('Changing password:', {
+    oldPassword: passwordForm.value.oldPassword,
+    newPassword: passwordForm.value.newPassword,
+  })
+
+  alert('Password changed successfully!')
+  closePasswordModal()
+}
+
+/**
+ * Handle profile update form submission
+ */
+const updateProfile = () => {
+  // Here you would typically make an API call to update the profile
+  console.log('Updating profile:', profileForm.value)
+
+  // Update user data
+  user.value.name = profileForm.value.name
+  if (profileForm.value.avatar) {
+    user.value.avatar = profileForm.value.avatar
+  }
+
+  alert('Profile updated successfully!')
+  closeProfileModal()
+}
+
+/**
+ * Handle avatar file change
+ */
+const handleAvatarChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file!')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB!')
+      return
+    }
+
+    // Create preview URL
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      profileForm.value.avatar = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+// ===========================================
 // LIFECYCLE HOOKS
 // ===========================================
 
 onMounted(() => {
-  // Component initialization logic can go here if needed
+  // Initialize profile form with current user data
+  profileForm.value = {
+    name: user.value.name,
+    username: '',
+    email: '',
+    address: '',
+    avatar: null,
+  }
 })
 </script>
 
@@ -904,7 +1172,204 @@ onMounted(() => {
   padding: 16px;
   flex: 1;
   min-height: 0;
+  /* overflow-y: auto; */
+}
+
+/* ===========================================
+   BUTTON STYLES
+   =========================================== */
+
+.btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: #14c9c9;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #0fa5a5;
+}
+
+.btn-secondary {
+  background: #f8f9fa;
+  color: #333;
+  border: 1px solid #dee2e6;
+}
+
+/* ===========================================
+   MODAL STYLES
+   =========================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
   overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  font-family: 'Poppins', sans-serif;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+/* Form Styles */
+.password-form,
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  font-family: 'Poppins', sans-serif;
+}
+
+.form-input,
+.form-textarea {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #14c9c9;
+  box-shadow: 0 0 0 3px rgba(20, 201, 201, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Avatar Section */
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+}
+
+.current-avatar {
+  position: relative;
+}
+
+.avatar-preview {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e5e7eb;
+}
+
+.avatar-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-input {
+  display: none;
+}
+
+.avatar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #14c9c9;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.avatar-label:hover {
+  background: #0fa5a5;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
 }
 
 /* ===========================================
