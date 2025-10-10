@@ -28,7 +28,6 @@ defineEmits(['view', 'respond', 'delete', 'toggle-select'])
 </script>
 
 <style scoped>
-/* Feedback Cards List */
 .feedback-list {
   display: flex;
   flex-direction: column;

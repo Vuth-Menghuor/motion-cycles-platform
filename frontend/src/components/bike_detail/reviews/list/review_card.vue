@@ -7,7 +7,6 @@
       <span class="review-card-date">{{ review.date || 'Just now' }} </span>
     </div>
 
-    <!-- star -->
     <div class="review-card-stars">
       <span
         v-for="i in 5"
@@ -19,7 +18,6 @@
       </span>
     </div>
 
-    <!-- comment -->
     <p class="review-card-content">
       {{ review.comment || 'No comment provided.' }}
     </p>
@@ -29,8 +27,7 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 
-// eslint-disable-next-line no-unused-vars
-const props = defineProps({
+defineProps({
   review: {
     type: Object,
     required: true,
@@ -47,34 +44,41 @@ const props = defineProps({
   font-family: 'Poppins', sans-serif;
   background-color: #ffffff;
 }
+
 .review-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
 }
+
 .review-card-user {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: #111827;
 }
+
 .review-card-date {
   font-size: 12px;
   color: #6b7280;
 }
+
 .review-card-stars {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
 }
+
 .review-card-star {
   font-size: 16px;
   color: #d1d5db;
 }
+
 .review-card-star.active {
   color: #fbbf24;
 }
+
 .review-card-content {
   font-size: 14px;
   line-height: 1.5;

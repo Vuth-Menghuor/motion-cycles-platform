@@ -7,43 +7,31 @@ import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 
 const email = ref('')
 const password = ref('')
 const errorMessage = ref('')
 const isLoading = ref(false)
 const showPassword = ref(false)
-const authStore = useAuthStore()
 
 const login = async () => {
   if (isLoading.value) return
 
-  // Clear previous error
   errorMessage.value = ''
   isLoading.value = true
 
   try {
     await authStore.login(email.value, password.value)
-
-    const redirect = route.query.redirect
-
-    if (redirect) {
-      router.push(redirect)
-      return
-    }
-
-    router.push('/')
+    router.push(route.query.redirect || '/')
   } catch (e) {
-    console.error('Login failed:', e)
-
-    // Set user-friendly error message
-    if (e.response?.status === 401) {
-      errorMessage.value = 'Invalid email or password. Please try again.'
-    } else if (e.response?.status === 422) {
-      errorMessage.value = 'Please check your email and password format.'
-    } else {
-      errorMessage.value = 'Login failed. Please try again later.'
-    }
+    const status = e.response?.status
+    errorMessage.value =
+      status === 401
+        ? 'Invalid email or password. Please try again.'
+        : status === 422
+          ? 'Please check your email and password format.'
+          : 'Login failed. Please try again later.'
   } finally {
     isLoading.value = false
   }
@@ -53,7 +41,6 @@ const login = async () => {
 <template>
   <div class="auth-container">
     <div class="auth-card">
-      <!-- Header -->
       <div class="auth-header">
         <h1 class="auth-title">Sign In</h1>
         <div class="auth-prompt">
@@ -62,12 +49,10 @@ const login = async () => {
         </div>
       </div>
 
-      <!-- Error Message -->
       <div v-if="errorMessage" class="error-message">
         {{ errorMessage }}
       </div>
 
-      <!-- Form Section -->
       <form @submit.prevent="login" action="auth-form">
         <div class="form-group">
           <input v-model="email" type="email" placeholder="Email" class="input-text" required />
@@ -92,7 +77,6 @@ const login = async () => {
         </div>
       </form>
 
-      <!-- Form Option -->
       <div class="form-option">
         <div class="checkbox-wrapper">
           <input type="checkbox" id="remember" class="form-checkbox" />
@@ -101,7 +85,6 @@ const login = async () => {
         <a href="#" class="link">Forgot Password?</a>
       </div>
 
-      <!-- Submit Button -->
       <div class="button-wrapper">
         <button @click="login" type="submit" class="submit-button" :disabled="isLoading">
           <span v-if="isLoading">Signing In...</span>
@@ -110,12 +93,10 @@ const login = async () => {
         <Guest_button />
       </div>
 
-      <!-- Divider -->
       <div class="form-divider">
         <span class="divider-text">or sign in</span>
       </div>
 
-      <!-- Social Section -->
       <div class="social-login">
         <button type="button" class="social-button">
           <Icon icon="flat-color-icons:google" class="soical-icon" />
@@ -132,6 +113,48 @@ const login = async () => {
 </template>
 
 <style scoped>
+.auth-card {
+  border: 1px solid rgb(202, 202, 202);
+  border-radius: 20px;
+  background-color: white;
+  height: auto;
+  width: 630px;
+}
+
+.auth-header {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+.auth-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  font-size: 40px;
+  padding: 0;
+  margin: 40px 0 8px 0;
+}
+
+.auth-prompt {
+  font-size: 14px;
+}
+
+.auth-prompt span {
+  padding-right: 6px;
+}
+
+.auth-prompt a {
+  color: #14c9c9;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-prompt a:hover {
+  text-decoration: underline;
+}
+
 .error-message {
   background-color: #fee;
   color: #c33;
@@ -144,9 +167,38 @@ const login = async () => {
   font-family: 'Poppins', sans-serif;
 }
 
-.submit-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+.form-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 35px;
+  position: relative;
+}
+
+.input-text {
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  border: none;
+  border-bottom: 1px solid grey;
+  padding-right: 30px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  width: 400px;
+  background-color: transparent;
+}
+
+.input-text:focus {
+  outline: none;
+  background-color: transparent;
+  border-bottom-color: #14c9c9;
+}
+
+.input-icon {
+  position: relative;
+  right: 20px;
+  height: 20px;
+  width: 20px;
+  opacity: 70%;
 }
 
 .password-toggle {
@@ -173,34 +225,78 @@ const login = async () => {
   color: #666;
 }
 
-.form-group {
-  position: relative;
-}
-
-/* ... rest of your existing styles ... */
-.soical-icon {
-  height: 22px;
-  width: 22px;
-}
-.social-button {
-  cursor: pointer;
+.form-option {
   display: flex;
-  justify-content: center;
-  background-color: transparent;
-  height: 40px;
-  border: 1px solid rgb(212, 212, 212);
-  border-radius: 6px;
-  width: 185px;
+  justify-content: space-between;
   align-items: center;
-  gap: 12px;
-  font-size: 14px;
+  margin-top: 12px;
+  margin-left: 84px;
+  margin-right: 110px;
   font-family: 'Poppins', sans-serif;
 }
-.social-login {
+
+.checkbox-wrapper {
   display: flex;
-  justify-content: space-around;
-  margin: 40px 100px;
+  align-items: center;
+  gap: 6px;
 }
+
+.checkbox-label {
+  font-size: 13px;
+  font-weight: 300;
+}
+
+.form-checkbox {
+  height: 14px;
+  width: 14px;
+}
+
+.link {
+  font-size: 12px;
+  color: #14c9c9;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.button-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 40px;
+}
+
+.submit-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 440px;
+  margin-right: 20px;
+  padding: 12px 0;
+  border: none;
+  font-weight: 500;
+  background-color: #14c9c9;
+  color: white;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #11b3b3;
+}
+
+.submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
 .form-divider {
   position: relative;
   text-align: center;
@@ -228,108 +324,39 @@ const login = async () => {
   z-index: 1;
   font-family: 'Poppins', sans-serif;
 }
-.button-wrapper {
+
+.social-login {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 40px;
-}
-.submit-button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 440px;
-  margin-right: 20px;
-  padding: 12px 0;
-  border: none;
-  font-weight: 500;
-  background-color: #14c9c9;
-  color: white;
-  font-size: 16px;
-  border-radius: 6px;
-  cursor: pointer;
+  justify-content: space-around;
+  margin: 40px 100px;
 }
 
-.form-checkbox {
-  height: 14px;
-  width: 14px;
-}
-.form-option {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-  margin-left: 84px;
-  margin-right: 110px;
-  font-family: 'Poppins', sans-serif;
-}
-.link {
-  font-size: 12px;
-}
-.checkbox-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.checkbox-label {
-  font-size: 13px;
-  font-weight: 300;
-}
-.auth-prompt span {
-  padding-right: 6px;
-}
-.auth-prompt {
-  font-size: 14px;
-}
-.form-group {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 35px;
-}
-.input-text {
-  font-size: 14px;
-  font-family: 'Poppins', sans-serif;
-  border: none;
-  border-bottom: 1px solid grey;
-  padding-right: 30px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  width: 400px;
-  background-color: transparent;
-}
-.input-text:focus {
-  outline: none;
-  background-color: transparent;
-}
-.input-icon {
-  position: relative;
-  right: 20px;
-  height: 20px;
-  width: 20px;
-  opacity: 70%;
-}
-.auth-title {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 400;
-  font-size: 40px;
-  padding: 0;
-  margin: 40px 0 8px 0;
-}
-.auth-header {
+.social-button {
   display: flex;
   justify-content: center;
-  flex-direction: column;
+  background-color: transparent;
+  height: 40px;
+  border: 1px solid rgb(212, 212, 212);
+  border-radius: 6px;
+  width: 185px;
   align-items: center;
+  gap: 12px;
+  font-size: 14px;
   font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
-.auth-card {
-  border: 1px solid rgb(202, 202, 202);
-  border-radius: 20px;
-  background-color: white;
-  height: auto;
-  width: 630px;
+
+.social-button:hover {
+  background-color: #f5f5f5;
+}
+
+.soical-icon {
+  height: 22px;
+  width: 22px;
+}
+
+.social-text {
+  font-weight: 500;
 }
 </style>

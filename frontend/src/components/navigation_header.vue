@@ -11,10 +11,7 @@ import router from '@/router'
 gsap.registerPlugin(ScrollTrigger)
 
 const props = defineProps({
-  disableAnimation: {
-    type: Boolean,
-    default: false,
-  },
+  disableAnimation: Boolean,
   colors: {
     type: Object,
     default: () => ({
@@ -44,70 +41,47 @@ let menuTl = null
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
-  if (menuTl) {
-    menuTl.reversed() ? menuTl.play() : menuTl.reverse()
-  }
+  menuTl?.reversed() ? menuTl.play() : menuTl.reverse()
 }
 
 const closeSidebar = () => {
   isSidebarOpen.value = false
-  if (menuTl) {
-    menuTl.reverse()
-  }
+  menuTl?.reverse()
 }
 
-const navigationAndScroll = (path) => {
-  router.push(path).then(() => {
-    setTimeout(() => {
-      window.scrollTo(0, 0)
-    }, 100)
-  })
+const navigate = (path) => {
+  router.push(path).then(() => window.scrollTo(0, 0))
 }
 
-const goToCart = () => {
-  navigationAndScroll('/checkout/cart')
-}
-
-const log = () => {
-  navigationAndScroll('/')
-}
-
-const goToAuth = () => {
-  navigationAndScroll('/authentication/sign_in')
-}
+const goToCart = () => navigate('/checkout/cart')
+const goToHome = () => navigate('/')
+const goToAuth = () => navigate('/authentication/sign_in')
 
 const handleClickOutside = (event) => {
-  if (!headerRef.value?.contains(event.target)) {
-    closeSidebar()
-  }
+  if (!headerRef.value?.contains(event.target)) closeSidebar()
 }
 
 onMounted(() => {
-  if (!props.disableAnimation) {
-    menuTl = gsap.timeline({ reversed: true })
+  if (props.disableAnimation) return
 
-    menuTl.to('.sidebar-content', {
-      x: 0,
-      duration: 0.3,
-      ease: 'power2.out',
-    })
+  menuTl = gsap.timeline({ reversed: true })
+  menuTl.to('.sidebar-content', { x: 0, duration: 0.3, ease: 'power2.out' })
 
-    gsap.to(headerRef.value, {
-      scrollTrigger: {
-        trigger: 'body',
-        start: '840 top',
-        toggleClass: { targets: headerRef.value, className: 'is-scrolled' },
-      },
-    })
+  gsap.to(headerRef.value, {
+    scrollTrigger: {
+      trigger: 'body',
+      start: '840 top',
+      toggleClass: { targets: headerRef.value, className: 'is-scrolled' },
+    },
+  })
 
-    gsap.fromTo(
-      '.brand-item',
-      { y: -50, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power2.out' },
-    )
+  gsap.fromTo(
+    '.brand-item',
+    { y: -50, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power2.out' },
+  )
 
-    document.addEventListener('click', handleClickOutside)
-  }
+  document.addEventListener('click', handleClickOutside)
 })
 
 onUnmounted(() => {
@@ -118,6 +92,7 @@ onUnmounted(() => {
 
 <template>
   <Navigation_sidebar :isOpen="isSidebarOpen" @close="closeSidebar" />
+
   <header
     ref="headerRef"
     class="header-slideshow"
@@ -134,10 +109,11 @@ onUnmounted(() => {
             :class="{ 'is-open': isSidebarOpen }"
             @click="toggleSidebar"
           />
-          <div class="brand-logo" @click="log">
+          <div class="brand-logo" @click="goToHome">
             <span class="brand-text" :style="{ color: colors.logoName || '' }">MOTION CYCLE</span>
           </div>
         </div>
+
         <div class="search-container">
           <input
             type="search"
@@ -166,22 +142,21 @@ onUnmounted(() => {
             />
             <span class="cart-badge" v-if="count > 0">{{ count }}</span>
           </button>
-          <div>
-            <button
-              class="user-account action-button"
-              :style="{
-                backgroundColor: colors.userBgBtn || '',
-                borderColor: colors.userBorderBtn,
-              }"
-              @click="goToAuth"
-            >
-              <Icon
-                icon="mdi:user"
-                class="action-icon user-icon"
-                :style="{ color: colors.userIcon }"
-              />
-            </button>
-          </div>
+
+          <button
+            class="user-account action-button"
+            :style="{
+              backgroundColor: colors.userBgBtn || '',
+              borderColor: colors.userBorderBtn,
+            }"
+            @click="goToAuth"
+          >
+            <Icon
+              icon="mdi:user"
+              class="action-icon user-icon"
+              :style="{ color: colors.userIcon }"
+            />
+          </button>
         </div>
       </div>
     </nav>

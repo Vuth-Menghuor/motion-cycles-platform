@@ -112,7 +112,6 @@ const localSpecs = computed({
 </script>
 
 <style scoped>
-/* Form Section */
 .form-section {
   background: #ffffff;
   border-radius: 8px;
@@ -130,7 +129,6 @@ const localSpecs = computed({
   padding: 20px 20px 0 20px;
 }
 
-/* Specification Fields */
 .spec-group {
   display: grid;
   grid-template-columns: 140px 1fr;
@@ -146,7 +144,6 @@ const localSpecs = computed({
   font-weight: 400;
 }
 
-/* Input Styling */
 input {
   width: 100%;
   padding: 10px 12px;
@@ -180,7 +177,6 @@ input:disabled {
   color: #22543d !important;
 }
 
-/* Button Actions */
 .form-actions {
   display: flex;
   gap: 12px;
@@ -221,7 +217,6 @@ input:disabled {
   color: #4a5568;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .spec-group {
     grid-template-columns: 1fr;

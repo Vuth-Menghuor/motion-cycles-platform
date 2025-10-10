@@ -86,21 +86,13 @@ import { useFavoritesStore } from '@/stores/favorites'
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
 
-defineProps({
-  isOpen: {
-    type: Boolean,
-    default: false,
-  },
-})
+defineProps({ isOpen: { type: Boolean, default: false } })
 const favoritesStore = useFavoritesStore()
 const emit = defineEmits(['close'])
 const router = useRouter()
 
-const closeSidebar = () => {
-  emit('close')
-}
+const closeSidebar = () => emit('close')
 
-// helper: navigate, scroll top, close
 const navigate = (path) => {
   router.push(path).then(() => {
     setTimeout(() => window.scrollTo(0, 0), 100)
@@ -113,6 +105,7 @@ const goToFav = () => navigate('/favorites')
 </script>
 
 <style scoped>
+/* Count Fav */
 .count-fav {
   margin-left: 5.5rem;
   color: #3491fa;
@@ -121,9 +114,12 @@ const goToFav = () => navigate('/favorites')
   border: 1px solid #3491fa;
   border-radius: 10px;
 }
+
 .fav-product-count {
   display: flex;
 }
+
+/* Sidebar Overlay */
 .sidebar-overlay {
   position: fixed;
   top: 0;
@@ -142,6 +138,7 @@ const goToFav = () => navigate('/favorites')
   visibility: visible;
 }
 
+/* App Sidebar */
 .app-sidebar {
   position: fixed;
   top: 0;
@@ -161,6 +158,7 @@ const goToFav = () => navigate('/favorites')
   transform: translateX(0);
 }
 
+/* Sidebar Header */
 .app-sidebar__header {
   display: flex;
   align-items: center;
@@ -198,6 +196,7 @@ const goToFav = () => navigate('/favorites')
   color: #374151;
 }
 
+/* Sidebar Nav */
 .app-sidebar__nav {
   flex: 1;
   overflow-y: auto;
@@ -260,6 +259,7 @@ const goToFav = () => navigate('/favorites')
   text-align: center;
 }
 
+/* Sidebar Footer */
 .app-sidebar__footer {
   border-top: 2px solid #e5e7eb;
   padding: 1rem;

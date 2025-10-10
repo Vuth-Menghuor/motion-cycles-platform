@@ -1,23 +1,14 @@
 <script setup>
 import { useRouter } from 'vue-router'
 
-const props = defineProps({
-  brand: Object,
-})
-
+// eslint-disable-next-line no-unused-vars
+const props = defineProps({ brand: Object })
 const router = useRouter()
 
 const goToBrand = (id, brandName) => {
-  router
-    .push({
-      name: 'BrandPage',
-      params: { id, brandName },
-    })
-    .then(() => {
-      setTimeout(() => {
-        window.scrollTo(0, 0)
-      }, 100)
-    })
+  router.push({ name: 'BrandPage', params: { id, brandName } }).then(() => {
+    setTimeout(() => window.scrollTo(0, 0), 100)
+  })
 }
 </script>
 

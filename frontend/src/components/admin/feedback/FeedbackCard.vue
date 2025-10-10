@@ -118,7 +118,6 @@ const handleCardClick = (event) => {
 </script>
 
 <style scoped>
-/* Feedback Card */
 .feedback-card {
   background: #ffffff;
   border-radius: 6px;
@@ -138,7 +137,6 @@ const handleCardClick = (event) => {
   box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
 }
 
-/* Card Header */
 .card-header {
   display: flex;
   align-items: center;
@@ -174,7 +172,6 @@ const handleCardClick = (event) => {
   flex-shrink: 0;
 }
 
-/* Card Content */
 .card-content {
   padding: 20px;
 }
@@ -213,7 +210,6 @@ const handleCardClick = (event) => {
   flex-shrink: 0;
 }
 
-/* Rating Section */
 .rating-section {
   margin-bottom: 16px;
 }
@@ -241,7 +237,6 @@ const handleCardClick = (event) => {
   font-weight: 500;
 }
 
-/* Comment Section */
 .comment-section {
   margin-bottom: 16px;
 }
@@ -257,7 +252,6 @@ const handleCardClick = (event) => {
   border-left: 4px solid #4299e1;
 }
 
-/* Card Actions */
 .card-actions {
   display: flex;
   gap: 12px;
@@ -312,7 +306,6 @@ const handleCardClick = (event) => {
   transform: translateY(-1px);
 }
 
-/* Status Badges */
 .status-badge {
   padding: 4px 8px;
   border-radius: 4px;
@@ -336,7 +329,6 @@ const handleCardClick = (event) => {
   color: #4299e1;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .card-header {
     padding: 12px 16px;

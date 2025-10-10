@@ -17,65 +17,19 @@ import Rating_bar from './overview/rating_bar.vue'
 import Reviews_list from './list/reviews_list.vue'
 import Review_form from './form/review_form.vue'
 
-// Make reviews reactive
 const reviews = ref([
-  {
-    user: 'v1',
-    rating: 2,
-    comment: 'This is a great product!',
-    date: '2023-10-01',
-  },
-  {
-    user: 'v2',
-    rating: 2,
-    comment: 'Not bad, could be better.',
-    date: '2023-10-02',
-  },
-  {
-    user: 'v3',
-    rating: 3,
-    comment: 'Average experience.',
-    date: '2023-10-03',
-  },
-  {
-    user: 'v4',
-    rating: 5,
-    comment: 'Exceeded my expectations!',
-    date: '2023-10-04',
-  },
-  {
-    user: 'v5',
-    rating: 3,
-    comment: "It's okay for the price.",
-    date: '2023-10-05',
-  },
-  {
-    user: 'v6',
-    rating: 2,
-    comment: 'Could be improved in some areas.',
-    date: '2023-10-06',
-  },
-  {
-    user: 'v7',
-    rating: 4,
-    comment: 'Good value for money.',
-    date: '2023-10-07',
-  },
-  {
-    user: 'v8',
-    rating: 5,
-    comment: 'Absolutely love it!',
-    date: '2023-10-08',
-  },
+  { user: 'v1', rating: 2, comment: 'This is a great product!', date: '2023-10-01' },
+  { user: 'v2', rating: 2, comment: 'Not bad, could be better.', date: '2023-10-02' },
+  { user: 'v3', rating: 3, comment: 'Average experience.', date: '2023-10-03' },
+  { user: 'v4', rating: 5, comment: 'Exceeded my expectations!', date: '2023-10-04' },
+  { user: 'v5', rating: 3, comment: "It's okay for the price.", date: '2023-10-05' },
+  { user: 'v6', rating: 2, comment: 'Could be improved in some areas.', date: '2023-10-06' },
+  { user: 'v7', rating: 4, comment: 'Good value for money.', date: '2023-10-07' },
+  { user: 'v8', rating: 5, comment: 'Absolutely love it!', date: '2023-10-08' },
 ])
 
-// Handle new review submission
 const handleNewReview = (reviewData) => {
-  // Add new review to the beginning of the array (most recent first)
   reviews.value.unshift(reviewData)
-
-  console.log('New review added:', reviewData)
-  console.log('Total reviews:', reviews.value.length)
 }
 </script>
 

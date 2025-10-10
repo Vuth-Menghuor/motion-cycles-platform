@@ -5,7 +5,11 @@
       {{ currentPage }} of {{ totalPages }})
     </div>
     <div class="pagination-controls">
-      <button @click="$emit('page-change', currentPage - 1)" :disabled="currentPage === 1" class="btn-page">
+      <button
+        @click="$emit('page-change', currentPage - 1)"
+        :disabled="currentPage === 1"
+        class="btn-page"
+      >
         <Icon icon="mdi:chevron-left" />
         Previous
       </button>
@@ -37,50 +41,32 @@
 import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// Props
 const props = defineProps({
-  currentPage: {
-    type: Number,
-    required: true
-  },
-  totalItems: {
-    type: Number,
-    required: true
-  },
-  itemsPerPage: {
-    type: Number,
-    default: 50
-  }
+  currentPage: { type: Number, required: true },
+  totalItems: { type: Number, required: true },
+  itemsPerPage: { type: Number, default: 50 },
 })
 
-// Emits
 defineEmits(['page-change'])
 
-// Computed properties
 const totalPages = computed(() => Math.ceil(props.totalItems / props.itemsPerPage))
 const startItem = computed(() => (props.currentPage - 1) * props.itemsPerPage + 1)
 const endItem = computed(() => Math.min(props.currentPage * props.itemsPerPage, props.totalItems))
 
 const visiblePages = computed(() => {
-  const pages = []
-  const maxVisiblePages = 5
-  let startPage = Math.max(1, props.currentPage - Math.floor(maxVisiblePages / 2))
-  let endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1)
+  const maxVisible = 5
+  let start = Math.max(1, props.currentPage - Math.floor(maxVisible / 2))
+  let end = Math.min(totalPages.value, start + maxVisible - 1)
 
-  if (endPage - startPage + 1 < maxVisiblePages) {
-    startPage = Math.max(1, endPage - maxVisiblePages + 1)
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1)
   }
 
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i)
-  }
-
-  return pages
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 })
 </script>
 
 <style scoped>
-/* Pagination */
 .pagination-container {
   display: flex;
   justify-content: space-between;
@@ -164,7 +150,6 @@ const visiblePages = computed(() => {
   border-color: #4299e1;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .pagination-container {
     flex-direction: column;

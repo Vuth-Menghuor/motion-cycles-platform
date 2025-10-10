@@ -129,7 +129,6 @@ select:disabled {
   opacity: 0.6;
 }
 
-/* Special styling for prefilled fields */
 input:disabled:not([readonly]),
 select:disabled {
   background-color: #e6fffa;

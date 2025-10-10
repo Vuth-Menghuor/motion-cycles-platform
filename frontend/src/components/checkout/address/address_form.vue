@@ -77,7 +77,6 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save', 'update'])
 
-// Local form state
 const form = reactive({
   id: null,
   name: '',
@@ -90,41 +89,31 @@ const form = reactive({
   isDefault: false,
 })
 
-// --- Move this above watch ---
 const resetForm = () => {
-  form.id = Date.now()
-  form.name = ''
-  form.streetAddress = ''
-  form.district = ''
-  form.city = ''
-  form.province = ''
-  form.country = ''
-  form.phone = ''
-  form.isDefault = false
+  Object.assign(form, {
+    id: Date.now(),
+    name: '',
+    streetAddress: '',
+    district: '',
+    city: '',
+    province: '',
+    country: '',
+    phone: '',
+    isDefault: false,
+  })
 }
 
-// Watch for edit mode
 watch(
   () => props.editingAddress,
   (newVal) => {
-    if (newVal) {
-      // Fill form with existing data for editing
-      Object.assign(form, { ...newVal }) // clone to avoid mutating props
-    } else {
-      // Reset form for creating a new one
-      resetForm()
-    }
+    newVal ? Object.assign(form, { ...newVal }) : resetForm()
   },
   { immediate: true },
 )
 
 const handleSubmit = () => {
   form.fullAddress = `${form.streetAddress}, ${form.district}, ${form.city}, ${form.province}, ${form.country}`
-  if (props.editingAddress) {
-    emit('update', { ...form })
-  } else {
-    emit('save', { ...form })
-  }
+  emit(props.editingAddress ? 'update' : 'save', { ...form })
   emit('close')
   resetForm()
 }

@@ -22,7 +22,6 @@
         :disabled="disabled"
       />
 
-      <!-- Drag and Drop Zone -->
       <div
         class="drop-zone"
         :class="{ disabled: disabled }"
@@ -37,9 +36,7 @@
         </div>
       </div>
 
-      <!-- Image Display Layout -->
       <div class="image-layout" v-if="images.length > 0">
-        <!-- All Images in One Flex Group -->
         <div class="images-flex-group">
           <div
             v-for="(image, index) in images"
@@ -184,7 +181,6 @@ const cancelUpload = () => {
   opacity: 0.6;
 }
 
-/* Drag and Drop Zone */
 .drop-zone {
   border: 2px dashed #cbd5e0;
   border-radius: 8px;
@@ -241,14 +237,12 @@ const cancelUpload = () => {
   font-family: 'Poppins', sans-serif;
 }
 
-/* Image Layout */
 .image-layout {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* All Images in One Flex Group */
 .images-flex-group {
   display: flex;
   gap: 12px;
@@ -272,7 +266,6 @@ const cancelUpload = () => {
   position: relative;
 }
 
-/* Common Image Item Styles */
 .image-item {
   background-size: cover;
   background-position: center;
@@ -306,7 +299,6 @@ const cancelUpload = () => {
   font-size: 24px;
 }
 
-/* Remove Button */
 .remove-btn {
   position: absolute;
   top: 8px;

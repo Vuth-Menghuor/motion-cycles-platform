@@ -114,29 +114,19 @@
 import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// Props for customization (optional)
-const props = defineProps({
-  showNewsletter: {
-    type: Boolean,
-    default: true,
-  },
-  companyName: {
-    type: String,
-    default: 'MOTION CYCLE',
-  },
+defineProps({
+  showNewsletter: { type: Boolean, default: true },
+  companyName: { type: String, default: 'MOTION CYCLE' },
   companyDescription: {
     type: String,
     default: 'Design amazing digital experiences that create more happy in the world.',
   },
 })
 
-// Emits for parent component communication
 const emit = defineEmits(['newsletter-subscribe', 'link-click', 'social-click'])
 
-// Reactive data
 const email = ref('')
 
-// Methods
 const subscribeNewsletter = () => {
   if (email.value.trim()) {
     emit('newsletter-subscribe', email.value)
@@ -144,19 +134,18 @@ const subscribeNewsletter = () => {
   }
 }
 
-const handleLinkClick = (linkType) => {
-  emit('link-click', linkType)
-}
+const handleLinkClick = (linkType) => emit('link-click', linkType)
 
-const handleSocialClick = (platform) => {
-  emit('social-click', platform)
-}
+const handleSocialClick = (platform) => emit('social-click', platform)
 </script>
 
 <style scoped>
+/* Footer */
 .footer {
   margin-top: 8rem;
 }
+
+/* Footer Newsletter Section */
 .footer-newsletter-section {
   position: absolute;
   left: 50%;
@@ -165,6 +154,7 @@ const handleSocialClick = (platform) => {
   z-index: 10;
   top: -160px;
 }
+
 .footer-container {
   position: relative;
   background: #23272f;
@@ -172,6 +162,7 @@ const handleSocialClick = (platform) => {
   padding: 4rem 6rem;
   margin-top: 12rem;
 }
+
 .footer-newsletter {
   display: flex;
   align-items: center;
@@ -185,6 +176,8 @@ const handleSocialClick = (platform) => {
   text-align: center;
   margin-bottom: 4rem;
 }
+
+/* Newsletter */
 .newsletter {
   display: flex;
   justify-content: space-between;
@@ -203,6 +196,7 @@ const handleSocialClick = (platform) => {
   font-weight: 600;
   margin: 0;
 }
+
 .footer-logo {
   font-size: 1.4rem;
   font-weight: bold;
@@ -224,6 +218,7 @@ const handleSocialClick = (platform) => {
   font-size: 15px;
   margin-top: 0.5rem;
 }
+
 .newsletter-form small a {
   color: white;
   text-decoration: underline;
@@ -241,6 +236,7 @@ const handleSocialClick = (platform) => {
   width: 360px;
   outline: none;
 }
+
 ::placeholder {
   color: white;
   opacity: 1;
@@ -249,6 +245,8 @@ const handleSocialClick = (platform) => {
 ::-ms-input-placeholder {
   color: white;
 }
+
+/* Footer Content */
 .footer-content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -271,6 +269,7 @@ const handleSocialClick = (platform) => {
 .footer-section {
   font-family: 'Poppins', sans-serif;
 }
+
 .footer-section ul {
   list-style: none;
   padding: 0;
@@ -291,6 +290,7 @@ const handleSocialClick = (platform) => {
   color: #14c9c9;
 }
 
+/* Footer Bottom */
 .footer-bottom {
   font-family: 'Poppins', sans-serif;
   border-top: 1px solid #374151;

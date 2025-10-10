@@ -1,6 +1,5 @@
 <template>
   <div class="admin-customers-container">
-    <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb">
       <router-link to="/admin/customers/list" class="breadcrumb-item">List Customers</router-link>
       <span class="breadcrumb-separator">></span>
@@ -12,7 +11,6 @@
     </nav>
 
     <div class="customer-edit-content">
-      <!-- Customer Header -->
       <div class="customer-header">
         <div class="customer-info">
           <h2><Icon icon="mdi:account-edit" /> Edit Customer</h2>
@@ -29,7 +27,6 @@
         </div>
       </div>
 
-      <!-- Loading State -->
       <div v-if="!customer" class="loading-section">
         <div class="loading-card">
           <Icon icon="mdi:loading" class="loading-icon" />
@@ -37,7 +34,6 @@
         </div>
       </div>
 
-      <!-- Customer Not Found -->
       <div v-else-if="!customer.id" class="error-section">
         <div class="error-card">
           <Icon icon="mdi:alert-circle" class="error-icon" />
@@ -50,10 +46,8 @@
         </div>
       </div>
 
-      <!-- Edit Form -->
       <template v-else>
         <form @submit.prevent="saveCustomer" class="edit-form">
-          <!-- Basic Information Section -->
           <div class="form-section">
             <div class="section-content">
               <div class="form-grid">
@@ -145,7 +139,6 @@
             </div>
           </div>
 
-          <!-- Form Actions -->
           <div class="form-actions">
             <button type="button" @click="cancelEdit" class="btn btn-secondary">
               <Icon icon="mdi:close" />
@@ -167,23 +160,15 @@ import { ref, reactive, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
 
-// ===== PROPS =====
 const props = defineProps({
-  id: {
-    type: [String, Number],
-    required: true,
-  },
+  id: { type: [String, Number], required: true },
 })
 
-// ===== COMPOSABLES =====
 const router = useRouter()
-
-// ===== REACTIVE DATA =====
 const customer = ref(null)
 const isSubmitting = ref(false)
 const errors = reactive({})
 
-// ===== FORM DATA =====
 const form = reactive({
   customer_id: '',
   name: '',
@@ -193,8 +178,6 @@ const form = reactive({
   password: '',
 })
 
-// ===== MOCK DATA =====
-// TODO: Replace with actual API calls
 const mockCustomers = [
   {
     id: 1,
@@ -216,40 +199,29 @@ const mockCustomers = [
   },
 ]
 
-// ===== METHODS =====
-/**
- * Load customer data by ID
- */
 const loadCustomer = () => {
   const customerId = parseInt(props.id)
   const foundCustomer = mockCustomers.find((c) => c.id === customerId)
 
   if (foundCustomer) {
     customer.value = { ...foundCustomer }
-    // Populate form (password intentionally left empty for security)
     Object.assign(form, {
       customer_id: foundCustomer.customer_id,
       name: foundCustomer.name,
       email: foundCustomer.email,
       phone: foundCustomer.phone,
       status: foundCustomer.status,
-      password: '', // Don't populate password for security
+      password: '',
     })
   } else {
     customer.value = null
-    console.error('Customer not found')
   }
 }
 
-/**
- * Validate form data
- */
 const validateForm = () => {
-  // Clear previous errors
   Object.keys(errors).forEach((key) => (errors[key] = ''))
   let isValid = true
 
-  // Required field validations
   if (!form.name?.trim()) {
     errors.name = 'Name is required'
     isValid = false
@@ -271,13 +243,11 @@ const validateForm = () => {
     isValid = false
   }
 
-  // Optional field validations
   if (form.phone?.trim() && !/^[+]?[1-9][\d]{0,15}$/.test(form.phone.replace(/[\s\-()]/g, ''))) {
     errors.phone = 'Please enter a valid phone number'
     isValid = false
   }
 
-  // Password validation (optional, but must be strong if provided)
   if (form.password?.trim()) {
     if (form.password.length < 8) {
       errors.password = 'Password must be at least 8 characters long'
@@ -291,21 +261,13 @@ const validateForm = () => {
   return isValid
 }
 
-/**
- * Save customer data
- */
 const saveCustomer = async () => {
   if (!validateForm()) return
 
   isSubmitting.value = true
 
   try {
-    // Simulate API call - Replace with actual API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // TODO: Implement actual API call to update customer
-    // const response = await api.updateCustomer(customer.value.id, form)
-
     alert('Customer updated successfully!')
     router.push(`/admin/customers/view/${customer.value.id}`)
   } catch (error) {
@@ -316,23 +278,16 @@ const saveCustomer = async () => {
   }
 }
 
-/**
- * Handle cancel action with confirmation
- */
 const cancelEdit = () => {
   if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
     router.push(`/admin/customers/view/${customer.value.id}`)
   }
 }
 
-// ===== LIFECYCLE =====
-onMounted(() => {
-  loadCustomer()
-})
+onMounted(() => loadCustomer())
 </script>
 
 <style scoped>
-/* ===== LAYOUT ===== */
 .admin-customers-container {
   margin: 0 auto;
   font-family: 'Poppins', sans-serif;
@@ -347,7 +302,6 @@ onMounted(() => {
   background: white;
 }
 
-/* ===== BREADCRUMB ===== */
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -384,7 +338,6 @@ onMounted(() => {
   color: #999;
 }
 
-/* ===== HEADER ===== */
 .customer-header {
   display: flex;
   justify-content: space-between;
@@ -428,7 +381,6 @@ onMounted(() => {
   gap: 12px;
 }
 
-/* ===== LOADING & ERROR STATES ===== */
 .loading-section,
 .error-section {
   display: flex;
@@ -472,7 +424,6 @@ onMounted(() => {
   color: #666;
 }
 
-/* ===== FORM ===== */
 .edit-form {
   padding: 0;
 }
@@ -556,7 +507,6 @@ onMounted(() => {
   color: #dc3545;
 }
 
-/* ===== FORM ACTIONS ===== */
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -566,7 +516,6 @@ onMounted(() => {
   border-top: 1px solid #e2e8f0;
 }
 
-/* ===== BUTTONS ===== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -602,11 +551,6 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-.loading-icon {
-  animation: spin 1s linear infinite;
-}
-
-/* ===== ANIMATIONS ===== */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -616,7 +560,6 @@ onMounted(() => {
   }
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .admin-customers-container {
     padding: 10px;

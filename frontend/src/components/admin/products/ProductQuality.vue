@@ -104,7 +104,6 @@ select:disabled {
   opacity: 0.6;
 }
 
-/* Special styling for prefilled fields */
 select:disabled {
   background-color: #e6fffa;
   color: #38a169;

@@ -18,6 +18,10 @@ import { createPinia } from 'pinia' // Pinia
 import App from './App.vue'
 import router from './router'
 import adminStore from './stores/admin'
+import axios from 'axios'
+
+// Configure axios base URL
+axios.defaults.baseURL = 'http://localhost:8100'
 
 // --- Vuex store setup ---
 const store = createStore({

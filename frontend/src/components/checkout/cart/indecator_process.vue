@@ -1,11 +1,9 @@
-<script setup lang="ts">
-import { Icon } from '@iconify/vue'
-import { useRoute } from 'vue-router'
+<script setup>
 import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { Icon } from '@iconify/vue'
 
 const route = useRoute()
-
-// Coerce to number for safety
 const currentStep = computed(() => Number(route.meta.step) || 1)
 </script>
 
@@ -40,14 +38,18 @@ const currentStep = computed(() => Number(route.meta.step) || 1)
 </template>
 
 <style scoped>
+/* Cart Header */
 .cart-header {
   padding-bottom: 36px;
 }
+
+/* Icon */
 .icon {
   font-size: 18px;
   transition: color 0.3s ease;
 }
 
+/* Step Indicator */
 .step-indicator {
   display: flex;
   justify-content: space-between;
@@ -55,6 +57,7 @@ const currentStep = computed(() => Number(route.meta.step) || 1)
   position: relative;
 }
 
+/* Step */
 .step {
   display: flex;
   flex-direction: column;
@@ -78,6 +81,7 @@ const currentStep = computed(() => Number(route.meta.step) || 1)
   background-color: #00bcd4;
 }
 
+/* Step Icon */
 .step-icon {
   width: 46px;
   height: 46px;
@@ -93,9 +97,10 @@ const currentStep = computed(() => Number(route.meta.step) || 1)
 .step.active .step-icon {
   background-color: #00bcd4;
   border: none;
-  color: white; /* now inherited by .icon */
+  color: white;
 }
 
+/* Step Span */
 .step span {
   margin-top: 10px;
   font-size: 12px;

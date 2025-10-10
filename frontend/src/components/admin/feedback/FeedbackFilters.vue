@@ -53,7 +53,6 @@
 import { computed, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// Props
 const props = defineProps({
   customerSearch: String,
   ratingFilter: String,
@@ -62,7 +61,6 @@ const props = defineProps({
   dateFilter: String,
 })
 
-// Emits
 const emit = defineEmits([
   'update:customerSearch',
   'update:ratingFilter',
@@ -72,10 +70,8 @@ const emit = defineEmits([
   'clearFilters',
 ])
 
-// State
 let searchTimeout = ref(null)
 
-// Computed properties for v-model
 const customerSearch = computed({
   get: () => props.customerSearch,
   set: (value) => emit('update:customerSearch', value),
@@ -101,17 +97,12 @@ const dateFilter = computed({
   set: (value) => emit('update:dateFilter', value),
 })
 
-// Methods
 const debouncedSearch = () => {
   clearTimeout(searchTimeout.value)
-  searchTimeout.value = setTimeout(() => {
-    // Search is handled by v-model
-  }, 500)
+  searchTimeout.value = setTimeout(() => {}, 500)
 }
 
-const applyFilters = () => {
-  // Filters are applied automatically through v-model
-}
+const applyFilters = () => {}
 
 const clearFilters = () => {
   emit('clearFilters')

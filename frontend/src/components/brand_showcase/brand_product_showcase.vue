@@ -1,9 +1,7 @@
 <template>
   <div class="brand-page-container">
     <div class="brand-page-wrapper">
-      <!-- Brand Content -->
       <div class="brand-content">
-        <!-- Full-width red background -->
         <div class="brand-showcase-background" :style="{ background: currentBrand.bgColor }">
           <div class="brand-showcase-inner">
             <h1 class="brand-name-display text-center" :style="{ color: currentBrand.textColor }">
@@ -19,9 +17,7 @@
           </div>
         </div>
 
-        <!-- Rest of content -->
         <div class="brand-hero-section">
-          <!-- Product Variants List -->
           <div class="product-variants-list text-center">
             <a
               v-for="variant in currentBrand.productVariants"
@@ -33,7 +29,6 @@
             </a>
           </div>
 
-          <!-- Featured Model Info -->
           <div class="text-center">
             <p class="brand-model-subtitle">{{ currentBrand.featuredProduct.category }}</p>
           </div>
@@ -45,7 +40,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import bike1 from '@/assets/images/product_showcase/image_1.png'
 import bike2 from '@/assets/images/product_showcase/image_2.png'
 import bike3 from '@/assets/images/product_showcase/image_3.png'
@@ -56,21 +51,14 @@ import bike7 from '@/assets/images/product_showcase/image_7.png'
 import bike8 from '@/assets/images/product_showcase/image_8.png'
 
 const route = useRoute()
-const router = useRouter()
 
-// Reactive data
 const brandName = ref(route.params.brandName)
 
 const brandConfig = {
-  // ... (brandConfig object remains the same)
   cannondale: {
     bgColor: 'linear-gradient(0deg, rgba(46, 32, 5, 0.7) 0%, rgba(255, 255, 255, 0.7) 50%)',
     textColor: '#2E2005',
-    featuredProduct: {
-      name: 'CAAD OPTIMO 105',
-      category: 'Modern Road',
-      image: bike1,
-    },
+    featuredProduct: { name: 'CAAD OPTIMO 105', category: 'Modern Road', image: bike1 },
     productVariants: [
       { id: 1, name: 'F-SI Carbon 2', slug: 'f-si-carbon-2' },
       { id: 2, name: 'F-SI Carbon 5', slug: 'f-si-carbon-5' },
@@ -80,11 +68,7 @@ const brandConfig = {
   trek: {
     bgColor: 'linear-gradient(0deg, rgba(28, 43, 87, 0.7) 0%, rgba(255, 255, 255, 0.7) 50%)',
     textColor: '#1C2B57',
-    featuredProduct: {
-      name: 'Domane SL 6',
-      category: 'Endurance Road',
-      image: bike2,
-    },
+    featuredProduct: { name: 'Domane SL 6', category: 'Endurance Road', image: bike2 },
     productVariants: [
       { id: 1, name: 'Emonda SL 7', slug: 'emonda-sl-7' },
       { id: 2, name: 'Checkpoint ALR 5', slug: 'checkpoint-alr-5' },
@@ -93,11 +77,7 @@ const brandConfig = {
   bianchi: {
     bgColor: 'linear-gradient(0deg, rgba(61, 58, 52, 0.7) 0%, rgba(255, 255, 255, 0.7) 50%)',
     textColor: '#3D3A34',
-    featuredProduct: {
-      name: 'Oltre XR4',
-      category: 'Aero Road',
-      image: bike3,
-    },
+    featuredProduct: { name: 'Oltre XR4', category: 'Aero Road', image: bike3 },
     productVariants: [
       { id: 1, name: 'Specialissima', slug: 'specialissima' },
       { id: 2, name: 'Infinito CV', slug: 'infinito-cv' },
@@ -106,11 +86,7 @@ const brandConfig = {
   giant: {
     bgColor: 'linear-gradient(0deg, rgba(53, 53, 55, 0.7) 0%, rgba(255, 255, 255, 0.7) 50%)',
     textColor: '#353537',
-    featuredProduct: {
-      name: 'TCR Advanced Pro',
-      category: 'Climbing Road',
-      image: bike4,
-    },
+    featuredProduct: { name: 'TCR Advanced Pro', category: 'Climbing Road', image: bike4 },
     productVariants: [
       { id: 1, name: 'Defy Advanced 1', slug: 'defy-advanced-1' },
       { id: 2, name: 'Propel Advanced 2', slug: 'propel-advanced-2' },
@@ -119,11 +95,7 @@ const brandConfig = {
   cervelo: {
     bgColor: 'linear-gradient(0deg, rgba(28, 39, 48, 0.7) 0%, rgba(255, 255, 255, 0.7) 50%)',
     textColor: '#1C2730',
-    featuredProduct: {
-      name: 'S5',
-      category: 'Aero Road',
-      image: bike5,
-    },
+    featuredProduct: { name: 'S5', category: 'Aero Road', image: bike5 },
     productVariants: [
       { id: 1, name: 'R5', slug: 'r5' },
       { id: 2, name: 'Caledonia-5', slug: 'caledonia-5' },
@@ -132,11 +104,7 @@ const brandConfig = {
   specialized: {
     bgColor: 'linear-gradient(0deg, rgba(106, 0, 8, 0.7) 0%, rgba(255, 255, 255, 0.7) 50%)',
     textColor: '#6A0008',
-    featuredProduct: {
-      name: 'Tarmac SL7',
-      category: 'All-Rounder',
-      image: bike6,
-    },
+    featuredProduct: { name: 'Tarmac SL7', category: 'All-Rounder', image: bike6 },
     productVariants: [
       { id: 1, name: 'Roubaix Pro', slug: 'roubaix-pro' },
       { id: 2, name: 'Aethos Expert', slug: 'aethos-expert' },
@@ -145,11 +113,7 @@ const brandConfig = {
   shimano: {
     bgColor: 'linear-gradient(0deg, rgba(81, 50, 63, 0.7) 0%, rgba(255, 255, 255, 0.7) 50%)',
     textColor: '#51323F',
-    featuredProduct: {
-      name: 'Dura-Ace R9200',
-      category: 'Groupset',
-      image: bike7,
-    },
+    featuredProduct: { name: 'Dura-Ace R9200', category: 'Groupset', image: bike7 },
     productVariants: [
       { id: 1, name: 'Ultegra R8100', slug: 'ultegra-r8100' },
       { id: 2, name: '105 R7100', slug: '105-r7100' },
@@ -158,11 +122,7 @@ const brandConfig = {
   colnago: {
     bgColor: 'linear-gradient(0deg, rgba(86, 108, 98, 0.7) 0%, rgba(255, 255, 255, 0.7) 50%)',
     textColor: '#566C62',
-    featuredProduct: {
-      name: 'V4Rs',
-      category: 'Pro Racing',
-      image: bike8,
-    },
+    featuredProduct: { name: 'V4Rs', category: 'Pro Racing', image: bike8 },
     productVariants: [
       { id: 1, name: 'C68', slug: 'c68' },
       { id: 2, name: 'V3 Disc', slug: 'v3-disc' },
@@ -180,22 +140,12 @@ const currentBrand = computed(() => {
   )
 })
 
-const goBack = () => {
-  router.push('/').then(() => {
-    window.scrollTo(0, 0)
-  })
-}
-
-// Add a watcher to update the brandName when the route changes
 watch(
   () => route.params.brandName,
   (newBrandName) => {
     if (newBrandName) {
       brandName.value = newBrandName
-      // Optional: scroll to the top of the page after the new content loads
-      setTimeout(() => {
-        window.scrollTo(0, 0)
-      }, 100)
+      setTimeout(() => window.scrollTo(0, 0), 100)
     }
   },
 )
@@ -230,11 +180,6 @@ watch(
   background: white;
   border-radius: 10px;
   padding: 20px 40px;
-}
-
-.brand-showcase {
-  max-width: 800px;
-  margin: 0 auto;
 }
 
 .brand-name-display {
@@ -297,19 +242,13 @@ watch(
   margin: 0 auto;
 }
 
-/* Layout utilities */
 .text-center {
   text-align: center;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .brand-name-display {
     font-size: 2rem;
-  }
-
-  .brand-featured-model {
-    font-size: 1.5rem;
   }
 
   .brand-hero-section {

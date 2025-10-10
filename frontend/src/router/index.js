@@ -3,7 +3,6 @@ import Authentication_page from '@/views/authentication_page.vue'
 import Home_view from '@/views/home_view.vue'
 import Brand_page from '@/views/brand_page.vue'
 import Bike_detail from '@/views/bike_detail.vue'
-import Default_layout from '@/layouts/Default_layout.vue'
 import Gallery_image from '@/components/bike_detail/gallery_image.vue'
 import Favorite_page from '@/views/favorite_page.vue'
 import Checkout_cart from '@/views/checkout/checkout_cart.vue'
@@ -23,11 +22,12 @@ import List_customers from '@/views/admin/customers/list_customers.vue'
 import View_customer from '@/views/admin/customers/view_customer.vue'
 import Edit_customer from '@/views/admin/customers/edit_customer.vue'
 import Analytics_page from '@/views/admin/analytics_page.vue'
+import Public_layout from '@/layouts/public_layout.vue'
 
 const routes = [
   {
     path: '/',
-    component: Default_layout,
+    component: Public_layout,
     children: [
       {
         path: '/',

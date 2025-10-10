@@ -1,46 +1,45 @@
 <template>
-  <!-- Stock Alert Table Component -->
   <div class="stock-alert-table">
     <div class="table-header">
       <h3>Stock Alert Breakdown</h3>
-      <!-- Category Filter Dropdown -->
       <select v-model="filterCategory" class="filter-select">
         <option value="all">Filter Category</option>
-        <option value="mountain">Mountain Bikes</option>
-        <option value="road">Road Bikes</option>
+        <option value="Mountain Bike">Mountain Bikes</option>
+        <option value="Road Bike">Road Bikes</option>
       </select>
     </div>
-    <div class="table-container">
+    <div>
       <table>
         <thead>
           <tr>
-            <th>STATUS</th>
-            <th>COUNT</th>
-            <th>TOTAL VALUE</th>
-            <th>PERCENTAGE</th>
-            <th>ACTION REQUIRED</th>
+            <th>Status</th>
+            <th>Brand</th>
+            <th>Category</th>
+            <th>Current Stock</th>
+            <th>Minimum Stock</th>
+            <th>Last Updated</th>
+            <th>Stock Alert</th>
           </tr>
         </thead>
         <tbody>
-          <!-- Loop through stock data and display each row -->
-          <tr v-for="(item, index) in stockData" :key="index">
+          <tr v-for="(item, index) in filteredStockData" :key="index">
             <td>
-              <!-- Status Badge with colored dot -->
               <span class="status-badge" :class="`status-${item.status.toLowerCase()}`">
                 <span class="status-dot"></span>
                 {{ item.status }}
               </span>
             </td>
-            <td>{{ item.count }}</td>
-            <td>${{ item.totalValue.toLocaleString() }}</td>
-            <td>{{ item.percentage }}%</td>
+            <td>{{ item.brand }}</td>
+            <td>{{ item.category }}</td>
+            <td>{{ item.currentStock }}</td>
+            <td>{{ item.minStock }}</td>
+            <td>{{ item.lastUpdated }}</td>
             <td>
-              <!-- Action Badge -->
               <span
                 class="action-badge"
-                :class="`action-${item.action.toLowerCase().replace(' ', '-')}`"
+                :class="`action-${item.stockAlert.toLowerCase().replace(' ', '-')}`"
               >
-                {{ item.action }}
+                {{ item.stockAlert }}
               </span>
             </td>
           </tr>
@@ -52,36 +51,92 @@
 
 <script>
 export default {
-  name: 'StockAlertTable',
   data() {
     return {
-      // Current filter selection
       filterCategory: 'all',
-      // Sample stock data (replace with real data from API)
       stockData: [
         {
+          brand: 'Cannondale',
+          category: 'Mountain Bike',
+          currentStock: 15,
+          minStock: 10,
           status: 'LOW',
-          count: 10,
-          totalValue: 43300.0,
-          percentage: 12.5,
-          action: 'Restock Needed',
+          stockAlert: 'Restock Needed',
+          lastUpdated: '2025-10-11',
         },
         {
+          brand: 'Trek',
+          category: 'Road Bike',
+          currentStock: 25,
+          minStock: 5,
           status: 'FULL',
-          count: 10,
-          totalValue: 43300.0,
-          percentage: 12.5,
-          action: 'Well Stock',
+          stockAlert: 'Well Stock',
+          lastUpdated: '2025-10-10',
         },
         {
+          brand: 'Bianchi',
+          category: 'Mountain Bike',
+          currentStock: 8,
+          minStock: 10,
           status: 'Normal',
-          count: 10,
-          totalValue: 43300.0,
-          percentage: 12.5,
-          action: 'Monitor',
+          stockAlert: 'Monitor',
+          lastUpdated: '2025-10-09',
+        },
+        {
+          brand: 'Giant',
+          category: 'Road Bike',
+          currentStock: 12,
+          minStock: 15,
+          status: 'LOW',
+          stockAlert: 'Restock Needed',
+          lastUpdated: '2025-10-08',
+        },
+        {
+          brand: 'Cervélo',
+          category: 'Mountain Bike',
+          currentStock: 30,
+          minStock: 8,
+          status: 'FULL',
+          stockAlert: 'Well Stock',
+          lastUpdated: '2025-10-07',
+        },
+        {
+          brand: 'Specialized',
+          category: 'Road Bike',
+          currentStock: 5,
+          minStock: 10,
+          status: 'Normal',
+          stockAlert: 'Monitor',
+          lastUpdated: '2025-10-06',
+        },
+        {
+          brand: 'Shimano',
+          category: 'Mountain Bike',
+          currentStock: 18,
+          minStock: 12,
+          status: 'LOW',
+          stockAlert: 'Restock Needed',
+          lastUpdated: '2025-10-05',
+        },
+        {
+          brand: 'Colnago',
+          category: 'Road Bike',
+          currentStock: 22,
+          minStock: 6,
+          status: 'FULL',
+          stockAlert: 'Well Stock',
+          lastUpdated: '2025-10-04',
         },
       ],
     }
+  },
+  computed: {
+    filteredStockData() {
+      if (this.filterCategory === 'all') {
+        return this.stockData
+      }
+      return this.stockData.filter((item) => item.category === this.filterCategory)
+    },
   },
 }
 </script>
@@ -127,12 +182,6 @@ export default {
   -moz-appearance: none;
 }
 
-.table-container {
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 400px;
-}
-
 table {
   width: 100%;
   border-collapse: collapse;
@@ -142,6 +191,9 @@ table {
 
 thead {
   background: #fbfdff;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 th {

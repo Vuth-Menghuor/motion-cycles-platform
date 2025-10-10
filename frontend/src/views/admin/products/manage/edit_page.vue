@@ -1,6 +1,5 @@
 <template>
   <div class="edit-product-page">
-    <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb">
       <router-link to="/admin/products/manage" class="breadcrumb-item">Product List</router-link>
       <span class="breadcrumb-separator">></span>
@@ -11,7 +10,6 @@
       }}</span>
     </nav>
 
-    <!-- Product ID Selector -->
     <div class="product-selector">
       <div class="selector-container">
         <label for="productInput" class="selector-label">Enter Product ID to Edit:</label>
@@ -31,9 +29,7 @@
       </div>
     </div>
 
-    <!-- Edit Form (only shown when product is selected) -->
     <div v-if="selectedProductId" class="form-container">
-      <!-- Left Column -->
       <div class="form-column form-column-left">
         <ProductInfo
           :product="product"
@@ -59,7 +55,6 @@
         />
       </div>
 
-      <!-- Right Column -->
       <div class="form-column">
         <ProductImage :disabled="isFormDisabled" />
         <ProductPrice
@@ -79,7 +74,6 @@
       </div>
     </div>
 
-    <!-- Placeholder when no product is selected -->
     <div v-else class="no-selection-message">
       <div class="message-container">
         <h2>Enter a Product ID to Edit</h2>
@@ -100,10 +94,8 @@ import ProductImage from '@/components/admin/products/ProductImage.vue'
 import ProductPrice from '@/components/admin/products/ProductPrice.vue'
 import ProductSpecs from '@/components/admin/products/ProductSpecs.vue'
 
-// Get route instance
 const route = useRoute()
 
-// Props
 const props = defineProps({
   id: {
     type: String,
@@ -111,14 +103,12 @@ const props = defineProps({
   },
 })
 
-// Constants
 const API_DELAY = 500
 
 // Reactive data
 const selectedProductId = ref('')
 const isProductLoaded = ref(false)
 
-// Set initial product ID from route param
 if (props.id) {
   selectedProductId.value = props.id
 }
@@ -174,7 +164,7 @@ const specs = ref({
   display: '',
 })
 
-// Mock data - In production, this would come from API
+// Mock data for demo
 const MOCK_PRODUCTS = {
   P0000I: {
     id: 'P0000I',
@@ -252,11 +242,9 @@ const MOCK_SPECS = {
   },
 }
 
-// Methods
+// Utility functions
 const convertDateFormat = (dateString) => {
-  // Convert from MM/DD/YYYY to YYYY-MM-DD format
   if (!dateString || dateString === 'N/A') return ''
-
   const parts = dateString.split('/')
   if (parts.length === 3) {
     const [month, day, year] = parts
@@ -264,6 +252,8 @@ const convertDateFormat = (dateString) => {
   }
   return dateString
 }
+
+// Product management methods
 const loadProduct = () => {
   const productId = selectedProductId.value.trim()
 
@@ -273,7 +263,6 @@ const loadProduct = () => {
   }
 
   if (MOCK_PRODUCTS[productId]) {
-    // Simulate API call delay
     setTimeout(() => {
       product.value = { ...MOCK_PRODUCTS[productId] }
       specs.value = { ...MOCK_SPECS[productId] }
@@ -289,13 +278,12 @@ const loadProduct = () => {
 const updateProduct = () => {
   console.log('Product updated:', product.value)
   console.log('Specifications:', specs.value)
-  // TODO: Implement actual update logic
   alert('Product updated successfully!')
 }
 
 const discardForm = () => {
   if (confirm('Are you sure you want to discard all changes?')) {
-    loadProduct() // Reload original data
+    loadProduct()
   }
 }
 
@@ -336,7 +324,6 @@ watch(
   },
 )
 
-// Watch for route param changes
 watch(
   () => props.id,
   (newId) => {
@@ -347,13 +334,12 @@ watch(
   },
 )
 
-// Auto-load product on mount if ID is provided
+// Lifecycle
 onMounted(() => {
   if (props.id) {
     loadProduct()
   }
 
-  // Check for query parameters from discount management page
   const {
     productName,
     brand,
@@ -377,84 +363,44 @@ onMounted(() => {
     display,
   } = route.query
 
-  if (productName) {
-    product.value.name = productName
-  }
-  if (brand) {
-    product.value.brand = brand
-  }
-  if (category) {
-    product.value.category = category
-  }
-  if (quantity) {
-    product.value.quantity = quantity
-  }
-  if (highlight) {
-    product.value.highlight = highlight
-  }
-  if (description) {
-    product.value.description = description
-  }
-  if (quality) {
-    product.value.quality = quality
-  }
-  if (price) {
-    product.value.price = price
-  }
-  if (color) {
-    product.value.color = color
-  }
-  if (discountCode) {
-    product.value.discountCode = discountCode
-  }
-  if (discountType && discountType !== 'N/A') {
-    product.value.discountType = discountType
-  }
-  if (discountValue && discountValue !== 'N/A') {
-    product.value.discountValue = discountValue
-  }
+  if (productName) product.value.name = productName
+  if (brand) product.value.brand = brand
+  if (category) product.value.category = category
+  if (quantity) product.value.quantity = quantity
+  if (highlight) product.value.highlight = highlight
+  if (description) product.value.description = description
+  if (quality) product.value.quality = quality
+  if (price) product.value.price = price
+  if (color) product.value.color = color
+  if (discountCode) product.value.discountCode = discountCode
+  if (discountType && discountType !== 'N/A') product.value.discountType = discountType
+  if (discountValue && discountValue !== 'N/A') product.value.discountValue = discountValue
   if (discountStartDate && discountStartDate !== 'N/A') {
-    // Convert date from MM/DD/YYYY to YYYY-MM-DD format for HTML date input
     const convertedStartDate = convertDateFormat(discountStartDate)
     product.value.discountStartDate = convertedStartDate
   }
   if (discountEndDate && discountEndDate !== 'N/A') {
-    // Convert date from MM/DD/YYYY to YYYY-MM-DD format for HTML date input
     const convertedEndDate = convertDateFormat(discountEndDate)
     product.value.discountExpireDate = convertedEndDate
   }
 
-  // Handle specs information
-  if (range) {
-    specs.value.range = range
-  }
-  if (hubMotor) {
-    specs.value.hubMotor = hubMotor
-  }
-  if (payload) {
-    specs.value.payload = payload
-  }
-  if (controller) {
-    specs.value.controller = controller
-  }
-  if (weight) {
-    specs.value.weight = weight
-  }
-  if (display) {
-    specs.value.display = display
-  }
+  if (range) specs.value.range = range
+  if (hubMotor) specs.value.hubMotor = hubMotor
+  if (payload) specs.value.payload = payload
+  if (controller) specs.value.controller = controller
+  if (weight) specs.value.weight = weight
+  if (display) specs.value.display = display
 })
 </script>
 
 <style scoped>
-/* Breadcrumb Navigation */
 .breadcrumb {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
   padding: 12px 16px;
-  background-color: white;
-  border-radius: 5px;
+  background: white;
+  border-radius: 6px;
   font-size: 13px;
   color: #666;
   border: 1px solid #e9ecef;
@@ -462,7 +408,7 @@ onMounted(() => {
 }
 
 .breadcrumb-item {
-  color: grey;
+  color: #666;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s;
@@ -475,7 +421,7 @@ onMounted(() => {
 
 .breadcrumb-item.active {
   color: #ff9934;
-  font-weight: 400;
+  font-weight: 500;
   cursor: default;
 }
 
@@ -484,7 +430,6 @@ onMounted(() => {
   color: #999;
 }
 
-/* Product Selector */
 .product-selector {
   background: #ffffff;
   border-radius: 8px;
@@ -558,7 +503,6 @@ onMounted(() => {
   opacity: 0.6;
 }
 
-/* Form Layout */
 .form-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -580,7 +524,6 @@ onMounted(() => {
   height: fit-content;
 }
 
-/* Empty State */
 .no-selection-message {
   display: flex;
   justify-content: center;
@@ -607,7 +550,6 @@ onMounted(() => {
   font-family: 'Poppins', sans-serif;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .form-container {
     grid-template-columns: 1fr;

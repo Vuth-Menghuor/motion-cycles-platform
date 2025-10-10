@@ -30,7 +30,6 @@ defineEmits(['mark-reviewed', 'delete-selected'])
 </script>
 
 <style scoped>
-/* Bulk Actions */
 .bulk-actions {
   display: flex;
   justify-content: space-between;
@@ -87,7 +86,6 @@ defineEmits(['mark-reviewed', 'delete-selected'])
   transform: translateY(-1px);
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .bulk-actions {
     flex-direction: column;

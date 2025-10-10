@@ -73,35 +73,15 @@
 <script setup>
 import { computed } from 'vue'
 
-// Props
 const props = defineProps({
-  bikes: {
-    type: Array,
-    required: true,
-  },
-  showFilters: {
-    type: Boolean,
-    default: false,
-  },
-  selectedPriceRange: {
-    type: String,
-    default: '',
-  },
-  selectedColors: {
-    type: Array,
-    default: () => [],
-  },
-  selectedBrands: {
-    type: Array,
-    default: () => [],
-  },
-  selectedDiscountStatuses: {
-    type: Array,
-    default: () => [],
-  },
+  bikes: { type: Array, required: true },
+  showFilters: { type: Boolean, default: false },
+  selectedPriceRange: { type: String, default: '' },
+  selectedColors: { type: Array, default: () => [] },
+  selectedBrands: { type: Array, default: () => [] },
+  selectedDiscountStatuses: { type: Array, default: () => [] },
 })
 
-// Emits
 const emit = defineEmits([
   'update:selectedPriceRange',
   'update:selectedColors',
@@ -110,7 +90,6 @@ const emit = defineEmits([
   'clear-filters',
 ])
 
-// Filter options
 const priceRanges = [
   { label: '$500 - $1,000', min: 500, max: 1000 },
   { label: '$1,000 - $2,500', min: 1000, max: 2500 },
@@ -119,45 +98,35 @@ const priceRanges = [
   { label: 'Greater than $10,000', min: 10000, max: Infinity },
 ]
 
-// Discount status options
 const discountStatuses = [
   { label: 'On Sale', value: 'discounted' },
   { label: 'Regular Price', value: 'regular' },
 ]
 
-// Computed properties for available options
-const availableColors = computed(() => {
-  const colors = [...new Set(props.bikes.map((bike) => bike.color))]
-  return colors.sort()
-})
+const availableColors = computed(() => [...new Set(props.bikes.map((b) => b.color))].sort())
 
-const availableBrands = computed(() => {
-  const brands = [...new Set(props.bikes.map((bike) => bike.subtitle))]
-  return brands.sort()
-})
+const availableBrands = computed(() => [...new Set(props.bikes.map((b) => b.subtitle))].sort())
 
-// Local reactive references for v-model
 const selectedPriceRange = computed({
   get: () => props.selectedPriceRange,
-  set: (value) => emit('update:selectedPriceRange', value),
+  set: (v) => emit('update:selectedPriceRange', v),
 })
 
 const selectedColors = computed({
   get: () => props.selectedColors,
-  set: (value) => emit('update:selectedColors', value),
+  set: (v) => emit('update:selectedColors', v),
 })
 
 const selectedBrands = computed({
   get: () => props.selectedBrands,
-  set: (value) => emit('update:selectedBrands', value),
+  set: (v) => emit('update:selectedBrands', v),
 })
 
 const selectedDiscountStatuses = computed({
   get: () => props.selectedDiscountStatuses,
-  set: (value) => emit('update:selectedDiscountStatuses', value),
+  set: (v) => emit('update:selectedDiscountStatuses', v),
 })
 
-// Methods
 const clearAllFilters = () => {
   emit('update:selectedPriceRange', '')
   emit('update:selectedColors', [])
@@ -166,52 +135,27 @@ const clearAllFilters = () => {
   emit('clear-filters')
 }
 
-const toggleColorFilter = (color) => {
-  const currentColors = [...props.selectedColors]
-  const index = currentColors.indexOf(color)
-
-  if (index > -1) {
-    currentColors.splice(index, 1)
-  } else {
-    currentColors.push(color)
-  }
-
-  emit('update:selectedColors', currentColors)
+const toggleFilter = (array, value) => {
+  const current = [...array]
+  const index = current.indexOf(value)
+  index > -1 ? current.splice(index, 1) : current.push(value)
+  return current
 }
 
-const toggleBrandFilter = (brand) => {
-  const currentBrands = [...props.selectedBrands]
-  const index = currentBrands.indexOf(brand)
+const toggleColorFilter = (color) =>
+  emit('update:selectedColors', toggleFilter(props.selectedColors, color))
 
-  if (index > -1) {
-    currentBrands.splice(index, 1)
-  } else {
-    currentBrands.push(brand)
-  }
+const toggleBrandFilter = (brand) =>
+  emit('update:selectedBrands', toggleFilter(props.selectedBrands, brand))
 
-  emit('update:selectedBrands', currentBrands)
-}
+const toggleDiscountFilter = (status) =>
+  emit('update:selectedDiscountStatuses', toggleFilter(props.selectedDiscountStatuses, status))
 
-const toggleDiscountFilter = (status) => {
-  const currentStatuses = [...props.selectedDiscountStatuses]
-  const index = currentStatuses.indexOf(status)
-
-  if (index > -1) {
-    currentStatuses.splice(index, 1)
-  } else {
-    currentStatuses.push(status)
-  }
-
-  emit('update:selectedDiscountStatuses', currentStatuses)
-}
-
-// Expose price ranges for parent component to use
-defineExpose({
-  priceRanges,
-})
+defineExpose({ priceRanges })
 </script>
 
 <style scoped>
+/* Filters Sidebar */
 .filters-sidebar {
   width: 280px;
   background: white;
@@ -223,6 +167,7 @@ defineExpose({
   top: 20px;
 }
 
+/* Filters Header */
 .filters-header {
   display: flex;
   justify-content: space-between;
@@ -255,6 +200,7 @@ defineExpose({
   background: #f0f0ff;
 }
 
+/* Filter Section */
 .filter-section {
   margin-top: 32px;
 }
@@ -266,6 +212,7 @@ defineExpose({
   color: #374151;
 }
 
+/* Filter Options */
 .filter-options {
   display: flex;
   flex-direction: column;
@@ -287,6 +234,7 @@ defineExpose({
   position: absolute;
 }
 
+/* Checkmark */
 .checkmark {
   width: 18px;
   height: 18px;

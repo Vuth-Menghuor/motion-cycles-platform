@@ -1,6 +1,5 @@
 <template>
   <div class="admin-orders-container">
-    <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb">
       <router-link to="/admin/orders/list" class="breadcrumb-item">List Orders</router-link>
       <span class="breadcrumb-separator">></span>
@@ -12,13 +11,12 @@
     </nav>
 
     <div class="order-edit-content">
-      <!-- Order Header -->
       <div class="order-header">
         <div class="order-info">
           <h2>Edit Order #{{ order?.order_number }}</h2>
           <div class="order-meta">
             <span class="order-date">Created {{ formatDate(order?.created_at) }}</span>
-            <span class="order-status status-{{ formData.order_status }}">
+            <span :class="`order-status status-${formData.order_status}`">
               {{ formatStatus(formData.order_status) }}
             </span>
           </div>
@@ -35,7 +33,6 @@
         </div>
       </div>
 
-      <!-- Status Management Section -->
       <div class="form-section">
         <div class="section-header">
           <h2><Icon icon="mdi:clipboard-check" /> Update Order Status</h2>
@@ -67,7 +64,6 @@
         </div>
       </div>
 
-      <!-- Progress Timeline -->
       <div class="timeline-section">
         <div class="section-header">
           <h2><Icon icon="mdi:timeline-clock" /> Order Progress</h2>
@@ -146,71 +142,35 @@
 import { ref, reactive, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// Props
-const props = defineProps({
-  id: {
-    type: [String, Number],
-    required: true,
-  },
-})
-
-// Reactive data
 const order = ref(null)
 const isSaving = ref(false)
 const formData = reactive({
-  order_number: '',
-  payment_status: 'pending',
   order_status: 'pending',
+  payment_status: 'pending',
 })
 
-// Mock order data - in real app this would come from API
-const mockOrders = [
-  {
-    id: 1,
-    order_number: 'ORD-001',
-    customer_name: 'John Doe',
-    customer_email: 'john.doe@example.com',
-    customer_phone: '+1-555-0123',
-    payment_method: 'bakong',
-    payment_status: 'completed',
-    order_status: 'completed',
-    transaction_id: 'TXN-123456789',
-    subtotal: 299.99,
-    discount_amount: 0,
-    shipping_amount: 10.0,
-    total_amount: 299.99,
-    created_at: '2024-01-15T10:30:00Z',
-    items: [
-      {
-        id: 1,
-        name: 'Mountain Bike Pro',
-        subtitle: 'Full suspension mountain bike',
-        category: 'mountain',
-        color: 'Black',
-        quantity: 1,
-        price: 299.99,
-        image: '/placeholder-bike.jpg',
-      },
-    ],
-  },
-]
-
-// Computed
-// (No computed properties needed for status-only form)
-
-// Methods
-const formatStatus = (status) => {
-  const statusMap = {
-    pending: 'Pending',
-    processing: 'Processing',
-    confirmed: 'Confirmed',
-    completed: 'Completed',
-    cancelled: 'Cancelled',
-    failed: 'Failed',
-    refunded: 'Refunded',
-  }
-  return statusMap[status] || status
+const mockOrder = {
+  id: 1,
+  order_number: 'ORD-001',
+  customer_name: 'John Doe',
+  payment_method: 'bakong',
+  payment_status: 'completed',
+  order_status: 'completed',
+  created_at: '2024-01-15T10:30:00Z',
+  items: [{ id: 1, name: 'Mountain Bike Pro', category: 'mountain' }],
 }
+
+const statusMap = {
+  pending: 'Pending',
+  processing: 'Processing',
+  confirmed: 'Confirmed',
+  completed: 'Completed',
+  cancelled: 'Cancelled',
+  failed: 'Failed',
+  refunded: 'Refunded',
+}
+
+const formatStatus = (status) => statusMap[status] || status
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
@@ -224,50 +184,26 @@ const formatDate = (dateString) => {
 }
 
 const loadOrder = () => {
-  // In real app, this would be an API call
-  const orderId = parseInt(props.id)
-  const foundOrder = mockOrders.find((o) => o.id === orderId)
-
-  if (foundOrder) {
-    order.value = foundOrder
-    // Populate form data with only status fields
-    Object.assign(formData, {
-      order_number: foundOrder.order_number,
-      payment_status: foundOrder.payment_status,
-      order_status: foundOrder.order_status,
-    })
-  }
+  order.value = mockOrder
+  formData.order_status = mockOrder.order_status
+  formData.payment_status = mockOrder.payment_status
 }
 
 const saveOrder = async () => {
   isSaving.value = true
-
   try {
-    // Only update status fields
-    const statusData = {
-      order_status: formData.order_status,
-      payment_status: formData.payment_status,
-    }
-
-    // In real app, this would be an API call to update only status
-    console.log('Updating order status:', statusData)
-
-    // Simulate API call
+    console.log('Updating:', formData)
     await new Promise((resolve) => setTimeout(resolve, 1000))
-
     alert('Order status updated successfully!')
   } catch (error) {
-    console.error('Error updating order status:', error)
+    console.error('Error:', error)
     alert('Error updating order status')
   } finally {
     isSaving.value = false
   }
 }
 
-// Lifecycle
-onMounted(() => {
-  loadOrder()
-})
+onMounted(loadOrder)
 </script>
 
 <style scoped>
@@ -281,8 +217,8 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 20px;
   padding: 12px 16px;
-  background-color: white;
-  border-radius: 5px;
+  background: white;
+  border-radius: 6px;
   font-size: 13px;
   color: #666;
   border: 1px solid #e9ecef;
@@ -290,7 +226,7 @@ onMounted(() => {
 }
 
 .breadcrumb-item {
-  color: grey;
+  color: #666;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s;
@@ -303,7 +239,7 @@ onMounted(() => {
 
 .breadcrumb-item.active {
   color: #ff9934;
-  font-weight: 400;
+  font-weight: 500;
   cursor: default;
 }
 
@@ -316,12 +252,10 @@ onMounted(() => {
   background: white;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
-  /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
   overflow: hidden;
   margin: 0 auto;
 }
 
-/* Order Header */
 .order-header {
   display: flex;
   justify-content: space-between;
@@ -366,7 +300,6 @@ onMounted(() => {
   align-items: center;
 }
 
-/* Form Sections */
 .form-section {
   margin: 24px;
   background: white;
@@ -399,7 +332,6 @@ onMounted(() => {
   padding: 24px;
 }
 
-/* Status Form */
 .status-form {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -434,7 +366,6 @@ onMounted(() => {
   border-color: #14c9c9;
 }
 
-/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -465,23 +396,6 @@ onMounted(() => {
   border: 1px solid #dee2e6;
 }
 
-.btn-outline {
-  background: transparent;
-  color: #14c9c9;
-  border: 1px solid #14c9c9;
-}
-
-.btn-danger {
-  background: #dc3545;
-  color: white;
-}
-
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 12px;
-}
-
-/* Status colors */
 .status-pending {
   background: #fff3cd;
   color: #856404;
@@ -509,7 +423,6 @@ onMounted(() => {
   color: white;
 }
 
-/* Timeline Section */
 .timeline-section {
   border-bottom: 1px solid #f1f5f9;
 }
@@ -606,7 +519,6 @@ onMounted(() => {
   font-weight: 400;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .admin-orders-container {
     padding: 10px;

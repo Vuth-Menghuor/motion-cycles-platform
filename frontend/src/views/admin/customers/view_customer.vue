@@ -1,6 +1,5 @@
 <template>
   <div class="admin-customers-container">
-    <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb">
       <router-link to="/admin/customers/list" class="breadcrumb-item">List Customers</router-link>
       <span class="breadcrumb-separator">></span>
@@ -8,7 +7,6 @@
     </nav>
 
     <div class="customer-view-content">
-      <!-- Customer Header -->
       <div class="customer-header">
         <div class="customer-info">
           <h2><Icon icon="mdi:account" /> {{ customer?.name }}</h2>
@@ -30,7 +28,6 @@
         </div>
       </div>
 
-      <!-- Loading State -->
       <div v-if="!customer" class="loading-section">
         <div class="loading-card">
           <Icon icon="mdi:loading" class="loading-icon" />
@@ -38,7 +35,6 @@
         </div>
       </div>
 
-      <!-- Customer Not Found -->
       <div v-else-if="!customer.id" class="error-section">
         <div class="error-card">
           <Icon icon="mdi:alert-circle" class="error-icon" />
@@ -51,10 +47,8 @@
         </div>
       </div>
 
-      <!-- Customer Details -->
       <template v-else>
         <div class="customer-view-inner">
-          <!-- Customer Information Section -->
           <div class="content-section">
             <div class="section-header">
               <h2><Icon icon="mdi:account-details" /> Customer Information</h2>
@@ -91,7 +85,6 @@
             </div>
           </div>
 
-          <!-- Recent Orders Section -->
           <div class="content-section">
             <div class="section-header">
               <h2><Icon icon="mdi:history" /> Recent Orders</h2>
@@ -146,19 +139,12 @@
 import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// ===== PROPS =====
 const props = defineProps({
-  id: {
-    type: [String, Number],
-    required: true,
-  },
+  id: { type: [String, Number], required: true },
 })
 
-// ===== REACTIVE DATA =====
 const customer = ref(null)
 
-// ===== MOCK DATA =====
-// TODO: Replace with actual API calls in production
 const mockCustomers = [
   {
     id: 1,
@@ -168,8 +154,6 @@ const mockCustomers = [
     phone: '+1-555-0123',
     registration_date: '2024-01-15T10:30:00Z',
     total_orders: 5,
-    total_spent: 1499.95,
-    average_rating: 4.8,
     status: 'active',
     recent_orders: [
       {
@@ -198,8 +182,6 @@ const mockCustomers = [
     phone: '+1-555-0124',
     registration_date: '2024-01-14T14:20:00Z',
     total_orders: 3,
-    total_spent: 899.97,
-    average_rating: 4.5,
     status: 'active',
     recent_orders: [
       {
@@ -214,33 +196,16 @@ const mockCustomers = [
   },
 ]
 
-// ===== METHODS =====
-/**
- * Load customer data by ID
- */
 const loadCustomer = () => {
   const customerId = parseInt(props.id)
   customer.value = mockCustomers.find((c) => c.id === customerId) || null
-
-  if (!customer.value) {
-    console.error('Customer not found')
-  }
 }
 
-/**
- * Format status for display
- */
-const formatStatus = (status) => {
-  if (!status) return 'Unknown'
-  return status.charAt(0).toUpperCase() + status.slice(1)
-}
+const formatStatus = (status) =>
+  status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'
 
-/**
- * Format date for display
- */
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
-
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -250,14 +215,10 @@ const formatDate = (dateString) => {
   })
 }
 
-// ===== LIFECYCLE =====
-onMounted(() => {
-  loadCustomer()
-})
+onMounted(() => loadCustomer())
 </script>
 
 <style scoped>
-/* ===== LAYOUT ===== */
 .admin-customers-container {
   margin: 0 auto;
   font-family: 'Poppins', sans-serif;
@@ -271,7 +232,6 @@ onMounted(() => {
   background: white;
 }
 
-/* ===== BREADCRUMB ===== */
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -308,7 +268,6 @@ onMounted(() => {
   color: #999;
 }
 
-/* ===== HEADER ===== */
 .customer-header {
   display: flex;
   justify-content: space-between;
@@ -359,7 +318,6 @@ onMounted(() => {
   gap: 12px;
 }
 
-/* ===== LOADING & ERROR STATES ===== */
 .loading-section,
 .error-section {
   display: flex;
@@ -403,7 +361,6 @@ onMounted(() => {
   color: #666;
 }
 
-/* ===== CONTENT SECTIONS ===== */
 .content-section {
   background: white;
   border-bottom: 1px solid #e2e8f0;
@@ -429,7 +386,6 @@ onMounted(() => {
   padding: 32px;
 }
 
-/* ===== CUSTOMER INFORMATION ===== */
 .info-list {
   display: flex;
   flex-direction: column;
@@ -472,7 +428,6 @@ onMounted(() => {
   text-transform: uppercase;
 }
 
-/* ===== RECENT ORDERS ===== */
 .orders-grid {
   display: grid;
   gap: 16px;
@@ -563,7 +518,6 @@ onMounted(() => {
   margin: 0;
 }
 
-/* ===== STATUS COLORS ===== */
 .status-active {
   background: rgba(16, 185, 129, 0.2);
   color: #059669;
@@ -591,7 +545,6 @@ onMounted(() => {
   color: #d97706;
 }
 
-/* ===== BUTTONS ===== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -650,7 +603,6 @@ onMounted(() => {
   border-color: #0fa5a5;
 }
 
-/* ===== ANIMATIONS ===== */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -660,7 +612,6 @@ onMounted(() => {
   }
 }
 
-/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .admin-customers-container {
     padding: 10px;

@@ -1,18 +1,16 @@
 <template>
   <div class="image-section">
-    <!-- Main Image -->
     <div class="main-image">
-      <img :src="mainImage" :alt="imageAlt" @click="openLightbox" />
+      <img :src="selectedImage" :alt="title" @click="openLightbox" />
     </div>
 
-    <!-- Thumbnail Grid (limit 4) -->
     <div class="thumbnail-grid">
       <div
         v-for="(thumbnail, index) in visibleThumbnails"
         :key="index"
         class="thumbnail-item"
         @click="selectImage(thumbnail.src)"
-        :class="{ active: thumbnail.src === mainImage }"
+        :class="{ active: thumbnail.src === selectedImage }"
       >
         <img
           :src="thumbnail.src"
@@ -31,7 +29,6 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-// Props
 const props = defineProps({
   image: { type: String, required: true },
   title: { type: String, required: true },
@@ -41,34 +38,24 @@ const props = defineProps({
 const router = useRouter()
 const route = useRoute()
 
-// State
 const selectedImage = ref(props.image)
 const currentImageIndex = ref(0)
 const lightboxOpen = ref(false)
 
-// Thumbnails (main + additional)
 const thumbnails = computed(() => {
   if (props.additionalImages.length > 0) {
     return [{ src: props.image, alt: props.title }].concat(
       props.additionalImages.map((img, i) => ({
         src: img.url,
-        alt: img.alt || `${props.title} - View ${i + 1}`, //  use provided alt
+        alt: img.alt || `${props.title} - View ${i + 1}`,
       })),
     )
   }
   return [{ src: props.image, alt: props.title }]
 })
 
-// Displayed in main area
-const mainImage = computed(() => selectedImage.value)
-const imageAlt = computed(() => props.title)
-
-// Show only 4 thumbnails
 const visibleThumbnails = computed(() => thumbnails.value.slice(0, 4))
 
-// Current image in lightbox
-
-// Methods
 const selectImage = (imageSrc) => {
   selectedImage.value = imageSrc
   currentImageIndex.value = thumbnails.value.findIndex((t) => t.src === imageSrc)
@@ -90,7 +77,6 @@ const goToGallery = () => {
   })
 }
 
-// Reset index when additionalImages changes
 watch(
   () => props.additionalImages,
   () => {
@@ -108,6 +94,7 @@ watch(
   align-items: flex-start;
   gap: 24px;
 }
+
 .main-image {
   flex: 1;
   background: white;
@@ -116,6 +103,7 @@ watch(
   justify-content: center;
   align-items: center;
 }
+
 .main-image img {
   width: 100%;
   object-fit: contain;
@@ -129,24 +117,29 @@ watch(
   grid-template-rows: repeat(2, 1fr);
   gap: 8px;
 }
+
 .thumbnail-item {
   position: relative;
   cursor: pointer;
   overflow: hidden;
   border: 1px solid #e2e8f0;
 }
+
 .thumbnail-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: 0.3s;
 }
+
 .thumbnail-item:hover img {
   transform: scale(1.05);
 }
+
 .thumbnail-item img.grayscale {
   filter: grayscale(100%) brightness(60%);
 }
+
 .overlay {
   position: absolute;
   inset: 0;

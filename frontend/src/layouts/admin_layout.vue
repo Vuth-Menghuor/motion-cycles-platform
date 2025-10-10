@@ -310,11 +310,12 @@ import adminAvatar from '@/assets/images/admin/admin_avatar.png'
 import { Icon } from '@iconify/vue'
 
 // ===========================================
-// CONSTANTS & CONFIGURATION
+// CONFIGURATION CONSTANTS
 // ===========================================
 
 /**
- * Tab configuration - defines available tabs with their properties
+ * Tab configuration object - defines all available admin tabs with their properties
+ * Each tab has a unique key, path, icon, and display label
  */
 const TAB_CONFIG = {
   dashboard: {
@@ -322,26 +323,9 @@ const TAB_CONFIG = {
     icon: 'material-symbols:dashboard-outline-rounded',
     label: 'Dashboard',
   },
-  products: {
-    path: '/admin/products',
-    icon: 'charm:package',
-    label: 'Products',
-  },
-  manage: {
-    path: '/admin/products/manage',
-    icon: 'charm:package',
-    label: 'Manage Product',
-  },
-  add: {
-    path: '/admin/products/add',
-    icon: 'material-symbols:add',
-    label: 'Add Product',
-  },
-  edit: {
-    path: '/admin/products/edit',
-    icon: 'material-symbols:edit',
-    label: 'Edit Product',
-  },
+  manage: { path: '/admin/products/manage', icon: 'charm:package', label: 'Manage Product' },
+  add: { path: '/admin/products/add', icon: 'material-symbols:add', label: 'Add Product' },
+  edit: { path: '/admin/products/edit', icon: 'material-symbols:edit', label: 'Edit Product' },
   discount: {
     path: '/admin/products/discount',
     icon: 'ic:outline-discount',
@@ -357,34 +341,16 @@ const TAB_CONFIG = {
     icon: 'material-symbols:inventory',
     label: 'Manage Stock',
   },
-  orders: {
-    path: '/admin/orders',
-    icon: 'lets-icons:order',
-    label: 'Orders',
-  },
-  orderList: {
-    path: '/admin/orders/list',
-    icon: 'lets-icons:order',
-    label: 'Order List',
-  },
+  orderList: { path: '/admin/orders/list', icon: 'lets-icons:order', label: 'Order List' },
   viewOrder: {
     path: '/admin/orders/view',
     icon: 'material-symbols:visibility',
     label: 'View Order',
   },
-  editOrder: {
-    path: '/admin/orders/edit',
-    icon: 'material-symbols:edit',
-    label: 'Edit Order',
-  },
-  customers: {
-    path: '/admin/customers/list',
-    icon: 'hugeicons:user-ai',
-    label: 'Customers',
-  },
+  editOrder: { path: '/admin/orders/edit', icon: 'material-symbols:edit', label: 'Edit Order' },
   customerList: {
     path: '/admin/customers/list',
-    icon: 'lets-icons:order',
+    icon: 'hugeicons:user-ai',
     label: 'Customer List',
   },
   viewCustomer: {
@@ -405,24 +371,46 @@ const TAB_CONFIG = {
 }
 
 // ===========================================
-// REACTIVE DATA
+// ROUTE TO TAB MAPPING
 // ===========================================
 
-// Router instances
+/**
+ * Maps route paths to tab configuration keys
+ * Used for determining which tab to open when navigating
+ */
+const ROUTE_TO_TAB_MAP = {
+  '/admin/dashboard': 'dashboard',
+  '/admin/products/manage': 'manage',
+  '/admin/products/add': 'add',
+  '/admin/products/discount': 'discount',
+  '/admin/products/feedback': 'feedback',
+  '/admin/products/stock': 'stock',
+  '/admin/orders/list': 'orderList',
+  '/admin/orders/view': 'viewOrder',
+  '/admin/customers/list': 'customerList',
+  '/admin/customers/view': 'viewCustomer',
+  '/admin/analytics': 'analytics',
+}
+
+// ===========================================
+// REACTIVE STATE
+// ===========================================
+
+// Router and route instances
 const router = useRouter()
 const route = useRoute()
 
-// UI state
+// UI state management
 const searchQuery = ref('')
 const sidebarOpen = ref(true)
 const productsDropdownOpen = ref(false)
 const activeNav = ref('dashboard')
 
-// Modal states
+// Modal visibility states
 const showPasswordModal = ref(false)
 const showProfileModal = ref(false)
 
-// Form data
+// Form data with reactive objects
 const passwordForm = ref({
   oldPassword: '',
   newPassword: '',
@@ -437,13 +425,13 @@ const profileForm = ref({
   avatar: null,
 })
 
-// User information
+// User information (in a real app, this would come from a store/API)
 const user = ref({
   name: 'Admin User',
   avatar: adminAvatar,
 })
 
-// Tab management - starts with dashboard only
+// Tab management - tracks which tabs are currently open
 const openTabs = ref(['dashboard'])
 
 // ===========================================
@@ -451,8 +439,9 @@ const openTabs = ref(['dashboard'])
 // ===========================================
 
 /**
- * Get available tabs based on currently open tabs
- * Filters tab config to only show tabs that are open
+ * Available tabs computed property
+ * Returns array of tab objects for currently open tabs
+ * Filters out any undefined tabs and maps to configuration
  */
 const availableTabs = computed(() => {
   return openTabs.value.map((tabKey) => TAB_CONFIG[tabKey]).filter(Boolean) // Remove any undefined tabs
@@ -463,87 +452,87 @@ const availableTabs = computed(() => {
 // ===========================================
 
 /**
- * Watch for route changes to automatically add new tabs
- * When user navigates to a new admin page, add it to open tabs
+ * Route watcher - automatically manages tabs when route changes
+ * Adds new tabs to openTabs array and updates active navigation
  */
 watch(
   () => route.path,
   (newPath) => {
-    let page = ''
+    // Determine which tab this route corresponds to
+    const tabKey = getTabKeyFromRoute(newPath)
 
-    // Handle different route patterns
-    if (newPath === '/admin/dashboard') {
-      page = 'dashboard'
-    } else if (newPath === '/admin/products/manage') {
-      page = 'manage'
-    } else if (newPath === '/admin/products/add') {
-      page = 'add'
-    } else if (newPath.startsWith('/admin/products/edit/')) {
-      page = 'edit'
-    } else if (newPath === '/admin/products/discount') {
-      page = 'discount'
-    } else if (newPath === '/admin/products/feedback') {
-      page = 'feedback'
-    } else if (newPath === '/admin/products/stock') {
-      page = 'stock'
-    } else if (newPath === '/admin/orders/list') {
-      page = 'orderList'
-    } else if (newPath === '/admin/orders/view') {
-      page = 'viewOrder'
-    } else if (newPath.startsWith('/admin/orders/edit/')) {
-      page = 'editOrder'
-    } else if (newPath === '/admin/customers') {
-      page = 'customers'
-    } else if (newPath === '/admin/customers/list') {
-      page = 'customerList'
-    } else if (newPath === '/admin/customers/view') {
-      page = 'viewCustomer'
-    } else if (newPath.startsWith('/admin/customers/edit/')) {
-      page = 'editCustomer'
-    } else if (newPath === '/admin/analytics') {
-      page = 'analytics'
+    // Add tab to open tabs if not already present
+    if (tabKey && !openTabs.value.includes(tabKey)) {
+      openTabs.value.push(tabKey)
     }
 
-    if (page && !openTabs.value.includes(page)) {
-      openTabs.value.push(page)
-    }
-
-    // Set active nav based on route
-    if (newPath.startsWith('/admin/products')) {
-      activeNav.value = 'products'
-    } else if (newPath.startsWith('/admin/orders')) {
-      activeNav.value = 'orders'
-    } else if (newPath.startsWith('/admin/customers')) {
-      activeNav.value = 'customers'
-    } else if (newPath === '/admin/dashboard') {
-      activeNav.value = 'dashboard'
-    } else if (newPath === '/admin/analytics') {
-      activeNav.value = 'analytics'
-    }
+    // Update active navigation based on route
+    updateActiveNavigation(newPath)
   },
 )
 
 // ===========================================
-// METHODS
+// HELPER FUNCTIONS
 // ===========================================
 
 /**
- * Toggle sidebar visibility
+ * Maps a route path to its corresponding tab key
+ * @param {string} path - The route path
+ * @returns {string|null} The tab key or null if not found
+ */
+const getTabKeyFromRoute = (path) => {
+  // Direct mapping for exact matches
+  if (ROUTE_TO_TAB_MAP[path]) {
+    return ROUTE_TO_TAB_MAP[path]
+  }
+
+  // Handle dynamic routes (edit pages)
+  if (path.startsWith('/admin/products/edit/')) return 'edit'
+  if (path.startsWith('/admin/orders/edit/')) return 'editOrder'
+  if (path.startsWith('/admin/customers/edit/')) return 'editCustomer'
+
+  return null
+}
+
+/**
+ * Updates the active navigation state based on current route
+ * @param {string} path - The current route path
+ */
+const updateActiveNavigation = (path) => {
+  if (path.startsWith('/admin/products')) {
+    activeNav.value = 'products'
+  } else if (path.startsWith('/admin/orders')) {
+    activeNav.value = 'orders'
+  } else if (path.startsWith('/admin/customers')) {
+    activeNav.value = 'customers'
+  } else if (path === '/admin/dashboard') {
+    activeNav.value = 'dashboard'
+  } else if (path === '/admin/analytics') {
+    activeNav.value = 'analytics'
+  }
+}
+
+// ===========================================
+// NAVIGATION METHODS
+// ===========================================
+
+/**
+ * Toggles sidebar visibility
  */
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
 /**
- * Handle navigation click for dashboard
+ * Handles dashboard navigation click
  */
 const handleDashboardClick = () => {
-  productsDropdownOpen.value = false
+  resetNavigationState()
   activeNav.value = 'dashboard'
 }
 
 /**
- * Handle navigation click for products
+ * Handles products navigation click - toggles dropdown
  */
 const handleProductsClick = () => {
   productsDropdownOpen.value = !productsDropdownOpen.value
@@ -551,116 +540,70 @@ const handleProductsClick = () => {
 }
 
 /**
- * Handle navigation click for orders
+ * Handles orders navigation click
  */
 const handleOrdersClick = () => {
-  productsDropdownOpen.value = false
+  resetNavigationState()
   activeNav.value = 'orders'
 }
 
 /**
- * Handle navigation click for customers
+ * Handles customers navigation click
  */
 const handleCustomersClick = () => {
-  productsDropdownOpen.value = false
+  resetNavigationState()
   activeNav.value = 'customers'
 }
 
 /**
- * Handle navigation click for analytics
+ * Handles analytics navigation click
  */
 const handleAnalyticsClick = () => {
-  productsDropdownOpen.value = false
+  resetNavigationState()
   activeNav.value = 'analytics'
 }
 
 /**
- * Close a specific tab
+ * Resets navigation dropdown states
+ */
+const resetNavigationState = () => {
+  productsDropdownOpen.value = false
+}
+
+// ===========================================
+// TAB MANAGEMENT METHODS
+// ===========================================
+
+/**
+ * Closes a specific tab and handles navigation to remaining tabs
  * @param {string} tabPath - The path of the tab to close
  */
 const closeTab = (tabPath) => {
-  let page = ''
+  const tabKey = getTabKeyFromRoute(tabPath)
 
-  // Handle different route patterns for closing tabs
-  if (tabPath === '/admin/dashboard') {
-    page = 'dashboard'
-  } else if (tabPath === '/admin/products/manage') {
-    page = 'manage'
-  } else if (tabPath === '/admin/products/add') {
-    page = 'add'
-  } else if (tabPath.startsWith('/admin/products/edit')) {
-    page = 'edit'
-  } else if (tabPath === '/admin/products/discount') {
-    page = 'discount'
-  } else if (tabPath === '/admin/products/feedback') {
-    page = 'feedback'
-  } else if (tabPath === '/admin/products/stock') {
-    page = 'stock'
-  } else if (tabPath === '/admin/orders') {
-    page = 'orders'
-  } else if (tabPath === '/admin/orders/list') {
-    page = 'orderList'
-  } else if (tabPath === '/admin/orders/view') {
-    page = 'viewOrder'
-  } else if (tabPath.startsWith('/admin/orders/edit')) {
-    page = 'editOrder'
-  } else if (tabPath === '/admin/customers') {
-    page = 'customers'
-  } else if (tabPath === '/admin/customers/list') {
-    page = 'customerList'
-  } else if (tabPath === '/admin/customers/view') {
-    page = 'viewCustomer'
-  } else if (tabPath.startsWith('/admin/customers/edit')) {
-    page = 'editCustomer'
-  } else if (tabPath === '/admin/analytics') {
-    page = 'analytics'
+  if (!tabKey) return
+
+  const tabIndex = openTabs.value.indexOf(tabKey)
+
+  if (tabIndex === -1) return
+
+  // Remove tab from open tabs
+  openTabs.value.splice(tabIndex, 1)
+
+  // If we closed the currently active tab, navigate to another open tab
+  const currentTabKey = getTabKeyFromRoute(route.path)
+  if (currentTabKey === tabKey) {
+    navigateToNextAvailableTab()
   }
+}
 
-  const tabIndex = openTabs.value.indexOf(page)
-
-  if (tabIndex > -1) {
-    // Remove tab from open tabs
-    openTabs.value.splice(tabIndex, 1)
-
-    // If we closed the currently active tab, navigate to another
-    let currentPage = ''
-    if (route.path === '/admin/dashboard') {
-      currentPage = 'dashboard'
-    } else if (route.path === '/admin/products/manage') {
-      currentPage = 'manage'
-    } else if (route.path === '/admin/products/add') {
-      currentPage = 'add'
-    } else if (route.path.startsWith('/admin/products/edit/')) {
-      currentPage = 'edit'
-    } else if (route.path === '/admin/products/discount') {
-      currentPage = 'discount'
-    } else if (route.path === '/admin/products/feedback') {
-      currentPage = 'feedback'
-    } else if (route.path === '/admin/products/stock') {
-      currentPage = 'stock'
-    } else if (route.path === '/admin/orders/list') {
-      currentPage = 'orderList'
-    } else if (route.path === '/admin/orders/view') {
-      currentPage = 'viewOrder'
-    } else if (route.path.startsWith('/admin/orders/edit/')) {
-      currentPage = 'editOrder'
-    } else if (route.path === '/admin/customers') {
-      currentPage = 'customers'
-    } else if (route.path === '/admin/analytics') {
-      currentPage = 'analytics'
-    }
-
-    if (currentPage === page) {
-      const nextTab = openTabs.value[0] || 'dashboard'
-      let nextPath = nextTab
-      if (nextTab === 'manage') {
-        nextPath = 'products/manage'
-      } else if (nextTab === 'orderList') {
-        nextPath = 'orders/list'
-      }
-      router.push(`/admin/${nextPath}`)
-    }
-  }
+/**
+ * Navigates to the next available tab when current tab is closed
+ */
+const navigateToNextAvailableTab = () => {
+  const nextTabKey = openTabs.value[0] || 'dashboard'
+  const nextPath = TAB_CONFIG[nextTabKey]?.path || '/admin/dashboard'
+  router.push(nextPath)
 }
 
 // ===========================================
@@ -668,10 +611,25 @@ const closeTab = (tabPath) => {
 // ===========================================
 
 /**
- * Close password modal and reset form
+ * Closes password change modal and resets form
  */
 const closePasswordModal = () => {
   showPasswordModal.value = false
+  resetPasswordForm()
+}
+
+/**
+ * Closes profile update modal and resets form
+ */
+const closeProfileModal = () => {
+  showProfileModal.value = false
+  resetProfileForm()
+}
+
+/**
+ * Resets password form to initial state
+ */
+const resetPasswordForm = () => {
   passwordForm.value = {
     oldPassword: '',
     newPassword: '',
@@ -680,10 +638,9 @@ const closePasswordModal = () => {
 }
 
 /**
- * Close profile modal and reset form
+ * Resets profile form to current user data
  */
-const closeProfileModal = () => {
-  showProfileModal.value = false
+const resetProfileForm = () => {
   profileForm.value = {
     name: user.value.name,
     username: '',
@@ -693,22 +650,28 @@ const closeProfileModal = () => {
   }
 }
 
+// ===========================================
+// FORM HANDLING METHODS
+// ===========================================
+
 /**
- * Handle password change form submission
+ * Handles password change form submission with validation
  */
 const changePassword = () => {
+  // Validate password match
   if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
     alert('New passwords do not match!')
     return
   }
 
+  // Validate password length
   if (passwordForm.value.newPassword.length < 6) {
     alert('New password must be at least 6 characters long!')
     return
   }
 
-  // Here you would typically make an API call to change the password
-  console.log('Changing password:', {
+  // In a real application, this would make an API call
+  console.log('Password change request:', {
     oldPassword: passwordForm.value.oldPassword,
     newPassword: passwordForm.value.newPassword,
   })
@@ -718,13 +681,13 @@ const changePassword = () => {
 }
 
 /**
- * Handle profile update form submission
+ * Handles profile update form submission
  */
 const updateProfile = () => {
-  // Here you would typically make an API call to update the profile
-  console.log('Updating profile:', profileForm.value)
+  // In a real application, this would make an API call
+  console.log('Profile update request:', profileForm.value)
 
-  // Update user data
+  // Update local user data
   user.value.name = profileForm.value.name
   if (profileForm.value.avatar) {
     user.value.avatar = profileForm.value.avatar
@@ -735,45 +698,45 @@ const updateProfile = () => {
 }
 
 /**
- * Handle avatar file change
+ * Handles avatar file selection with validation
+ * @param {Event} event - File input change event
  */
 const handleAvatarChange = (event) => {
   const file = event.target.files[0]
-  if (file) {
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('Please select a valid image file!')
-      return
-    }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size must be less than 5MB!')
-      return
-    }
+  if (!file) return
 
-    // Create preview URL
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      profileForm.value.avatar = e.target.result
-    }
-    reader.readAsDataURL(file)
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    alert('Please select a valid image file!')
+    return
   }
+
+  // Validate file size (max 5MB)
+  const maxSize = 5 * 1024 * 1024 // 5MB in bytes
+  if (file.size > maxSize) {
+    alert('File size must be less than 5MB!')
+    return
+  }
+
+  // Create preview URL for the selected image
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    profileForm.value.avatar = e.target.result
+  }
+  reader.readAsDataURL(file)
 }
 
 // ===========================================
 // LIFECYCLE HOOKS
 // ===========================================
 
+/**
+ * Component mount hook - initializes form data
+ */
 onMounted(() => {
   // Initialize profile form with current user data
-  profileForm.value = {
-    name: user.value.name,
-    username: '',
-    email: '',
-    address: '',
-    avatar: null,
-  }
+  resetProfileForm()
 })
 </script>
 

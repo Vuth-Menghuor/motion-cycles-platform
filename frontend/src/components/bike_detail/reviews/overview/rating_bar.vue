@@ -2,7 +2,6 @@
   <div class="rating-overview">
     <div class="rating-content">
       <div>
-        <!-- summary -->
         <Rating_overview
           :averageRating="averageRating"
           :totalRating="totalRatings"
@@ -19,7 +18,6 @@
         />
       </div>
 
-      <!-- Overall Badge -->
       <div class="overall-badge">
         <div class="circular-progress">
           <svg viewBox="0 0 36 36" class="circular-chart">
@@ -52,19 +50,6 @@ import { computed } from 'vue'
 import Rating_overview from './rating_overview.vue'
 import Rating_stars from './rating_stars.vue'
 
-// const props = defineProps({
-//   ratings: {
-//     type: Object,
-//     default: () => ({
-//       5: 102,
-//       4: 45,
-//       3: 40,
-//       2: 34,
-//       1: 12,
-//     }),
-//   },
-// })
-
 const props = defineProps({
   reviews: {
     type: Array,
@@ -76,9 +61,7 @@ const totalReviews = computed(() => props.reviews.length)
 
 const ratings = computed(() => {
   const result = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
-  props.reviews.forEach((review) => {
-    result[review.rating] = (result[review.rating] || 0) + 1
-  })
+  props.reviews.forEach((review) => (result[review.rating] = (result[review.rating] || 0) + 1))
   return result
 })
 
@@ -110,6 +93,7 @@ const progressPercentage = computed(() => (averageRating.value / 5) * 100)
   background: white;
   border-radius: 8px;
 }
+
 .rating-content {
   display: flex;
   justify-content: space-between;
@@ -117,6 +101,7 @@ const progressPercentage = computed(() => (averageRating.value / 5) * 100)
   padding-right: 50px;
   width: 100%;
 }
+
 .rating-distribution {
   display: flex;
   flex-direction: column;
@@ -131,22 +116,26 @@ const progressPercentage = computed(() => (averageRating.value / 5) * 100)
   align-items: center;
   gap: 8px;
 }
+
 .circular-progress {
   position: relative;
   width: 100px;
   height: 100px;
 }
+
 .circular-chart {
   display: block;
   margin: 0 auto;
   width: 100%;
   height: 100%;
 }
+
 .circle-bg {
   fill: none;
   stroke: #e5e7eb;
   stroke-width: 3;
 }
+
 .circle {
   fill: none;
   stroke: #22c55e;
@@ -154,11 +143,13 @@ const progressPercentage = computed(() => (averageRating.value / 5) * 100)
   stroke-linecap: round;
   animation: progress 1s ease-in-out forwards;
 }
+
 @keyframes progress {
   0% {
     stroke-dasharray: 0 100;
   }
 }
+
 .progress-text {
   position: absolute;
   top: 50%;
@@ -166,30 +157,36 @@ const progressPercentage = computed(() => (averageRating.value / 5) * 100)
   transform: translate(-50%, -50%);
   text-align: center;
 }
+
 .badge-score {
   font-size: 24px;
   font-weight: bold;
   color: #111827;
   line-height: 1;
 }
+
 .badge-label {
   font-size: 14px;
   font-weight: 500;
   color: #6b7280;
   text-align: center;
 }
+
 @media (max-width: 640px) {
   .rating-overview {
     padding: 24px;
   }
+
   .rating-content {
     flex-direction: column;
     gap: 32px;
   }
+
   .circular-progress {
     width: 60px;
     height: 60px;
   }
+
   .badge-score {
     font-size: 20px;
   }

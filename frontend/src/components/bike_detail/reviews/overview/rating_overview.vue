@@ -13,8 +13,7 @@
 </template>
 
 <script setup>
-// eslint-disable-next-line no-unused-vars
-const props = defineProps({
+defineProps({
   averageRating: {
     type: Number,
     required: true,

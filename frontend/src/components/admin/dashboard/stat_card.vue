@@ -1,7 +1,5 @@
 <template>
-  <!-- Statistics Card Component -->
   <div class="stat-card" :class="`stat-card-${color}`">
-    <!-- Main Content: Title, Value and Icon -->
     <div class="stat-header">
       <div class="stat-label">{{ title }}</div>
     </div>
@@ -14,7 +12,6 @@
       </div>
     </div>
 
-    <!-- Action Buttons (Add, Edit, View) -->
     <div class="stat-actions">
       <div class="action-group">
         <button v-if="actions.includes('add')" class="action-icon" title="Add">
@@ -43,65 +40,31 @@
 import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// Define props
 const props = defineProps({
-  // Title displayed at the top of the card
-  title: {
-    type: String,
-    required: true,
-  },
-  // Numeric value to display
-  value: {
-    type: Number,
-    required: true,
-  },
-  // Prefix for the value (e.g., '$')
-  prefix: {
-    type: String,
-    default: '',
-  },
-  // Color theme: 'blue', 'green', 'red', 'custom-blue', 'custom-teal', 'custom-red'
+  title: { type: String, required: true },
+  value: { type: Number, required: true },
+  prefix: { type: String, default: '' },
   color: {
     type: String,
     default: 'blue',
     validator: (value) =>
       ['blue', 'green', 'red', 'custom-blue', 'custom-teal', 'custom-red'].includes(value),
   },
-  // Icon name to display (e.g., 'package', 'dollar', 'users')
-  icon: {
-    type: String,
-    default: 'package',
-  },
-  // Actions to display: array of 'add', 'edit', 'view'
+  icon: { type: String, default: 'package' },
   actions: {
     type: Array,
     default: () => ['add', 'edit', 'view'],
     validator: (value) => value.every((action) => ['add', 'edit', 'view'].includes(action)),
   },
-  // Custom icons for actions
-  addIcon: {
-    type: String,
-    default: 'fluent-mdl2:product-release',
-  },
-  editIcon: {
-    type: String,
-    default: 'ic:baseline-edit',
-  },
-  viewIcon: {
-    type: String,
-    default: 'mdi:eye',
-  },
+  addIcon: { type: String, default: 'fluent-mdl2:product-release' },
+  editIcon: { type: String, default: 'ic:baseline-edit' },
+  viewIcon: { type: String, default: 'mdi:eye' },
 })
 
-// Computed properties
-// Format the value with commas for readability
-const formattedValue = computed(() => {
-  return props.value.toLocaleString()
-})
+const formattedValue = computed(() => props.value.toLocaleString())
 
-// Create a shorter version of the title
 const shortTitle = computed(() => {
-  let title = props.title.replace(/^Total\s+/i, '') // Remove "Total" from the beginning
+  let title = props.title.replace(/^Total\s+/i, '')
   return title.length > 10 ? title.substring(0, 10) + '...' : title
 })
 </script>

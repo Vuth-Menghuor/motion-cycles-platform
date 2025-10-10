@@ -1,11 +1,9 @@
 <template>
   <div class="discount-page">
-    <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb">
-      <span class="breadcrumb-item active">Product & Discount Management</span>
+      <span class="breadcrumb-item active">Discount Management</span>
     </nav>
 
-    <!-- Discounts Table -->
     <div class="table-container">
       <table class="discounts-table">
         <thead>
@@ -95,7 +93,6 @@
       </table>
     </div>
 
-    <!-- Bulk Actions (shown when items are selected) -->
     <div v-if="selectedDiscounts.length > 0" class="bulk-actions">
       <span class="selected-count">{{ selectedDiscounts.length }} product(s) selected</span>
       <div class="bulk-buttons">
@@ -106,7 +103,6 @@
       </div>
     </div>
 
-    <!-- Pagination -->
     <div class="pagination-container">
       <div class="pagination-info">
         Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} products (Page
@@ -147,20 +143,16 @@ import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
 
-// Constants
 const ITEMS_PER_PAGE = 50
-
-// Reactive state
 const selectAll = ref(false)
 const currentPage = ref(1)
 const router = useRouter()
 
-// Sample data generation
-const generateSampleDiscounts = () => {
-  const categories = ['Road Bike', 'Mountain Bike']
-  const types = ['Percentage', 'Fixed Amount']
-  const statuses = ['Active', 'Inactive', 'Expired', 'No Discount']
-  const discountCodes = [
+const sampleData = {
+  categories: ['Road Bike', 'Mountain Bike'],
+  types: ['Percentage', 'Fixed Amount'],
+  statuses: ['Active', 'Inactive', 'Expired', 'No Discount'],
+  codes: [
     'SUMMER2025',
     'WELCOME10',
     'LOYALTY15',
@@ -171,8 +163,8 @@ const generateSampleDiscounts = () => {
     'DEAL40',
     'OFFER35',
     'PROMO45',
-  ]
-  const products = [
+  ],
+  products: [
     'Trail Pro Carbon',
     'Road Race Elite',
     'Mountain Bike Aluminum',
@@ -187,8 +179,8 @@ const generateSampleDiscounts = () => {
     'Folding Compact',
     'Kids Balance Bike',
     'Cargo Family Bike',
-  ]
-  const brands = [
+  ],
+  brands: [
     'Cannondale',
     'Trek',
     'Bianchi',
@@ -197,53 +189,24 @@ const generateSampleDiscounts = () => {
     'Specialized',
     'Shimano',
     'Calnago',
-  ]
+  ],
+}
 
-  const discounts = []
+const generateId = () =>
+  `P${Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, '0')}I`
 
-  // Generate products with discounts (about 60% of total)
-  const discountCount = Math.floor(45 * 0.6)
-  for (let i = 0; i < discountCount; i++) {
-    const type = types[Math.floor(Math.random() * types.length)]
-    const value =
-      type === 'Percentage'
-        ? Math.floor(Math.random() * 50) + 5
-        : Math.floor(Math.random() * 100) + 10
+const randomItem = (array) => array[Math.floor(Math.random() * array.length)]
 
-    const startDate = new Date()
-    startDate.setDate(startDate.getDate() - Math.floor(Math.random() * 30))
-    const endDate = new Date(startDate)
-    endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 90) + 30)
-
-    discounts.push({
-      id: `P${Math.floor(Math.random() * 10000)
-        .toString()
-        .padStart(4, '0')}I`,
-      code: discountCodes[Math.floor(Math.random() * discountCodes.length)],
-      product: products[Math.floor(Math.random() * products.length)],
-      brand: brands[Math.floor(Math.random() * brands.length)],
-      category: categories[Math.floor(Math.random() * categories.length)],
-      type: type,
-      value: value.toString(),
-      status: statuses[Math.floor(Math.random() * 3)], // Only Active, Inactive, Expired
-      startDate: startDate.toLocaleDateString(),
-      endDate: endDate.toLocaleDateString(),
-      selected: false,
-      hasDiscount: true,
-    })
-  }
-
-  // Generate products without discounts (remaining 40%)
-  const noDiscountCount = 45 - discountCount
-  for (let i = 0; i < noDiscountCount; i++) {
-    discounts.push({
-      id: `P${Math.floor(Math.random() * 10000)
-        .toString()
-        .padStart(4, '0')}I`,
+const generateDiscount = (hasDiscount = true) => {
+  if (!hasDiscount) {
+    return {
+      id: generateId(),
       code: 'N/A',
-      product: products[Math.floor(Math.random() * products.length)],
-      brand: brands[Math.floor(Math.random() * brands.length)],
-      category: categories[Math.floor(Math.random() * categories.length)],
+      product: randomItem(sampleData.products),
+      brand: randomItem(sampleData.brands),
+      category: randomItem(sampleData.categories),
       type: 'N/A',
       value: 'N/A',
       status: 'No Discount',
@@ -251,16 +214,47 @@ const generateSampleDiscounts = () => {
       endDate: 'N/A',
       selected: false,
       hasDiscount: false,
-    })
+    }
   }
+
+  const type = randomItem(sampleData.types)
+  const value =
+    type === 'Percentage'
+      ? Math.floor(Math.random() * 50) + 5
+      : Math.floor(Math.random() * 100) + 10
+  const startDate = new Date()
+  startDate.setDate(startDate.getDate() - Math.floor(Math.random() * 30))
+  const endDate = new Date(startDate)
+  endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 90) + 30)
+
+  return {
+    id: generateId(),
+    code: randomItem(sampleData.codes),
+    product: randomItem(sampleData.products),
+    brand: randomItem(sampleData.brands),
+    category: randomItem(sampleData.categories),
+    type,
+    value: value.toString(),
+    status: randomItem(sampleData.statuses.slice(0, 3)),
+    startDate: startDate.toLocaleDateString(),
+    endDate: endDate.toLocaleDateString(),
+    selected: false,
+    hasDiscount: true,
+  }
+}
+
+const generateSampleDiscounts = () => {
+  const discounts = []
+  const discountCount = Math.floor(45 * 0.6)
+
+  for (let i = 0; i < discountCount; i++) discounts.push(generateDiscount(true))
+  for (let i = 0; i < 45 - discountCount; i++) discounts.push(generateDiscount(false))
 
   return discounts
 }
 
-// Data
 const discounts = ref(generateSampleDiscounts())
 
-// Computed properties
 const totalItems = computed(() => discounts.value.length)
 const totalPages = computed(() => Math.ceil(totalItems.value / ITEMS_PER_PAGE))
 const startItem = computed(() => (currentPage.value - 1) * ITEMS_PER_PAGE + 1)
@@ -268,35 +262,23 @@ const endItem = computed(() => Math.min(currentPage.value * ITEMS_PER_PAGE, tota
 
 const paginatedDiscounts = computed(() => {
   const start = (currentPage.value - 1) * ITEMS_PER_PAGE
-  const end = start + ITEMS_PER_PAGE
-  return discounts.value.slice(start, end)
+  return discounts.value.slice(start, start + ITEMS_PER_PAGE)
 })
 
-const selectedDiscounts = computed(() => discounts.value.filter((discount) => discount.selected))
+const selectedDiscounts = computed(() => discounts.value.filter((d) => d.selected))
 
 const visiblePages = computed(() => {
-  const pages = []
-  const maxVisiblePages = 5
-  let startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2))
-  let endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1)
+  const maxVisible = 5
+  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
+  let end = Math.min(totalPages.value, start + maxVisible - 1)
 
-  if (endPage - startPage + 1 < maxVisiblePages) {
-    startPage = Math.max(1, endPage - maxVisiblePages + 1)
-  }
+  if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1)
 
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i)
-  }
-
-  return pages
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 })
 
-// Methods
-const toggleSelectAll = () => {
-  paginatedDiscounts.value.forEach((discount) => {
-    discount.selected = selectAll.value
-  })
-}
+const toggleSelectAll = () =>
+  paginatedDiscounts.value.forEach((d) => (d.selected = selectAll.value))
 
 const toggleOrderSelection = (discount) => {
   discount.selected = !discount.selected
@@ -304,11 +286,8 @@ const toggleOrderSelection = (discount) => {
 }
 
 const updateSelectAllState = () => {
-  const currentPageSelected = paginatedDiscounts.value.filter(
-    (discount) => discount.selected,
-  ).length
-  const currentPageTotal = paginatedDiscounts.value.length
-  selectAll.value = currentPageSelected === currentPageTotal && currentPageTotal > 0
+  const selected = paginatedDiscounts.value.filter((d) => d.selected).length
+  selectAll.value = selected === paginatedDiscounts.value.length && selected > 0
 }
 
 const goToPage = (page) => {
@@ -318,50 +297,42 @@ const goToPage = (page) => {
   }
 }
 
+const createProductInfo = (product) => ({
+  productName: product.product,
+  brand: product.brand,
+  category: product.category,
+  quantity: product.hasDiscount ? '25' : '15',
+  highlight: `${product.product} - ${product.category}`,
+  description: `Complete description for ${product.product}. This is a high-quality ${product.category.toLowerCase()} from ${product.brand}.`,
+  quality: product.hasDiscount ? 'High' : 'Standard',
+  price: product.hasDiscount ? '2999' : '1899',
+  color: product.hasDiscount ? 'Black' : 'Blue',
+  discountCode: product.code !== 'N/A' ? product.code : '',
+  discountType: product.type !== 'N/A' ? product.type : '',
+  discountValue: product.value !== 'N/A' ? product.value : '',
+  discountStartDate: product.startDate !== 'N/A' ? product.startDate : '',
+  discountEndDate: product.endDate !== 'N/A' ? product.endDate : '',
+  range: product.category === 'Road Bike' ? 'N/A' : '100km',
+  hubMotor: product.category === 'Road Bike' ? 'N/A' : '750W',
+  payload: '120kg',
+  controller: product.category === 'Road Bike' ? 'Basic' : 'LCD Display',
+  weight: product.category === 'Road Bike' ? '15kg' : '25kg',
+  display: product.category === 'Road Bike' ? 'None' : 'Digital',
+})
+
 const editProduct = (productId) => {
-  console.log('Edit product:', productId)
-  // Find the product data
   const product = discounts.value.find((d) => d.id === productId)
   if (product) {
-    // Generate complete product information based on available data
-    const completeProductInfo = {
-      productName: product.product,
-      brand: product.brand,
-      category: product.category,
-      quantity: product.hasDiscount ? '25' : '15', // Default quantities
-      highlight: `${product.product} - ${product.category}`,
-      description: `Complete description for ${product.product}. This is a high-quality ${product.category.toLowerCase()} from ${product.brand}.`,
-      quality: product.hasDiscount ? 'High' : 'Standard',
-      price: product.hasDiscount ? '2999' : '1899', // Default prices
-      color: product.hasDiscount ? 'Black' : 'Blue', // Default colors
-      discountCode: product.code !== 'N/A' ? product.code : '',
-      discountType: product.type !== 'N/A' ? product.type : '',
-      discountValue: product.value !== 'N/A' ? product.value : '',
-      discountStartDate: product.startDate !== 'N/A' ? product.startDate : '',
-      discountEndDate: product.endDate !== 'N/A' ? product.endDate : '',
-      // Specs information
-      range: product.category === 'Road Bike' ? 'N/A' : '100km',
-      hubMotor: product.category === 'Road Bike' ? 'N/A' : '750W',
-      payload: '120kg',
-      controller: product.category === 'Road Bike' ? 'Basic' : 'LCD Display',
-      weight: product.category === 'Road Bike' ? '15kg' : '25kg',
-      display: product.category === 'Road Bike' ? 'None' : 'Digital',
-    }
-
-    // Navigate to edit product page with complete product information
     router.push({
       path: `/admin/products/edit/${productId}`,
-      query: completeProductInfo,
+      query: createProductInfo(product),
     })
   } else {
-    // Fallback if product not found
     router.push(`/admin/products/edit/${productId}`)
   }
 }
 
 const addDiscount = (discount) => {
-  console.log('Add discount for product:', discount)
-  // Navigate to add discount page with product details
   router.push({
     path: '/admin/products/add',
     query: {
@@ -378,9 +349,9 @@ const addDiscount = (discount) => {
 }
 
 const bulkDelete = () => {
-  const selectedIds = selectedDiscounts.value.map((discount) => discount.id)
-  if (confirm(`Delete ${selectedIds.length} selected discount(s)?`)) {
-    discounts.value = discounts.value.filter((discount) => !discount.selected)
+  const count = selectedDiscounts.value.length
+  if (confirm(`Delete ${count} selected discount(s)?`)) {
+    discounts.value = discounts.value.filter((d) => !d.selected)
     selectAll.value = false
     if (paginatedDiscounts.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
@@ -388,25 +359,15 @@ const bulkDelete = () => {
   }
 }
 
-// Watchers
-watch(
-  () => discounts.value.map((p) => p.selected),
-  () => updateSelectAllState(),
-  { deep: true },
-)
-
-watch(currentPage, () => {
-  selectAll.value = false
-})
+watch(() => discounts.value.map((p) => p.selected), updateSelectAllState, { deep: true })
+watch(currentPage, () => (selectAll.value = false))
 </script>
 
 <style scoped>
-/* Page Layout */
 .discount-page {
   min-height: auto;
 }
 
-/* Breadcrumb Navigation */
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -443,7 +404,6 @@ watch(currentPage, () => {
   color: #999;
 }
 
-/* Table Container */
 .table-container {
   background: #ffffff;
   border-radius: 8px;
@@ -453,7 +413,6 @@ watch(currentPage, () => {
   margin-bottom: 20px;
 }
 
-/* Discounts Table */
 .discounts-table {
   width: 100%;
   border-collapse: collapse;
@@ -496,7 +455,6 @@ watch(currentPage, () => {
   cursor: pointer;
 }
 
-/* Checkbox Column */
 .checkbox-column {
   width: 50px;
   text-align: center;
@@ -511,14 +469,12 @@ watch(currentPage, () => {
   margin: 0 auto;
 }
 
-/* Product ID Column */
 .product-id {
   font-family: 'Monaco', 'Menlo', monospace;
   font-weight: 500;
   color: #2b6cb0;
 }
 
-/* Discount Code Column */
 .discount-code {
   font-family: 'Monaco', 'Menlo', monospace;
   font-weight: 500;
@@ -527,7 +483,6 @@ watch(currentPage, () => {
   letter-spacing: 0.5px;
 }
 
-/* Discount Product Column */
 .discount-product {
   font-weight: 500;
   max-width: 180px;
@@ -537,7 +492,6 @@ watch(currentPage, () => {
   color: #2d3748;
 }
 
-/* Discount Brand Column */
 .discount-brand {
   font-weight: 500;
   max-width: 150px;
@@ -547,7 +501,6 @@ watch(currentPage, () => {
   color: #2d3748;
 }
 
-/* Discount Category Column */
 .discount-category {
   font-weight: 500;
   max-width: 150px;
@@ -557,7 +510,6 @@ watch(currentPage, () => {
   color: #2d3748;
 }
 
-/* Status Badge */
 .status-badge {
   display: inline-block;
   padding: 4px 8px;
@@ -582,7 +534,6 @@ watch(currentPage, () => {
   color: #4a5568;
 }
 
-/* Actions Column */
 .actions-column {
   display: flex;
 }
@@ -635,7 +586,6 @@ watch(currentPage, () => {
   transform: translateY(-1px);
 }
 
-/* Bulk Actions */
 .bulk-actions {
   display: flex;
   justify-content: space-between;
@@ -682,7 +632,6 @@ watch(currentPage, () => {
   transform: translateY(-1px);
 }
 
-/* Pagination */
 .pagination-container {
   display: flex;
   justify-content: space-between;
@@ -766,7 +715,6 @@ watch(currentPage, () => {
   border-color: #4299e1;
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .discounts-table {
     font-size: 13px;

@@ -37,9 +37,9 @@
           </div>
 
           <div class="price-info">
-            <label class="product-price discounted"
-              >${{ formatNumber(getDiscountedPrice(bike)) }}</label
-            >
+            <label class="product-price discounted">
+              ${{ formatNumber(getDiscountedPrice(bike)) }}
+            </label>
             <span v-if="bike.discount" class="original-price">${{ formatNumber(bike.price) }}</span>
           </div>
 
@@ -86,27 +86,14 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 
-// Router instance
-const Router = useRouter()
-
-// Props
 const props = defineProps({
-  currentBikeId: {
-    type: Number,
-    default: null,
-  },
-  maxSuggestions: {
-    type: Number,
-    default: 6, // Show more bikes but only 3 visible initially
-  },
+  currentBikeId: { type: Number, default: null },
+  maxSuggestions: { type: Number, default: 6 },
 })
 
-// Emit events
 const emit = defineEmits(['add-to-cart'])
 
-// Sample bike data (you can replace this with your actual data source)
 const allBikes = ref([
   {
     id: 1,
@@ -119,10 +106,7 @@ const allBikes = ref([
       icon: 'mdi:hot',
       gradient: 'linear-gradient(135deg, rgb(255, 107, 107), rgb(255, 82, 82))',
     },
-    discount: {
-      type: 'percent',
-      value: 10,
-    },
+    discount: { type: 'percent', value: 10 },
     rating: 4.8,
     reviewCount: 3221,
     image: '/src/assets/images/product_card/mount_1.png',
@@ -138,10 +122,7 @@ const allBikes = ref([
       icon: 'material-symbols-light:new-releases',
       gradient: 'linear-gradient(135deg, #3491FA, #3491FA)',
     },
-    discount: {
-      type: 'fixed',
-      value: 1.5,
-    },
+    discount: { type: 'fixed', value: 1.5 },
     rating: 2.4,
     reviewCount: 3221,
     image: '/src/assets/images/product_card/mount_2/mount_2.png',
@@ -165,10 +146,7 @@ const allBikes = ref([
     price: 5.99,
     color: 'Black',
     badge: {},
-    discount: {
-      type: 'percent',
-      value: 15,
-    },
+    discount: { type: 'percent', value: 15 },
     rating: 4.8,
     reviewCount: 1120,
     image: '/src/assets/images/product_card/road_1.png',
@@ -180,10 +158,7 @@ const allBikes = ref([
     price: 6.79,
     color: 'Blue',
     badge: {},
-    discount: {
-      type: 'fixed',
-      value: 0.8,
-    },
+    discount: { type: 'fixed', value: 0.8 },
     rating: 4.7,
     reviewCount: 890,
     image: '/src/assets/images/product_card/road_2.png',
@@ -206,37 +181,24 @@ const allBikes = ref([
   },
 ])
 
-// Computed properties
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
 
 const suggestionBikes = computed(() => {
-  // Filter out the current bike and get suggestions
   const filtered = allBikes.value.filter((bike) => bike.id !== props.currentBikeId)
-  // Shuffle and take the specified number
-  const shuffled = filtered.sort(() => 0.5 - Math.random())
-  return shuffled.slice(0, props.maxSuggestions)
+  return filtered.sort(() => 0.5 - Math.random()).slice(0, props.maxSuggestions)
 })
 
-// Reactive state
 const favorites = ref(new Set())
 
-// Methods
-function formatNumber(number) {
-  return number.toLocaleString()
-}
+const formatNumber = (number) => number.toLocaleString()
 
 const toggleFavorite = (bikeId) => {
-  if (favorites.value.has(bikeId)) {
-    favorites.value.delete(bikeId)
-  } else {
-    favorites.value.add(bikeId)
-  }
+  if (favorites.value.has(bikeId)) favorites.value.delete(bikeId)
+  else favorites.value.add(bikeId)
   favorites.value = new Set(favorites.value)
 }
 
-const isFavorited = (bikeId) => {
-  return favorites.value.has(bikeId)
-}
+const isFavorited = (bikeId) => favorites.value.has(bikeId)
 
 const getDiscountLabel = (bike) => {
   if (!bike.discount) return null
@@ -247,26 +209,18 @@ const getDiscountLabel = (bike) => {
 
 const getDiscountedPrice = (bike) => {
   if (!bike.discount) return bike.price
-  if (bike.discount.type === 'percent') {
-    return bike.price - (bike.price * bike.discount.value) / 100
-  } else {
-    return bike.price - bike.discount.value
-  }
+  return bike.discount.type === 'percent'
+    ? bike.price - (bike.price * bike.discount.value) / 100
+    : bike.price - bike.discount.value
 }
 
 const addToCart = (bike) => {
   emit('add-to-cart', bike)
-  // You can add additional logic here like showing a toast notification
   console.log('Added to cart:', bike.title)
 }
 
-// New method to handle navigation with page refresh
-const viewBikeDetails = async (bikeId) => {
-  try {
-    window.location.href = `/bike/${bikeId}`
-  } catch (error) {
-    console.error('Navigation error:', error)
-  }
+const viewBikeDetails = (bikeId) => {
+  window.location.href = `/bike/${bikeId}`
 }
 </script>
 
@@ -303,7 +257,6 @@ const viewBikeDetails = async (bikeId) => {
   position: relative;
 }
 
-/* Clip-path to show only 3 cards */
 .bikes-scroll-container::after {
   content: '';
   position: absolute;
@@ -327,7 +280,6 @@ const viewBikeDetails = async (bikeId) => {
   scrollbar-color: #cbd5e0 transparent;
 }
 
-/* Webkit scrollbar styling */
 .bikes-grid::-webkit-scrollbar {
   height: 6px;
 }
@@ -353,7 +305,7 @@ const viewBikeDetails = async (bikeId) => {
   overflow: hidden;
   position: relative;
   transition: all 0.3s ease;
-  flex: 0 0 400px; /* Fixed width for consistent sizing */
+  flex: 0 0 400px;
   height: fit-content;
 }
 

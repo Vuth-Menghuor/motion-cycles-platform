@@ -21,7 +21,9 @@
     <div class="bill-to-section">
       <h3>Bill To:</h3>
       <div class="customer-info">
-        <p><strong>{{ customerName }}</strong></p>
+        <p>
+          <strong>{{ customerName }}</strong>
+        </p>
         <p>Phone: {{ customerPhone }}</p>
       </div>
     </div>
@@ -49,9 +51,7 @@
             <td class="item-qty">{{ item.quantity }}</td>
             <td class="item-price">${{ formatPrice(item.price) }}</td>
             <td class="item-discount">
-              <span v-if="hasDiscount(item)">
-                -${{ formatPrice(getDiscountAmount(item)) }}
-              </span>
+              <span v-if="hasDiscount(item)"> -${{ formatPrice(getDiscountAmount(item)) }} </span>
               <span v-else>-</span>
             </td>
             <td class="item-total">${{ formatPrice(getItemTotal(item)) }}</td>
@@ -81,7 +81,9 @@
         </div>
         <div class="summary-row total-row">
           <span><strong>Total:</strong></span>
-          <span><strong>${{ formatPrice(total) }}</strong></span>
+          <span
+            ><strong>${{ formatPrice(total) }}</strong></span
+          >
         </div>
       </div>
     </div>
@@ -89,7 +91,9 @@
     <!-- Footer -->
     <div class="invoice-footer">
       <p class="thank-you">Thank you for your business!</p>
-      <p class="terms">Payment is due within 30 days. Please retain this invoice for your records.</p>
+      <p class="terms">
+        Payment is due within 30 days. Please retain this invoice for your records.
+      </p>
     </div>
   </div>
 </template>
@@ -97,84 +101,40 @@
 <script setup>
 import { defineProps } from 'vue'
 
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
-  invoiceNumber: {
-    type: String,
-    required: true,
-  },
-  transactionDate: {
-    type: String,
-    required: true,
-  },
-  paymentMethod: {
-    type: String,
-    required: true,
-  },
-  customerName: {
-    type: String,
-    required: true,
-  },
-  customerPhone: {
-    type: String,
-    required: true,
-  },
-  items: {
-    type: Array,
-    required: true,
-  },
-  subtotal: {
-    type: Number,
-    required: true,
-  },
-  itemDiscounts: {
-    type: Number,
-    default: 0,
-  },
-  promoDiscount: {
-    type: Number,
-    default: 0,
-  },
-  shipping: {
-    type: Number,
-    required: true,
-  },
-  total: {
-    type: Number,
-    required: true,
-  },
+  invoiceNumber: { type: String, required: true },
+  transactionDate: { type: String, required: true },
+  paymentMethod: { type: String, required: true },
+  customerName: { type: String, required: true },
+  customerPhone: { type: String, required: true },
+  items: { type: Array, required: true },
+  subtotal: { type: Number, required: true },
+  itemDiscounts: { type: Number, default: 0 },
+  promoDiscount: { type: Number, default: 0 },
+  shipping: { type: Number, required: true },
+  total: { type: Number, required: true },
 })
 
-// Helper functions
-const hasDiscount = (item) => {
-  return item.discount && (item.discount.type === 'percent' || item.discount.type === 'fixed')
-}
+const hasDiscount = (item) =>
+  item.discount && (item.discount.type === 'percent' || item.discount.type === 'fixed')
 
 const getDiscountAmount = (item) => {
   if (!hasDiscount(item)) return 0
-
-  if (item.discount.type === 'percent') {
-    return (item.price * item.discount.value) / 100
-  } else if (item.discount.type === 'fixed') {
-    return item.discount.value
-  }
-
-  return 0
+  return item.discount.type === 'percent'
+    ? (item.price * item.discount.value) / 100
+    : item.discount.value
 }
 
-const getDiscountedPrice = (item) => {
-  return item.price - getDiscountAmount(item)
-}
+const getDiscountedPrice = (item) => item.price - getDiscountAmount(item)
 
-const getItemTotal = (item) => {
-  return getDiscountedPrice(item) * item.quantity
-}
+const getItemTotal = (item) => getDiscountedPrice(item) * item.quantity
 
-const formatPrice = (price) => {
-  return price.toLocaleString()
-}
+const formatPrice = (price) => price.toLocaleString()
 </script>
 
 <style scoped>
+/* Invoice Container */
 .invoice-container {
   max-width: 800px;
   margin: 0 auto;
@@ -188,6 +148,7 @@ const formatPrice = (price) => {
   border-radius: 8px;
 }
 
+/* Invoice Header */
 .invoice-header {
   display: flex;
   justify-content: space-between;
@@ -231,6 +192,7 @@ const formatPrice = (price) => {
   font-size: 12px;
 }
 
+/* Bill To Section */
 .bill-to-section {
   margin-bottom: 30px;
 }
@@ -246,6 +208,7 @@ const formatPrice = (price) => {
   font-size: 14px;
 }
 
+/* Items Section */
 .items-section {
   margin-bottom: 30px;
 }
@@ -299,6 +262,7 @@ const formatPrice = (price) => {
   margin-top: 4px;
 }
 
+/* Summary Section */
 .summary-section {
   display: flex;
   justify-content: flex-end;
@@ -327,6 +291,7 @@ const formatPrice = (price) => {
   color: #e74c3c;
 }
 
+/* Invoice Footer */
 .invoice-footer {
   text-align: center;
   border-top: 1px solid #e0e0e0;
@@ -346,7 +311,7 @@ const formatPrice = (price) => {
   margin: 0;
 }
 
-/* Print styles */
+/* Print Styles */
 @media print {
   .invoice-container {
     box-shadow: none;

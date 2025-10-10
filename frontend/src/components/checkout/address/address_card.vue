@@ -1,6 +1,5 @@
 <template>
   <div class="address-card" :class="{ selected: isSelected }" @click="selectAddress">
-    <!-- Radio button -->
     <div class="radio-container">
       <input
         type="radio"
@@ -13,7 +12,6 @@
       <label :for="`address-${address.id}`" class="radio-label"></label>
     </div>
 
-    <!-- Address content -->
     <div class="address-content">
       <div class="address-header">
         <h3 class="address-name">{{ address.name }}</h3>
@@ -28,39 +26,17 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
-
 const props = defineProps({
-  address: {
-    type: Object,
-    required: true,
-    validator: (address) => {
-      return address.id && address.name && address.fullAddress
-    },
-  },
-  isSelected: {
-    type: Boolean,
-    default: false,
-  },
-  radioGroupName: {
-    type: String,
-    default: 'address-selection',
-  },
+  address: { type: Object, required: true },
+  isSelected: { type: Boolean, default: false },
+  radioGroupName: { type: String, default: 'address-selection' },
 })
 
 const emit = defineEmits(['select', 'edit', 'remove'])
 
-const selectAddress = () => {
-  emit('select', props.address)
-}
-
-const editAddress = () => {
-  emit('edit', props.address)
-}
-
-const removeAddress = () => {
-  emit('remove', props.address.id)
-}
+const selectAddress = () => emit('select', props.address)
+const editAddress = () => emit('edit', props.address)
+const removeAddress = () => emit('remove', props.address.id)
 </script>
 
 <style scoped>
@@ -173,7 +149,6 @@ const removeAddress = () => {
   line-height: 1.4;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .address-card {
     padding: 16px;

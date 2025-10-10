@@ -1,16 +1,13 @@
 <template>
-  <!-- Revenue Chart Component with Filters -->
   <div class="revenue-chart">
     <div class="chart-header">
       <h3>Revenue & Profit Trend</h3>
       <div class="chart-filters">
-        <!-- Period Filter -->
         <select v-model="selectedPeriod" class="filter-select" @change="updateChart">
           <option value="daily">Daily Revenue</option>
           <option value="weekly">Weekly Revenue</option>
           <option value="monthly">Monthly Revenue</option>
         </select>
-        <!-- Type Filter -->
         <select v-model="selectedType" class="filter-select" @change="updateChart">
           <option value="revenue">Revenue</option>
           <option value="profit">Profit</option>
@@ -54,13 +51,9 @@ export default {
   name: 'RevenueChart',
   data() {
     return {
-      // Current selected period for the chart
       selectedPeriod: 'daily',
-      // Current selected type (revenue, profit, or both)
       selectedType: 'revenue',
-      // Reference to the chart instance (for cleanup)
       chart: null,
-      // Sample data for different periods
       chartData: {
         daily: {
           labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -98,29 +91,20 @@ export default {
     }
   },
   mounted() {
-    // Initialize the chart when component is mounted
     this.initChart()
   },
   beforeUnmount() {
-    // Clean up the chart instance before unmounting
     if (this.chart) {
       this.chart.destroy()
     }
   },
   methods: {
-    /**
-     * Initialize the chart using Chart.js
-     */
     initChart() {
       const ctx = this.$refs.chartCanvas.getContext('2d')
       this.createChart(ctx)
     },
 
-    /**
-     * Create or update the Chart.js chart
-     */
     createChart(ctx) {
-      // Destroy existing chart if it exists
       if (this.chart) {
         this.chart.destroy()
       }
@@ -252,9 +236,6 @@ export default {
       })
     },
 
-    /**
-     * Update the chart when filters change
-     */
     updateChart() {
       if (this.chart) {
         this.createChart(this.chart.ctx)

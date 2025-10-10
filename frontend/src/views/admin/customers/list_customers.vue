@@ -1,12 +1,10 @@
 <template>
   <div class="admin-customers-container">
-    <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb">
       <span class="breadcrumb-item active">List Customers</span>
     </nav>
 
     <div class="customers-content">
-      <!-- Filters and Search -->
       <div class="filters-section">
         <div class="search-box">
           <input
@@ -120,7 +118,6 @@
         </table>
       </div>
 
-      <!-- Bulk Actions (shown when items are selected) -->
       <div v-if="selectedCustomers.length > 0" class="bulk-actions">
         <span class="selected-count">{{ selectedCustomers.length }} customer(s) selected</span>
         <div class="bulk-buttons">
@@ -131,7 +128,6 @@
         </div>
       </div>
 
-      <!-- Pagination -->
       <div v-if="totalPages > 1" class="pagination-container">
         <div class="pagination-info">
           Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} customers (Page
@@ -176,7 +172,6 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// Mock data for customers
 const mockCustomers = [
   {
     id: 1,
@@ -300,83 +295,63 @@ const mockCustomers = [
   },
 ]
 
-// State
-const customers = ref([...mockCustomers].map((customer) => ({ ...customer, selected: false })))
+const customers = ref(mockCustomers.map((c) => ({ ...c, selected: false })))
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
-
-// Filter and search state
 const searchQuery = ref('')
 const selectedStatus = ref('')
 const selectAll = ref(false)
 let searchTimeout = null
 
-// Computed properties
 const filteredCustomers = computed(() => {
   let filtered = customers.value
 
-  // Search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(
-      (customer) =>
-        customer.customer_id.toLowerCase().includes(query) ||
-        customer.name.toLowerCase().includes(query) ||
-        customer.email.toLowerCase().includes(query),
+      (c) =>
+        c.customer_id.toLowerCase().includes(query) ||
+        c.name.toLowerCase().includes(query) ||
+        c.email.toLowerCase().includes(query),
     )
   }
 
-  // Status filter
   if (selectedStatus.value) {
-    filtered = filtered.filter((customer) => customer.status === selectedStatus.value)
+    filtered = filtered.filter((c) => c.status === selectedStatus.value)
   }
 
   return filtered
 })
 
-const totalPages = computed(() => {
-  return Math.ceil(filteredCustomers.value.length / itemsPerPage.value)
-})
-
+const totalPages = computed(() => Math.ceil(filteredCustomers.value.length / itemsPerPage.value))
 const paginatedCustomers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredCustomers.value.slice(start, end)
+  return filteredCustomers.value.slice(start, start + itemsPerPage.value)
 })
 
 const totalItems = computed(() => filteredCustomers.value.length)
 const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
 const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalItems.value))
 
-const selectedCustomers = computed(() => customers.value.filter((customer) => customer.selected))
+const selectedCustomers = computed(() => customers.value.filter((c) => c.selected))
 
 const visiblePages = computed(() => {
-  const pages = []
-  const maxVisiblePages = 5
-  let startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2))
-  let endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1)
+  const maxVisible = 5
+  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
+  let end = Math.min(totalPages.value, start + maxVisible - 1)
 
-  if (endPage - startPage + 1 < maxVisiblePages) {
-    startPage = Math.max(1, endPage - maxVisiblePages + 1)
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1)
   }
 
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i)
-  }
-
-  return pages
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 })
 
-// Methods
 const changePage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-  }
+  if (page >= 1 && page <= totalPages.value) currentPage.value = page
 }
 
-const formatStatus = (status) => {
-  return status.charAt(0).toUpperCase() + status.slice(1)
-}
+const formatStatus = (status) => status.charAt(0).toUpperCase() + status.slice(1)
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -389,8 +364,7 @@ const formatDate = (dateString) => {
 }
 
 const deleteCustomer = (customer) => {
-  if (confirm(`Are you sure you want to delete customer ${customer.name}?`)) {
-    // Remove from mock data
+  if (confirm(`Delete customer ${customer.name}?`)) {
     customers.value = customers.value.filter((c) => c.id !== customer.id)
     alert('Customer deleted successfully')
   }
@@ -398,14 +372,10 @@ const deleteCustomer = (customer) => {
 
 const debouncedSearch = () => {
   clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    currentPage.value = 1 // Reset to first page when searching
-  }, 500)
+  searchTimeout = setTimeout(() => (currentPage.value = 1), 500)
 }
 
-const applyFilters = () => {
-  currentPage.value = 1 // Reset to first page when filtering
-}
+const applyFilters = () => (currentPage.value = 1)
 
 const clearFilters = () => {
   searchQuery.value = ''
@@ -414,17 +384,12 @@ const clearFilters = () => {
 }
 
 const toggleSelectAll = () => {
-  paginatedCustomers.value.forEach((customer) => {
-    customer.selected = selectAll.value
-  })
+  paginatedCustomers.value.forEach((c) => (c.selected = selectAll.value))
 }
 
 const updateSelectAllState = () => {
-  const currentPageSelected = paginatedCustomers.value.filter(
-    (customer) => customer.selected,
-  ).length
-  const currentPageTotal = paginatedCustomers.value.length
-  selectAll.value = currentPageSelected === currentPageTotal && currentPageTotal > 0
+  const selectedCount = paginatedCustomers.value.filter((c) => c.selected).length
+  selectAll.value = selectedCount === paginatedCustomers.value.length && selectedCount > 0
 }
 
 const toggleCustomerSelection = (customer) => {
@@ -433,31 +398,22 @@ const toggleCustomerSelection = (customer) => {
 }
 
 const bulkDelete = () => {
-  const selectedIds = selectedCustomers.value.map((customer) => customer.name)
-  if (confirm(`Delete ${selectedIds.length} selected customer(s)?`)) {
-    customers.value = customers.value.filter((customer) => !customer.selected)
+  const selectedNames = selectedCustomers.value.map((c) => c.name)
+  if (confirm(`Delete ${selectedNames.length} selected customer(s)?`)) {
+    customers.value = customers.value.filter((c) => !c.selected)
     selectAll.value = false
-    if (paginatedCustomers.value.length === 0 && currentPage.value > 1) {
-      currentPage.value--
-    }
+    if (paginatedCustomers.value.length === 0 && currentPage.value > 1) currentPage.value--
   }
 }
 
-// Lifecycle
-onMounted(() => {
-  // Data is already loaded with mock data
-})
+onMounted(() => {})
 
-// Watchers
 watch(
   () => customers.value.map((c) => c.selected),
   () => updateSelectAllState(),
   { deep: true },
 )
-
-watch(currentPage, () => {
-  selectAll.value = false
-})
+watch(currentPage, () => (selectAll.value = false))
 </script>
 
 <style scoped>
@@ -616,7 +572,6 @@ watch(currentPage, () => {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Table Container */
 .table-container {
   background: #ffffff;
   border-radius: 8px;
@@ -626,7 +581,6 @@ watch(currentPage, () => {
   margin-bottom: 20px;
 }
 
-/* Customers Table */
 .customers-table {
   width: 100%;
   border-collapse: collapse;
@@ -665,7 +619,6 @@ watch(currentPage, () => {
   cursor: pointer;
 }
 
-/* Checkbox Column */
 .checkbox-column {
   width: 50px;
   text-align: center;
@@ -680,20 +633,17 @@ watch(currentPage, () => {
   margin: 0 auto;
 }
 
-/* Customer ID Column */
 .customer-id {
   font-family: 'Monaco', 'Menlo', monospace;
   font-weight: 500;
   color: #2b6cb0;
 }
 
-/* Order Count Column */
 .order-count {
   font-weight: 600;
   color: #38a169;
 }
 
-/* Status Badge */
 .status-badge {
   display: inline-block;
   padding: 4px 8px;
@@ -713,7 +663,6 @@ watch(currentPage, () => {
   color: #dc2626;
 }
 
-/* Actions Column */
 .actions-column {
   width: 80px;
   text-align: center;
@@ -771,7 +720,6 @@ watch(currentPage, () => {
   transform: translateY(-1px);
 }
 
-/* Bulk Actions */
 .bulk-actions {
   display: flex;
   justify-content: space-between;
@@ -818,7 +766,6 @@ watch(currentPage, () => {
   transform: translateY(-1px);
 }
 
-/* Pagination */
 .pagination-container {
   display: flex;
   justify-content: space-between;
@@ -902,7 +849,6 @@ watch(currentPage, () => {
   border-color: #4299e1;
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .customers-table {
     font-size: 13px;

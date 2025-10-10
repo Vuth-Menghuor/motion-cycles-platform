@@ -140,18 +140,12 @@
 import { ref, onMounted, computed } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// Props
 const props = defineProps({
-  id: {
-    type: [String, Number],
-    required: true,
-  },
+  id: { type: [String, Number], required: true },
 })
 
-// Reactive data
 const order = ref(null)
 
-// Computed properties
 const totalAmount = computed(() => {
   if (!order.value) return 0
   return (
@@ -161,7 +155,6 @@ const totalAmount = computed(() => {
   )
 })
 
-// Mock data - Replace with API call in production
 const mockOrders = [
   {
     id: 1,
@@ -175,7 +168,7 @@ const mockOrders = [
     subtotal: 299.99,
     discount_amount: 0,
     shipping_amount: 10.0,
-    total_amount: 309.99, // Fixed: subtotal + shipping - discount
+    total_amount: 309.99,
     created_at: '2024-01-15T10:30:00Z',
     items: [
       {
@@ -192,30 +185,16 @@ const mockOrders = [
   },
 ]
 
-// Methods
 const loadOrder = () => {
-  // Find order by ID from mock data
   const orderId = parseInt(props.id)
   order.value = mockOrders.find((o) => o.id === orderId) || null
-
-  if (!order.value) {
-    console.error('Order not found')
-  }
 }
 
-const formatStatus = (status) => {
-  // Handle undefined/null status
-  if (!status) return 'Unknown'
-
-  // Capitalize first letter of status
-  return status.charAt(0).toUpperCase() + status.slice(1)
-}
+const formatStatus = (status) =>
+  status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'
 
 const formatDate = (dateString) => {
-  // Handle undefined/null date
   if (!dateString) return 'N/A'
-
-  // Format date for display
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -226,25 +205,15 @@ const formatDate = (dateString) => {
 }
 
 const getCategoryName = (category) => {
-  // Handle undefined/null category
   if (!category) return 'Unknown'
-
-  // Convert category codes to readable names
-  const categories = {
-    mountain: 'Mountain',
-    road: 'Road',
-  }
+  const categories = { mountain: 'Mountain', road: 'Road' }
   return categories[category] || category.charAt(0).toUpperCase() + category.slice(1)
 }
 
-// Lifecycle
-onMounted(() => {
-  loadOrder()
-})
+onMounted(() => loadOrder())
 </script>
 
 <style scoped>
-/* ===== LAYOUT & CONTAINERS ===== */
 .admin-orders-container {
   margin: 0 auto;
   font-family: 'Poppins', sans-serif;
@@ -260,13 +229,12 @@ onMounted(() => {
   background: white;
 }
 
-/* ===== NAVIGATION ===== */
 .breadcrumb {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
   padding: 12px 16px;
-  background-color: white;
+  background: white;
   border-radius: 6px;
   font-size: 13px;
   color: #666;
@@ -275,7 +243,7 @@ onMounted(() => {
 }
 
 .breadcrumb-item {
-  color: grey;
+  color: #666;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s;
@@ -288,7 +256,7 @@ onMounted(() => {
 
 .breadcrumb-item.active {
   color: #ff9934;
-  font-weight: 400;
+  font-weight: 500;
   cursor: default;
 }
 
@@ -297,7 +265,6 @@ onMounted(() => {
   color: #999;
 }
 
-/* ===== ORDER HEADER ===== */
 .order-header {
   display: flex;
   justify-content: space-between;
@@ -340,7 +307,6 @@ onMounted(() => {
   align-items: center;
 }
 
-/* ===== LOADING & ERROR STATES ===== */
 .loading-section,
 .error-section {
   display: flex;
@@ -384,7 +350,6 @@ onMounted(() => {
   color: #666;
 }
 
-/* ===== ORDER DETAILS CONTAINER ===== */
 .order-details {
   overflow-y: scroll;
   height: calc(100vh - 200px);
@@ -411,7 +376,6 @@ onMounted(() => {
   padding: 32px;
 }
 
-/* ===== CUSTOMER INFORMATION ===== */
 .info-list {
   display: flex;
   flex-direction: column;
@@ -445,14 +409,11 @@ onMounted(() => {
   margin-left: 16px;
 }
 
-/* ===== ORDER ITEMS ===== */
-/* Container for all item cards */
 .items-grid {
   display: grid;
   gap: 16px;
 }
 
-/* Individual item card with image and details */
 .item-card {
   display: flex;
   gap: 16px;
@@ -463,7 +424,6 @@ onMounted(() => {
   align-items: center;
 }
 
-/* Product image */
 .item-image {
   width: 80px;
   height: 80px;
@@ -472,7 +432,6 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-/* Details section containing name, category, and meta info */
 .item-details {
   flex: 1;
   display: flex;
@@ -480,40 +439,34 @@ onMounted(() => {
   gap: 4px;
 }
 
-/* Product name */
 .item-name {
   font-weight: 600;
   color: #1e293b;
   font-size: 16px;
 }
 
-/* Product category */
 .item-category {
   color: #64748b;
   font-size: 13px;
 }
 
-/* Meta information row (quantity, price, total) */
 .item-meta {
   display: flex;
   gap: 16px;
   margin-top: 8px;
 }
 
-/* Individual meta items */
 .meta-item {
   font-size: 14px;
   color: #475569;
   font-weight: 500;
 }
 
-/* Total amount styling */
 .meta-item.total {
   color: #10b981;
   font-weight: 600;
 }
 
-/* ===== ORDER SUMMARY ===== */
 .summary-card {
   margin: 0 auto;
 }
@@ -549,7 +502,6 @@ onMounted(() => {
   color: #10b981;
 }
 
-/* ===== STATUS COLORS ===== */
 .status-pending {
   background: rgba(255, 193, 7, 0.2);
   color: #d97706;
@@ -575,7 +527,6 @@ onMounted(() => {
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-/* ===== BUTTONS ===== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -611,7 +562,6 @@ onMounted(() => {
   transform: none;
 }
 
-/* ===== ANIMATIONS ===== */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -621,7 +571,6 @@ onMounted(() => {
   }
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .admin-orders-container {
     padding: 10px;
@@ -656,7 +605,6 @@ onMounted(() => {
     margin-left: 0;
   }
 
-  /* Item card responsive: stack vertically on tablets */
   .item-card {
     flex-direction: column;
     text-align: center;
@@ -707,7 +655,6 @@ onMounted(() => {
     margin-left: 0;
   }
 
-  /* Item card responsive: smaller sizes on mobile */
   .item-card {
     flex-direction: column;
     text-align: center;

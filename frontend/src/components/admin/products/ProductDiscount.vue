@@ -13,7 +13,6 @@
       />
     </div>
 
-    <!-- Discount Type and Value -->
     <div v-if="localProduct.discountCode" class="discount-details">
       <div class="form-group">
         <label>Discount Type</label>
@@ -44,7 +43,6 @@
       </div>
     </div>
 
-    <!-- Validity Period (only shown when discount code is entered) -->
     <div v-if="localProduct.discountCode" class="validity-section">
       <h3 class="validity-title">Discount Validity Period</h3>
 
@@ -98,7 +96,6 @@ const localProduct = computed({
   set: (value) => emit('update:product', value),
 })
 
-// Computed property for today's date in YYYY-MM-DD format
 const today = computed(() => {
   const date = new Date()
   return date.toISOString().split('T')[0]
@@ -182,7 +179,6 @@ select:disabled {
   color: #22543d !important;
 }
 
-/* Validity Period Section */
 .validity-section {
   background: #f8fafc;
   border: 1px solid #e2e8f0;

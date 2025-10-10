@@ -1,5 +1,4 @@
 <template>
-  <!-- Category Distribution Donut Chart -->
   <div class="category-chart">
     <div class="chart-header">
       <h3>Product Category Distribution</h3>
@@ -68,9 +67,6 @@ export default {
           },
           plugins: {
             legend: { display: false },
-            // tooltip: {
-            //   enabled: false,
-            // },
           },
           animation: {
             animateScale: false,

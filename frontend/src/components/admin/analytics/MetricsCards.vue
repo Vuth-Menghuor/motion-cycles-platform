@@ -100,10 +100,6 @@ const formatNumber = (num) => {
   transition: box-shadow 0.2s ease;
 }
 
-.metric-card:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
 .card-content {
   padding: 24px;
   display: flex;

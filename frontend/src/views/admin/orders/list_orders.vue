@@ -1,12 +1,10 @@
 <template>
   <div class="admin-orders-container">
-    <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb">
       <span class="breadcrumb-item active">List Orders</span>
     </nav>
 
     <div class="orders-content">
-      <!-- Filters and Search -->
       <div class="filters-section">
         <div class="search-box">
           <input
@@ -157,7 +155,6 @@
         </table>
       </div>
 
-      <!-- Bulk Actions (shown when items are selected) -->
       <div v-if="selectedOrders.length > 0" class="bulk-actions">
         <span class="selected-count">{{ selectedOrders.length }} order(s) selected</span>
         <div class="bulk-buttons">
@@ -168,7 +165,6 @@
         </div>
       </div>
 
-      <!-- Pagination -->
       <div v-if="totalPages > 1" class="pagination-container">
         <div class="pagination-info">
           Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} orders (Page
@@ -213,258 +209,69 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// Mock data for orders
-const mockOrders = [
-  {
-    id: 1,
-    order_number: 'ORD-001',
-    customer_name: 'John Doe',
-    payment_method: 'bakong',
-    total_amount: 299.99,
-    created_at: '2024-01-15T10:30:00Z',
-    order_status: 'completed',
-    items: [
-      {
-        id: 1,
-        name: 'Mountain Bike Pro',
-        category: 'mountain',
-        quantity: 1,
-        price: 299.99,
-      },
-    ],
-  },
-  {
-    id: 2,
-    order_number: 'ORD-002',
-    customer_name: 'Jane Smith',
-    payment_method: 'bakong',
-    total_amount: 399.99,
-    created_at: '2024-01-14T14:20:00Z',
-    order_status: 'processing',
-    items: [
-      {
-        id: 2,
-        name: 'Road Bike Elite',
-        category: 'road',
-        quantity: 1,
-        price: 399.99,
-      },
-    ],
-  },
-  {
-    id: 3,
-    order_number: 'ORD-003',
-    customer_name: 'Bob Johnson',
-    payment_method: 'bakong',
-    total_amount: 299.99,
-    created_at: '2024-01-13T09:15:00Z',
-    order_status: 'pending',
-    items: [
-      {
-        id: 4,
-        name: 'Mountain Bike Pro',
-        category: 'mountain',
-        quantity: 1,
-        price: 299.99,
-      },
-    ],
-  },
-  {
-    id: 4,
-    order_number: 'ORD-004',
-    customer_name: 'Alice Brown',
-    payment_method: 'bakong',
-    total_amount: 699.98,
-    created_at: '2024-01-12T16:45:00Z',
-    order_status: 'confirmed',
-    items: [
-      {
-        id: 5,
-        name: 'Mountain Bike Pro',
-        category: 'mountain',
-        quantity: 1,
-        price: 299.99,
-      },
-      {
-        id: 6,
-        name: 'Road Bike Elite',
-        category: 'road',
-        quantity: 1,
-        price: 399.99,
-      },
-    ],
-  },
-  {
-    id: 5,
-    order_number: 'ORD-005',
-    customer_name: 'Charlie Wilson',
-    payment_method: 'bakong',
-    total_amount: 299.99,
-    created_at: '2024-01-11T11:30:00Z',
-    order_status: 'cancelled',
-    items: [
-      {
-        id: 8,
-        name: 'Mountain Bike Pro',
-        category: 'mountain',
-        quantity: 1,
-        price: 299.99,
-      },
-    ],
-  },
-  {
-    id: 6,
-    order_number: 'ORD-006',
-    customer_name: 'Diana Prince',
-    payment_method: 'bakong',
-    total_amount: 399.99,
-    created_at: '2024-01-10T14:15:00Z',
-    order_status: 'completed',
-    items: [
-      {
-        id: 9,
-        name: 'Road Bike Elite',
-        category: 'road',
-        quantity: 1,
-        price: 399.99,
-      },
-    ],
-  },
-  {
-    id: 7,
-    order_number: 'ORD-007',
-    customer_name: 'Edward Norton',
-    payment_method: 'bakong',
-    total_amount: 299.99,
-    created_at: '2024-01-09T09:45:00Z',
-    order_status: 'processing',
-    items: [
-      {
-        id: 11,
-        name: 'Mountain Bike Pro',
-        category: 'mountain',
-        quantity: 1,
-        price: 299.99,
-      },
-    ],
-  },
-  {
-    id: 8,
-    order_number: 'ORD-008',
-    customer_name: 'Fiona Green',
-    payment_method: 'bakong',
-    total_amount: 399.99,
-    created_at: '2024-01-08T16:20:00Z',
-    order_status: 'pending',
-    items: [
-      {
-        id: 13,
-        name: 'Road Bike Elite',
-        category: 'road',
-        quantity: 1,
-        price: 399.99,
-      },
-    ],
-  },
-  {
-    id: 9,
-    order_number: 'ORD-009',
-    customer_name: 'George Lucas',
-    payment_method: 'bakong',
-    total_amount: 299.99,
-    created_at: '2024-01-07T11:10:00Z',
-    order_status: 'completed',
-    items: [
-      {
-        id: 14,
-        name: 'Mountain Bike Pro',
-        category: 'mountain',
-        quantity: 1,
-        price: 299.99,
-      },
-    ],
-  },
-  {
-    id: 10,
-    order_number: 'ORD-010',
-    customer_name: 'Helen Troy',
-    payment_method: 'bakong',
-    total_amount: 699.98,
-    created_at: '2024-01-06T13:30:00Z',
-    order_status: 'confirmed',
-    items: [
-      {
-        id: 15,
-        name: 'Mountain Bike Pro',
-        category: 'mountain',
-        quantity: 1,
-        price: 299.99,
-      },
-      {
-        id: 17,
-        name: 'Road Bike Elite',
-        category: 'road',
-        quantity: 1,
-        price: 399.99,
-      },
-    ],
-  },
-  {
-    id: 11,
-    order_number: 'ORD-011',
-    customer_name: 'Ian Malcolm',
-    payment_method: 'bakong',
-    total_amount: 399.99,
-    created_at: '2024-01-05T10:00:00Z',
-    order_status: 'processing',
-    items: [
-      {
-        id: 18,
-        name: 'Road Bike Elite',
-        category: 'road',
-        quantity: 1,
-        price: 399.99,
-      },
-    ],
-  },
-  {
-    id: 12,
-    order_number: 'ORD-012',
-    customer_name: 'Julia Roberts',
-    payment_method: 'bakong',
-    total_amount: 299.99,
-    created_at: '2024-01-04T15:45:00Z',
-    order_status: 'completed',
-    items: [
-      {
-        id: 20,
-        name: 'Mountain Bike Pro',
-        category: 'mountain',
-        quantity: 1,
-        price: 499.99,
-      },
-    ],
-  },
-]
-
-// State
-const orders = ref([...mockOrders].map((order) => ({ ...order, selected: false })))
+const ITEMS_PER_PAGE = 10
 const currentPage = ref(1)
-const itemsPerPage = ref(10)
+const selectAll = ref(false)
+let searchTimeout = null
 
-// Filter and search state
 const searchQuery = ref('')
 const selectedStatus = ref('')
 const selectedPaymentMethod = ref('')
 const selectedCategory = ref('')
-const selectAll = ref(false)
-let searchTimeout = null
 
-// Computed properties
+const sampleData = {
+  customers: [
+    'John Doe',
+    'Jane Smith',
+    'Bob Johnson',
+    'Alice Brown',
+    'Charlie Wilson',
+    'Diana Prince',
+    'Edward Norton',
+    'Fiona Green',
+    'George Lucas',
+    'Helen Troy',
+    'Ian Malcolm',
+    'Julia Roberts',
+  ],
+  products: ['Mountain Bike Pro', 'Road Bike Elite'],
+  categories: ['mountain', 'road'],
+  statuses: ['completed', 'processing', 'pending', 'confirmed', 'cancelled'],
+}
+
+const generateId = (prefix, num) => `${prefix}-${String(num).padStart(3, '0')}`
+const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)]
+const randomDate = () => {
+  const date = new Date()
+  date.setDate(date.getDate() - Math.floor(Math.random() * 30))
+  return date.toISOString()
+}
+
+const mockOrders = Array.from({ length: 12 }, (_, i) => ({
+  id: i + 1,
+  order_number: generateId('ORD', i + 1),
+  customer_name: randomItem(sampleData.customers),
+  payment_method: 'bakong',
+  total_amount: randomItem([299.99, 399.99, 699.98]),
+  created_at: randomDate(),
+  order_status: randomItem(sampleData.statuses),
+  items: [
+    {
+      id: i + 1,
+      name: randomItem(sampleData.products),
+      category: randomItem(sampleData.categories),
+      quantity: 1,
+      price: randomItem([299.99, 399.99]),
+    },
+  ],
+  selected: false,
+}))
+
+const orders = ref(mockOrders)
+
 const filteredOrders = computed(() => {
   let filtered = orders.value
 
-  // Search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(
@@ -475,17 +282,14 @@ const filteredOrders = computed(() => {
     )
   }
 
-  // Status filter
   if (selectedStatus.value) {
     filtered = filtered.filter((order) => order.order_status === selectedStatus.value)
   }
 
-  // Payment method filter
   if (selectedPaymentMethod.value) {
     filtered = filtered.filter((order) => order.payment_method === selectedPaymentMethod.value)
   }
 
-  // Category filter
   if (selectedCategory.value) {
     filtered = filtered.filter((order) =>
       order.items.some((item) => item.category === selectedCategory.value),
@@ -495,49 +299,35 @@ const filteredOrders = computed(() => {
   return filtered
 })
 
-const totalPages = computed(() => {
-  return Math.ceil(filteredOrders.value.length / itemsPerPage.value)
-})
-
+const totalPages = computed(() => Math.ceil(filteredOrders.value.length / ITEMS_PER_PAGE))
 const paginatedOrders = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredOrders.value.slice(start, end)
+  const start = (currentPage.value - 1) * ITEMS_PER_PAGE
+  return filteredOrders.value.slice(start, start + ITEMS_PER_PAGE)
 })
 
 const totalItems = computed(() => filteredOrders.value.length)
-const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
-const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalItems.value))
+const startItem = computed(() => (currentPage.value - 1) * ITEMS_PER_PAGE + 1)
+const endItem = computed(() => Math.min(currentPage.value * ITEMS_PER_PAGE, totalItems.value))
 
 const selectedOrders = computed(() => orders.value.filter((order) => order.selected))
 
 const visiblePages = computed(() => {
-  const pages = []
-  const maxVisiblePages = 5
-  let startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2))
-  let endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1)
+  const maxVisible = 5
+  let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
+  let end = Math.min(totalPages.value, start + maxVisible - 1)
 
-  if (endPage - startPage + 1 < maxVisiblePages) {
-    startPage = Math.max(1, endPage - maxVisiblePages + 1)
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1)
   }
 
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i)
-  }
-
-  return pages
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 })
 
-// Methods
 const changePage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page
-  }
+  if (page >= 1 && page <= totalPages.value) currentPage.value = page
 }
 
-const formatStatus = (status) => {
-  return status.charAt(0).toUpperCase() + status.slice(1)
-}
+const formatStatus = (status) => status.charAt(0).toUpperCase() + status.slice(1)
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -550,23 +340,17 @@ const formatDate = (dateString) => {
 }
 
 const formatPaymentMethod = (method) => {
-  const methods = {
-    bakong: 'Bakong',
-  }
+  const methods = { bakong: 'Bakong' }
   return methods[method] || method.charAt(0).toUpperCase() + method.slice(1)
 }
 
 const getCategoryName = (category) => {
-  const categories = {
-    mountain: 'Mountain',
-    road: 'Road',
-  }
+  const categories = { mountain: 'Mountain', road: 'Road' }
   return categories[category] || category.charAt(0).toUpperCase() + category.slice(1)
 }
 
 const deleteOrder = (order) => {
-  if (confirm(`Are you sure you want to delete order ${order.order_number}?`)) {
-    // Remove from mock data
+  if (confirm(`Delete order ${order.order_number}?`)) {
     orders.value = orders.value.filter((o) => o.id !== order.id)
     alert('Order deleted successfully')
   }
@@ -574,14 +358,10 @@ const deleteOrder = (order) => {
 
 const debouncedSearch = () => {
   clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    currentPage.value = 1 // Reset to first page when searching
-  }, 500)
+  searchTimeout = setTimeout(() => (currentPage.value = 1), 500)
 }
 
-const applyFilters = () => {
-  currentPage.value = 1 // Reset to first page when filtering
-}
+const applyFilters = () => (currentPage.value = 1)
 
 const clearFilters = () => {
   searchQuery.value = ''
@@ -592,15 +372,12 @@ const clearFilters = () => {
 }
 
 const toggleSelectAll = () => {
-  paginatedOrders.value.forEach((order) => {
-    order.selected = selectAll.value
-  })
+  paginatedOrders.value.forEach((order) => (order.selected = selectAll.value))
 }
 
 const updateSelectAllState = () => {
-  const currentPageSelected = paginatedOrders.value.filter((order) => order.selected).length
-  const currentPageTotal = paginatedOrders.value.length
-  selectAll.value = currentPageSelected === currentPageTotal && currentPageTotal > 0
+  const selectedCount = paginatedOrders.value.filter((order) => order.selected).length
+  selectAll.value = selectedCount === paginatedOrders.value.length && selectedCount > 0
 }
 
 const toggleOrderSelection = (order) => {
@@ -613,27 +390,18 @@ const bulkDelete = () => {
   if (confirm(`Delete ${selectedIds.length} selected order(s)?`)) {
     orders.value = orders.value.filter((order) => !order.selected)
     selectAll.value = false
-    if (paginatedOrders.value.length === 0 && currentPage.value > 1) {
-      currentPage.value--
-    }
+    if (paginatedOrders.value.length === 0 && currentPage.value > 1) currentPage.value--
   }
 }
 
-// Lifecycle
-onMounted(() => {
-  // Data is already loaded with mock data
-})
+onMounted(() => {})
 
-// Watchers
 watch(
   () => orders.value.map((o) => o.selected),
   () => updateSelectAllState(),
   { deep: true },
 )
-
-watch(currentPage, () => {
-  selectAll.value = false
-})
+watch(currentPage, () => (selectAll.value = false))
 </script>
 
 <style scoped>
@@ -803,7 +571,6 @@ watch(currentPage, () => {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Table Container */
 .table-container {
   background: #ffffff;
   border-radius: 8px;
@@ -813,7 +580,6 @@ watch(currentPage, () => {
   margin-bottom: 20px;
 }
 
-/* Orders Table */
 .orders-table {
   width: 100%;
   border-collapse: collapse;
@@ -852,7 +618,6 @@ watch(currentPage, () => {
   cursor: pointer;
 }
 
-/* Checkbox Column */
 .checkbox-column {
   width: 50px;
   text-align: center;
@@ -867,14 +632,12 @@ watch(currentPage, () => {
   margin: 0 auto;
 }
 
-/* Order ID Column */
 .order-id {
   font-family: 'Monaco', 'Menlo', monospace;
   font-weight: 500;
   color: #2b6cb0;
 }
 
-/* Product Name Column */
 .product-name {
   font-weight: 500;
   max-width: 200px;
@@ -883,13 +646,11 @@ watch(currentPage, () => {
   white-space: nowrap;
 }
 
-/* Price Column */
 .price {
   font-weight: 600;
   color: #38a169;
 }
 
-/* Status Badge */
 .status-badge {
   display: inline-block;
   padding: 4px 8px;
@@ -921,7 +682,6 @@ watch(currentPage, () => {
   color: #dc2626;
 }
 
-/* Actions Column */
 .actions-column {
   width: 80px;
   text-align: center;
@@ -979,7 +739,6 @@ watch(currentPage, () => {
   transform: translateY(-1px);
 }
 
-/* Bulk Actions */
 .bulk-actions {
   display: flex;
   justify-content: space-between;
@@ -1026,7 +785,6 @@ watch(currentPage, () => {
   transform: translateY(-1px);
 }
 
-/* Pagination */
 .pagination-container {
   display: flex;
   justify-content: space-between;
@@ -1110,7 +868,6 @@ watch(currentPage, () => {
   border-color: #4299e1;
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .orders-table {
     font-size: 13px;

@@ -1,6 +1,6 @@
 <script setup>
 import { Icon } from '@iconify/vue'
-import { ref, onMounted, onUnmounted, computed, reactive } from 'vue' // Import reactive
+import { ref, onMounted, onUnmounted, computed, reactive } from 'vue'
 import bike_filter from './bike_filter.vue'
 import bike1 from '@/assets/images/product_card/mount_1.png'
 import bike2 from '@/assets/images/product_card/mount_2/mount_2.png'
@@ -12,27 +12,17 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useFavoritesStore } from '@/stores/favorites'
 
-// router instance
 const router = useRouter()
+const cartStore = useCartStore()
+const favoritesStore = useFavoritesStore()
 
 const props = defineProps({
-  brand: {
-    type: String,
-    required: false,
-    default: '',
-  },
+  brand: { type: String, default: '' },
 })
-
-const cartStore = useCartStore() // Use the store
-
-// Emit event for parent to listen to
-const emit = defineEmits(['add-to-cart'])
 
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
 
-function formatNumber(number) {
-  return number.toLocaleString()
-}
+const formatNumber = (number) => number.toLocaleString()
 
 const bikes = ref([
   {
@@ -46,10 +36,7 @@ const bikes = ref([
       icon: 'mdi:hot',
       gradient: 'linear-gradient(135deg, rgb(255, 107, 107), rgb(255, 82, 82))',
     },
-    discount: {
-      type: 'percent',
-      value: 10,
-    },
+    discount: { type: 'percent', value: 10 },
     rating: 4.8,
     reviewCount: 3221,
     specs: [
@@ -70,15 +57,12 @@ const bikes = ref([
       icon: 'material-symbols-light:new-releases',
       gradient: 'linear-gradient(135deg, #3491FA, #3491FA)',
     },
-    discount: {
-      type: 'fixed',
-      value: 1.5,
-    },
+    discount: { type: 'fixed', value: 1.5 },
     rating: 2.4,
     reviewCount: 3221,
     specs: [
       {
-        text: 'The Trek Slash 9.8 XT is a high-performance enduro mountain bike designed for aggressive trail riding and technical descents. It features a lightweight OCLV Mountain Carbon frame with 170mm of front and rear travel, utilizing a high-pivot suspension system with an idler pulley to enhance rear-wheel traction and control over rough terrain .',
+        text: 'The Trek Slash 9.8 XT is a high-performance enduro mountain bike designed for aggressive trail riding and technical descents. It features a lightweight OCLV Mountain Carbon frame with 170mm of front and rear travel, utilizing a high-pivot suspension system with an idler pulley to enhance rear-wheel traction and control over rough terrain.',
       },
     ],
     image: bike2,
@@ -107,10 +91,7 @@ const bikes = ref([
     price: 5.99,
     color: 'Black',
     badge: {},
-    discount: {
-      type: 'percent',
-      value: 15,
-    },
+    discount: { type: 'percent', value: 15 },
     rating: 4.8,
     reviewCount: 1120,
     specs: [
@@ -127,10 +108,7 @@ const bikes = ref([
     price: 6.79,
     color: 'Blue',
     badge: {},
-    discount: {
-      type: 'fixed',
-      value: 0.8,
-    },
+    discount: { type: 'fixed', value: 0.8 },
     rating: 4.7,
     reviewCount: 890,
     specs: [
@@ -165,7 +143,6 @@ const bikes = ref([
 
 const showToast = ref(false)
 const toastMessage = ref('')
-// Use a reactive object to store item quantities by ID
 const itemQuantities = reactive({})
 
 const showToastMessage = (message) => {
@@ -177,18 +154,13 @@ const showToastMessage = (message) => {
   }, 2000)
 }
 
-// Function to handle the "Add to Cart" click
 const handleAddToCart = (bikeId) => {
   const bike = bikes.value.find((b) => b.id === bikeId)
   if (bike) {
-    // Increment the quantity for this specific item (local state)
     itemQuantities[bikeId] = (itemQuantities[bikeId] || 0) + 1
     const quantityString = 'x' + itemQuantities[bikeId].toString().padStart(2, '0')
     const message = `${bike.title} added to cart! ${quantityString} 🛒`
     showToastMessage(message)
-
-    // Call the action from the Pinia store to update the global count
-    // cartStore.incrementCount()
     cartStore.addItem(bike)
   }
 }
@@ -199,53 +171,40 @@ const selectedBrands = ref([])
 const selectedDiscountStatuses = ref([])
 const showFilters = ref(false)
 const bike_filters = ref(null)
-const hasDiscount = (bike) => {
-  return bike.discount && (bike.discount.type === 'percent' || bike.discount.type === 'fixed')
-}
+
+const hasDiscount = (bike) =>
+  bike.discount && (bike.discount.type === 'percent' || bike.discount.type === 'fixed')
+
 const filteredBikes = computed(() => {
   return bikes.value.filter((bike) => {
-    if (props.brand && bike.subtitle.toLowerCase() !== props.brand.toLowerCase()) {
-      return false
-    }
+    if (props.brand && bike.subtitle.toLowerCase() !== props.brand.toLowerCase()) return false
+
     const discountedPrice = getDiscountedPrice(bike)
     if (selectedPriceRange.value && bike_filters.value) {
       const range = bike_filters.value.priceRanges.find((r) => r.label === selectedPriceRange.value)
-      if (range && (discountedPrice < range.min || discountedPrice > range.max)) {
-        return false
-      }
+      if (range && (discountedPrice < range.min || discountedPrice > range.max)) return false
     }
+
     if (selectedDiscountStatuses.value.length > 0) {
       const bikeHasDiscount = hasDiscount(bike)
       const shouldShowDiscounted = selectedDiscountStatuses.value.includes('discounted')
       const shouldShowRegular = selectedDiscountStatuses.value.includes('regular')
-      if (bikeHasDiscount && !shouldShowDiscounted) {
-        return false
-      }
-      if (!bikeHasDiscount && !shouldShowRegular) {
-        return false
-      }
+      if (bikeHasDiscount && !shouldShowDiscounted) return false
+      if (!bikeHasDiscount && !shouldShowRegular) return false
     }
-    if (selectedColors.value.length > 0 && !selectedColors.value.includes(bike.color)) {
+
+    if (selectedColors.value.length > 0 && !selectedColors.value.includes(bike.color)) return false
+    if (selectedBrands.value.length > 0 && !selectedBrands.value.includes(bike.subtitle))
       return false
-    }
-    if (selectedBrands.value.length > 0 && !selectedBrands.value.includes(bike.subtitle)) {
-      return false
-    }
+
     return true
   })
 })
-const favorites = ref(new Set())
+
 const visibleBikes = ref(new Set())
 
-const favoritesStore = useFavoritesStore()
-
-const toggleFavorite = (bike) => {
-  favoritesStore.toggleFavorite(bike)
-}
-
-const isFavorited = (bikeId) => {
-  return favoritesStore.isFavorited(bikeId)
-}
+const toggleFavorite = (bike) => favoritesStore.toggleFavorite(bike)
+const isFavorited = (bikeId) => favoritesStore.isFavorited(bikeId)
 
 const getDiscountLabel = (bike) => {
   if (!bike.discount) return null
@@ -253,45 +212,40 @@ const getDiscountLabel = (bike) => {
     ? `${bike.discount.value}% OFF`
     : `-${bike.discount.value.toLocaleString()} OFF`
 }
+
 const getDiscountedPrice = (bike) => {
   if (!bike.discount) return bike.price
-  if (bike.discount.type === 'percent') {
-    return bike.price - (bike.price * bike.discount.value) / 100
-  } else {
-    return bike.price - bike.discount.value
-  }
+  return bike.discount.type === 'percent'
+    ? bike.price - (bike.price * bike.discount.value) / 100
+    : bike.price - bike.discount.value
 }
-const viewBikeDetails = (bikeId) => {
-  router.push(`/bike/${bikeId}`).then(() => window.scrollTo(0, 0))
-}
+
+const viewBikeDetails = (bikeId) => router.push(`/bike/${bikeId}`).then(() => window.scrollTo(0, 0))
+
 const handleClearFilters = () => {
   selectedPriceRange.value = ''
   selectedColors.value = []
   selectedBrands.value = []
   selectedDiscountStatuses.value = []
 }
+
 let observer
+
 onMounted(() => {
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         const id = Number(entry.target.dataset.id)
-        if (entry.isIntersecting) {
-          visibleBikes.value.add(id)
-        } else {
-          visibleBikes.value.delete(id)
-        }
+        entry.isIntersecting ? visibleBikes.value.add(id) : visibleBikes.value.delete(id)
         visibleBikes.value = new Set(visibleBikes.value)
       })
     },
     { threshold: 0.5 },
   )
-  const cards = document.querySelectorAll('.product-card')
-  cards.forEach((card) => observer.observe(card))
+  document.querySelectorAll('.product-card').forEach((card) => observer.observe(card))
 })
-onUnmounted(() => {
-  if (observer) observer.disconnect()
-})
+
+onUnmounted(() => observer?.disconnect())
 </script>
 
 <template>
@@ -319,7 +273,9 @@ onUnmounted(() => {
       <div class="products-section">
         <div class="products-header">
           <h2>
-            {{ props.brand ? props.brand + ' Bikes' : 'All Bikes' }} ({{ filteredBikes.length }}
+            {{ props.brand ? props.brand + ' Bikes' : 'All Bikes' }} ({{
+              filteredBikes.length
+            }}
             results)
           </h2>
         </div>
@@ -348,7 +304,7 @@ onUnmounted(() => {
             </div>
 
             <div class="product-image-container">
-              <div v-if="bike.discount" class="promotion-price">
+              <div class="promotion-price" v-if="bike.discount">
                 <span>{{ getDiscountLabel(bike) }}</span>
               </div>
               <img :src="bike.image" alt="bikes-image-transparent" class="product-image" />
@@ -358,13 +314,13 @@ onUnmounted(() => {
               <label class="product-price discounted"
                 >${{ formatNumber(getDiscountedPrice(bike)) }}</label
               >
-              <span v-if="bike.discount" class="original-price"
+              <span class="original-price" v-if="bike.discount"
                 >${{ formatNumber(bike.price) }}</span
               >
             </div>
 
             <div class="product-info">
-              <label class="product-title">{{ bike.title }}<br /></label>
+              <label class="product-title">{{ bike.title }}</label>
               <div class="subtitle-color">
                 <span class="product-subtitle">{{ bike.subtitle }}</span>
                 <span class="separator">|</span>
@@ -383,9 +339,9 @@ onUnmounted(() => {
                   <Icon icon="line-md:star-filled" />
                 </span>
               </div>
-              <span class="rating-text">
-                ({{ bike.rating }}) {{ formatNumber(bike.reviewCount) }}
-              </span>
+              <span class="rating-text"
+                >({{ bike.rating }}) {{ formatNumber(bike.reviewCount) }}</span
+              >
             </div>
 
             <div class="product-specs">
@@ -408,7 +364,7 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div v-if="filteredBikes.length === 0" class="no-results">
+        <div class="no-results" v-if="filteredBikes.length === 0">
           <Icon icon="mdi:magnify-close" class="no-results-icon" />
           <h3>No bikes found</h3>
           <p>Try adjusting your filters to see more results.</p>
@@ -418,7 +374,7 @@ onUnmounted(() => {
     </div>
 
     <Transition name="fade">
-      <div v-if="showToast" class="toast-popup">
+      <div class="toast-popup" v-if="showToast">
         <p>{{ toastMessage }}</p>
       </div>
     </Transition>
@@ -622,6 +578,7 @@ onUnmounted(() => {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+  line-clamp: 3;
   overflow: hidden;
   font-size: 12px;
   color: grey;

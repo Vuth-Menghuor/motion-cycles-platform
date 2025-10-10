@@ -1,6 +1,5 @@
 <template>
   <div class="product-page">
-    <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb">
       <span class="breadcrumb-item active">Product List</span>
       <span class="breadcrumb-separator">></span>
@@ -9,7 +8,6 @@
       <router-link to="/admin/products/edit/1" class="breadcrumb-item">Edit Product</router-link>
     </nav>
 
-    <!-- Products Table -->
     <div class="table-container">
       <table class="products-table">
         <thead>
@@ -89,7 +87,6 @@
       </table>
     </div>
 
-    <!-- Bulk Actions (shown when items are selected) -->
     <div v-if="selectedProducts.length > 0" class="bulk-actions">
       <span class="selected-count">{{ selectedProducts.length }} product(s) selected</span>
       <div class="bulk-buttons">
@@ -100,7 +97,6 @@
       </div>
     </div>
 
-    <!-- Pagination -->
     <div class="pagination-container">
       <div class="pagination-info">
         Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} products (Page
@@ -141,7 +137,6 @@ import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
 
-// Constants
 const ITEMS_PER_PAGE = 50
 
 // Reactive state
@@ -149,7 +144,7 @@ const selectAll = ref(false)
 const currentPage = ref(1)
 const router = useRouter()
 
-// Sample data generation
+// Generate sample products for demo
 const generateSampleProducts = () => {
   const brands = [
     'Cannondale',
@@ -196,10 +191,9 @@ const generateSampleProducts = () => {
   return products
 }
 
-// Data
 const products = ref(generateSampleProducts())
 
-// Computed properties
+// Pagination computed properties
 const totalItems = computed(() => products.value.length)
 const totalPages = computed(() => Math.ceil(totalItems.value / ITEMS_PER_PAGE))
 const startItem = computed(() => (currentPage.value - 1) * ITEMS_PER_PAGE + 1)
@@ -230,7 +224,7 @@ const visiblePages = computed(() => {
   return pages
 })
 
-// Methods
+// Selection methods
 const toggleSelectAll = () => {
   paginatedProducts.value.forEach((product) => {
     product.selected = selectAll.value
@@ -248,6 +242,7 @@ const toggleProductSelection = (product) => {
   updateSelectAllState()
 }
 
+// Pagination methods
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
@@ -255,9 +250,9 @@ const goToPage = (page) => {
   }
 }
 
+// Product actions
 const editProduct = (productId) => {
   console.log('Edit product:', productId)
-  // Navigate to edit page with product ID
   router.push(`/admin/products/edit/${productId}`)
 }
 
@@ -297,27 +292,25 @@ watch(currentPage, () => {
 </script>
 
 <style scoped>
-/* Page Layout */
 .product-page {
   min-height: auto;
 }
 
-/* Breadcrumb Navigation */
 .breadcrumb {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
   padding: 12px 16px;
-  border-radius: 5px;
+  background: white;
+  border-radius: 6px;
   font-size: 13px;
   color: #666;
-  background-color: white;
   border: 1px solid #e9ecef;
   font-family: 'Poppins', sans-serif;
 }
 
 .breadcrumb-item {
-  color: grey;
+  color: #666;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s;
@@ -330,7 +323,7 @@ watch(currentPage, () => {
 
 .breadcrumb-item.active {
   color: #ff9934;
-  font-weight: 400;
+  font-weight: 500;
   cursor: default;
 }
 
@@ -339,7 +332,6 @@ watch(currentPage, () => {
   color: #999;
 }
 
-/* Table Container */
 .table-container {
   background: #ffffff;
   border-radius: 8px;
@@ -349,7 +341,6 @@ watch(currentPage, () => {
   margin-bottom: 20px;
 }
 
-/* Products Table */
 .products-table {
   width: 100%;
   border-collapse: collapse;
@@ -388,7 +379,6 @@ watch(currentPage, () => {
   cursor: pointer;
 }
 
-/* Checkbox Column */
 .checkbox-column {
   width: 50px;
   text-align: center;
@@ -403,14 +393,12 @@ watch(currentPage, () => {
   margin: 0 auto;
 }
 
-/* Product ID Column */
 .product-id {
   font-family: 'Monaco', 'Menlo', monospace;
   font-weight: 500;
   color: #2b6cb0;
 }
 
-/* Product Name Column */
 .product-name {
   font-weight: 500;
   max-width: 200px;
@@ -419,13 +407,11 @@ watch(currentPage, () => {
   white-space: nowrap;
 }
 
-/* Price Column */
 .price {
   font-weight: 600;
   color: #38a169;
 }
 
-/* Quality Badge */
 .quality-badge {
   display: inline-block;
   padding: 4px 8px;
@@ -445,7 +431,6 @@ watch(currentPage, () => {
   color: #742a2a;
 }
 
-/* Actions Column */
 .actions-column {
   width: 80px;
   text-align: center;
@@ -457,13 +442,6 @@ watch(currentPage, () => {
   justify-content: center;
   margin: 0 auto;
   align-items: center;
-}
-
-.action-separator {
-  color: #cbd5e0;
-  font-weight: bold;
-  font-size: 14px;
-  margin: 0 4px;
 }
 
 .btn-action {
@@ -500,7 +478,6 @@ watch(currentPage, () => {
   transform: translateY(-1px);
 }
 
-/* Bulk Actions */
 .bulk-actions {
   display: flex;
   justify-content: space-between;
@@ -547,7 +524,6 @@ watch(currentPage, () => {
   transform: translateY(-1px);
 }
 
-/* Pagination */
 .pagination-container {
   display: flex;
   justify-content: space-between;
@@ -631,7 +607,6 @@ watch(currentPage, () => {
   border-color: #4299e1;
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .products-table {
     font-size: 13px;

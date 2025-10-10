@@ -47,27 +47,19 @@
   </header>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// --- Images ---
 import banner1 from '@/assets/images/landing/banner_1.png'
 import banner2 from '@/assets/images/landing/banner_2.png'
 import banner3 from '@/assets/images/landing/banner_3.png'
 import banner4 from '@/assets/images/landing/banner_4.png'
 import banner5 from '@/assets/images/landing/banner_5.png'
 
-// --- Slideshow Data ---
 const backgroundImages = [banner1, banner2, banner3, banner4, banner5]
 
-interface Slide {
-  title: string
-  subtitle: string
-  description: string
-}
-
-const slideContent: Slide[] = [
+const slideContent = [
   {
     title: '2022 Specialized Turbo Levo Expert Carbon',
     subtitle:
@@ -100,30 +92,22 @@ const slideContent: Slide[] = [
   },
 ]
 
-// --- Slideshow State ---
 const currentSlide = ref(0)
-let slideInterval: number | null = null
+let slideInterval = null
 
-// --- Slideshow Controls ---
-const nextSlide = () => {
-  currentSlide.value = (currentSlide.value + 1) % backgroundImages.length
-}
+const nextSlide = () => (currentSlide.value = (currentSlide.value + 1) % backgroundImages.length)
 
-const prevSlide = () => {
-  currentSlide.value =
-    currentSlide.value === 0 ? backgroundImages.length - 1 : currentSlide.value - 1
-}
+const prevSlide = () =>
+  (currentSlide.value =
+    currentSlide.value === 0 ? backgroundImages.length - 1 : currentSlide.value - 1)
 
-const goToSlide = (index: number) => {
+const goToSlide = (index) => {
   currentSlide.value = index
   stopSlideshow()
   startSlideshow()
 }
 
-// --- Auto Slideshow ---
-const startSlideshow = () => {
-  slideInterval = window.setInterval(nextSlide, 4000)
-}
+const startSlideshow = () => (slideInterval = window.setInterval(nextSlide, 4000))
 
 const stopSlideshow = () => {
   if (slideInterval) {
@@ -132,12 +116,12 @@ const stopSlideshow = () => {
   }
 }
 
-// --- Lifecycle ---
 onMounted(() => startSlideshow())
 onUnmounted(() => stopSlideshow())
 </script>
 
 <style scoped>
+/* Header Slideshow */
 .header-slideshow {
   position: relative;
   width: 100%;
@@ -146,6 +130,7 @@ onUnmounted(() => stopSlideshow())
   color: white;
 }
 
+/* Slideshow Container */
 .slideshow-container {
   position: absolute;
   top: 0;
@@ -155,6 +140,7 @@ onUnmounted(() => stopSlideshow())
   z-index: -1;
 }
 
+/* Slide */
 .slide {
   position: absolute;
   top: 0;
@@ -184,6 +170,7 @@ onUnmounted(() => stopSlideshow())
   z-index: 0;
 }
 
+/* Hero Section */
 .hero-section {
   position: relative;
   z-index: 1;
@@ -222,6 +209,7 @@ onUnmounted(() => stopSlideshow())
   transition: opacity 0.5s ease;
 }
 
+/* Pagination Content */
 .pagination-content {
   display: flex;
   flex-direction: column;
@@ -242,6 +230,7 @@ onUnmounted(() => stopSlideshow())
   justify-content: flex-end;
 }
 
+/* Dot */
 .dot {
   width: 50px;
   height: 4px;
@@ -260,11 +249,13 @@ onUnmounted(() => stopSlideshow())
   transform: scaleY(1.2);
 }
 
+/* Pagination Arrows */
 .pagination-arrows {
   display: flex;
   gap: 1rem;
 }
 
+/* Arrow Button */
 .arrow-btn {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -293,6 +284,7 @@ onUnmounted(() => stopSlideshow())
   font-size: 18px;
 }
 
+/* Pagination Text */
 .pagination-text {
   font-size: 12px;
   font-family: 'Poppins', sans-serif;
@@ -305,6 +297,7 @@ onUnmounted(() => stopSlideshow())
   transition: opacity 0.5s ease;
 }
 
+/* Pulse Animation */
 @keyframes pulse {
   0% {
     transform: scale(1);

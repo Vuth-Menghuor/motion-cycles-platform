@@ -7,8 +7,7 @@
 <script setup>
 import Review_card from './review_card.vue'
 
-// eslint-disable-next-line no-unused-vars
-const props = defineProps({
+defineProps({
   reviews: {
     type: Array,
     required: true,

@@ -4,9 +4,6 @@
       <Icon icon="weui:back-filled" class="back-icon" />
       <span>Back</span>
     </button>
-    <!-- <div class="brand-logo-header">
-      <span>{{ brandName.toUpperCase() }}</span>
-    </div> -->
   </div>
   <div class="gallery-wrapper">
     <div class="gallery-container">
@@ -24,24 +21,15 @@ import { Icon } from '@iconify/vue'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-const props = defineProps({
-  brandName: {
-    type: String,
-    requirement: true,
-  },
-})
-
 const route = useRoute()
 const router = useRouter()
 
-// Get data from query
 const image = route.query.image
 const title = route.query.title
 const additionalImages = route.query.additionalImages
   ? JSON.parse(route.query.additionalImages)
   : []
 
-// First 7 images
 const gridImages = computed(() => [image, ...additionalImages.slice(0, 7)])
 
 const goBack = () => {
@@ -74,7 +62,7 @@ const goBack = () => {
   height: 44px;
   background-color: white;
   border: 1px solid grey;
-  padding: 10px 20px 10px 20px;
+  padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
   transition:
@@ -84,15 +72,6 @@ const goBack = () => {
 
 .back-icon {
   font-size: 1.2rem;
-}
-
-.brand-logo-header {
-  flex: 1;
-  text-align: center;
-  margin-right: 5.2rem;
-  font-family: '911Porscha', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 500;
 }
 
 .gallery-container {

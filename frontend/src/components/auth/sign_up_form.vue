@@ -11,19 +11,14 @@ const router = useRouter()
 const username = ref('')
 const email = ref('')
 const password = ref('')
-// const password_confirmation = ref('')
 const terms = ref(true)
 const isLoading = ref(false)
 const errorMessage = ref('')
 const showPassword = ref(false)
 
 const register = async () => {
-  event.preventDefault() // Prevent form submission
-
-  // Clear previous errors
   errorMessage.value = ''
 
-  // Validation
   if (!username.value || !email.value || !password.value) {
     errorMessage.value = 'All fields are required'
     return
@@ -37,64 +32,35 @@ const register = async () => {
   isLoading.value = true
 
   try {
-    const result = await auth.register({
+    await auth.register({
       username: username.value,
       name: username.value,
       email: email.value,
       password: password.value,
       password_confirmation: password.value,
-      terms: terms.value ? 1 : 0, // Convert boolean to 1/0
+      terms: terms.value ? 1 : 0,
     })
 
-    // Success redirect to home or login
-    console.log('Registration successful:', result)
     router.push('/authentication/sign_in')
   } catch (error) {
-    console.error('Registration error:', error)
+    const status = error.response?.status
+    const data = error.response?.data
 
-    // Optional: Handle different error type
-    if (error.response) {
-      // Server responded with error
-      if (error.response.status === 422) {
-        // Validation errors
-        const errors = error.response.data.errors
-        if (errors) {
-          // Display first error message
-          const firstError = Object.values(errors)[0]
-          errorMessage.value = Array.isArray(firstError) ? firstError[0] : firstError
-        } else {
-          errorMessage.value = error.response.data.message || 'Validation failed'
-        }
-      } else if (error.response.status === 500) {
-        errorMessage.value = 'Server error. Please try again later.'
-      } else {
-        errorMessage.value = error.response.data.message || 'Registration failed'
-      }
-    } else if (error.request) {
-      // Request made but no response
-      errorMessage.value = 'Network error. Please check your connection.'
-    } else {
-      // Something else happened
-      errorMessage.value = 'An unexpected error occurred'
-    }
+    errorMessage.value =
+      status === 422 && data?.errors
+        ? Object.values(data.errors)[0][0]
+        : status === 500
+          ? 'Server error. Please try again later.'
+          : data?.message || 'Registration failed'
   } finally {
     isLoading.value = false
   }
-  // await auth.register({
-  //   username: username.value,
-  //   name: username.value,
-  //   email: email.value,
-  //   password: password.value,
-  //   password_confirmation: password.value,
-  //   terms: terms.value,
-  // })
 }
 </script>
 
 <template>
   <div class="auth-container">
     <div class="auth-card">
-      <!-- Header -->
       <div class="auth-header">
         <h1 class="auth-title">Sign Up</h1>
         <div class="auth-prompt">
@@ -103,13 +69,11 @@ const register = async () => {
         </div>
       </div>
 
-      <!-- Error Message -->
       <div v-if="errorMessage" class="error-alert">
         <Icon icon="mdi:alert-circle" class="error-icon" />
         {{ errorMessage }}
       </div>
 
-      <!-- Form Section -->
       <form @submit.prevent="register" class="auth-form">
         <div class="form-group">
           <input
@@ -156,7 +120,6 @@ const register = async () => {
           </button>
         </div>
 
-        <!-- Form Option -->
         <div class="form-option">
           <div class="checkbox-wrapper">
             <input
@@ -172,14 +135,8 @@ const register = async () => {
           <a href="#" class="link">Terms & Conditions</a>
         </div>
 
-        <!-- Submit Button -->
         <div class="button-wrapper">
-          <button
-            type="submit"
-            class="submit-button"
-            :disabled="isLoading"
-            :class="{ loading: isLoading }"
-          >
+          <button type="submit" class="submit-button" :disabled="isLoading">
             <span v-if="!isLoading">Sign Up</span>
             <span v-else class="loading-text">
               <Icon icon="eos-icons:loading" class="loading-icon" />
@@ -190,18 +147,15 @@ const register = async () => {
         </div>
       </form>
 
-      <!-- Divider -->
       <div class="form-divider">
         <span class="divider-text">or sign up with</span>
       </div>
 
-      <!-- Social Section -->
       <div class="social-login">
         <button type="button" class="social-button">
           <Icon icon="flat-color-icons:google" class="social-icon" />
           <span class="social-text">Google</span>
         </button>
-
         <button type="button" class="social-button">
           <Icon icon="logos:facebook" class="social-icon" />
           <span class="social-text">Facebook</span>
@@ -212,6 +166,48 @@ const register = async () => {
 </template>
 
 <style scoped>
+.auth-card {
+  border: 1px solid rgb(202, 202, 202);
+  border-radius: 20px;
+  background-color: white;
+  height: auto;
+  width: 630px;
+}
+
+.auth-header {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+.auth-title {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
+  font-size: 40px;
+  padding: 0;
+  margin: 40px 0 8px 0;
+}
+
+.auth-prompt {
+  font-size: 14px;
+}
+
+.auth-prompt span {
+  padding-right: 6px;
+}
+
+.auth-prompt a {
+  color: #14c9c9;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.auth-prompt a:hover {
+  text-decoration: underline;
+}
+
 .error-alert {
   display: flex;
   align-items: center;
@@ -242,208 +238,6 @@ const register = async () => {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-}
-
-.submit-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.loading-text {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.loading-icon {
-  width: 20px;
-  height: 20px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.password-toggle {
-  position: relative;
-  right: 20px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-
-.password-toggle:hover:not(:disabled) {
-  opacity: 1;
-}
-
-.password-toggle:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.toggle-icon {
-  width: 18px;
-  height: 18px;
-  color: #666;
-}
-
-.social-icon {
-  height: 22px;
-  width: 22px;
-}
-
-.social-button {
-  display: flex;
-  justify-content: center;
-  background-color: transparent;
-  height: 40px;
-  border: 1px solid rgb(212, 212, 212);
-  border-radius: 6px;
-  width: 185px;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  font-family: 'Poppins', sans-serif;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.social-button:hover {
-  background-color: #f5f5f5;
-}
-
-.social-login {
-  display: flex;
-  justify-content: space-around;
-  margin: 40px 100px;
-}
-
-.form-divider {
-  position: relative;
-  text-align: center;
-  margin: 25px 0;
-}
-
-.form-divider::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  margin: 0 106px 0 82px;
-  background: #ddd;
-}
-
-.divider-text {
-  background: white;
-  padding: 0 15px;
-  color: #666;
-  font-size: 14px;
-  position: relative;
-  font-weight: 300;
-  z-index: 1;
-  font-family: 'Poppins', sans-serif;
-}
-
-.button-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 40px;
-}
-
-.submit-button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 440px;
-  margin-right: 20px;
-  padding: 12px 0;
-  font-weight: 500;
-  border: none;
-  background-color: #14c9c9;
-  color: white;
-  font-size: 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.submit-button:hover:not(:disabled) {
-  background-color: #11b3b3;
-}
-
-.form-checkbox {
-  height: 14px;
-  width: 14px;
-  cursor: pointer;
-}
-
-.form-option {
-  display: flex;
-  justify-content: start;
-  align-items: center;
-  gap: 4px;
-  margin-top: 12px;
-  margin-left: 84px;
-  margin-right: 110px;
-  font-family: 'Poppins', sans-serif;
-}
-
-.link {
-  font-size: 12px;
-  font-weight: 500;
-  color: #14c9c9;
-  text-decoration: none;
-}
-
-.link:hover {
-  text-decoration: underline;
-}
-
-.checkbox-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.checkbox-label {
-  font-size: 13px;
-  font-weight: 300;
-  cursor: pointer;
-}
-
-.auth-prompt span {
-  padding-right: 6px;
-}
-
-.auth-prompt {
-  font-size: 14px;
-}
-
-.auth-prompt a {
-  color: #14c9c9;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.auth-prompt a:hover {
-  text-decoration: underline;
 }
 
 .form-group {
@@ -486,27 +280,191 @@ const register = async () => {
   opacity: 70%;
 }
 
-.auth-title {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 400;
-  font-size: 40px;
+.password-toggle {
+  position: relative;
+  right: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
   padding: 0;
-  margin: 40px 0 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.2s;
 }
 
-.auth-header {
+.password-toggle:hover:not(:disabled) {
+  opacity: 1;
+}
+
+.password-toggle:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toggle-icon {
+  width: 18px;
+  height: 18px;
+  color: #666;
+}
+
+.form-option {
   display: flex;
-  justify-content: center;
+  justify-content: start;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  margin-left: 84px;
+  margin-right: 110px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.checkbox-label {
+  font-size: 13px;
+  font-weight: 300;
+  cursor: pointer;
+}
+
+.form-checkbox {
+  height: 14px;
+  width: 14px;
+  cursor: pointer;
+}
+
+.link {
+  font-size: 12px;
+  font-weight: 500;
+  color: #14c9c9;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.button-wrapper {
+  display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 40px;
+}
+
+.submit-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 440px;
+  margin-right: 20px;
+  padding: 12px 0;
+  font-weight: 500;
+  border: none;
+  background-color: #14c9c9;
+  color: white;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #11b3b3;
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.loading-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-icon {
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.form-divider {
+  position: relative;
+  text-align: center;
+  margin: 25px 0;
+}
+
+.form-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  margin: 0 106px 0 82px;
+  background: #ddd;
+}
+
+.divider-text {
+  background: white;
+  padding: 0 15px;
+  color: #666;
+  font-size: 14px;
+  position: relative;
+  font-weight: 300;
+  z-index: 1;
   font-family: 'Poppins', sans-serif;
 }
 
-.auth-card {
-  border: 1px solid rgb(202, 202, 202);
-  border-radius: 20px;
-  background-color: white;
-  height: auto;
-  width: 630px;
+.social-login {
+  display: flex;
+  justify-content: space-around;
+  margin: 40px 100px;
+}
+
+.social-button {
+  display: flex;
+  justify-content: center;
+  background-color: transparent;
+  height: 40px;
+  border: 1px solid rgb(212, 212, 212);
+  border-radius: 6px;
+  width: 185px;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.social-button:hover {
+  background-color: #f5f5f5;
+}
+
+.social-icon {
+  height: 22px;
+  width: 22px;
+}
+
+.social-text {
+  font-weight: 500;
 }
 </style>

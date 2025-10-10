@@ -190,7 +190,6 @@ select:disabled {
   opacity: 0.6;
 }
 
-/* Special styling for prefilled fields */
 input:disabled:not([readonly]),
 select:disabled {
   background-color: #e6fffa;
@@ -199,7 +198,6 @@ select:disabled {
   opacity: 1;
 }
 
-/* Special styling for Product ID field */
 .form-group:first-child input:disabled {
   background-color: #e6fffa;
   color: #38a169;

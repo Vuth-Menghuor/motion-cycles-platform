@@ -1,6 +1,5 @@
 <template>
   <div class="info-section">
-    <!-- Basic Info -->
     <div class="info-content">
       <div class="basic-info">
         <div>
@@ -11,7 +10,6 @@
             <span class="color">Color: {{ bike.color }}</span>
           </div>
 
-          <!-- Rating -->
           <div class="rating-section">
             <div class="stars">
               <span
@@ -29,7 +27,6 @@
           </div>
         </div>
 
-        <!-- Price -->
         <div class="price-section">
           <div class="price-details">
             <div class="current-price">${{ formatNumber(getDiscountedPrice(bike)) }}</div>
@@ -41,7 +38,6 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
       <div class="action-buttons">
         <button class="add-to-cart-btn" @click="emit('addToCart')">
           <Icon icon="ic:round-shopping-cart" class="cart-icon" />
@@ -54,7 +50,6 @@
       </div>
     </div>
 
-    <!-- Brand Information -->
     <div class="brand-info">
       <h3>About {{ bike.title }}</h3>
       <div class="brand-description">{{ getBrandDescription(bike.subtitle) }}</div>
@@ -65,8 +60,7 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 
-// eslint-disable-next-line no-unused-vars
-const props = defineProps({
+defineProps({
   bike: { type: Object, required: true },
   formatNumber: Function,
   getDiscountedPrice: Function,
@@ -78,10 +72,16 @@ const emit = defineEmits(['addToCart'])
 </script>
 
 <style scoped>
+.info-section {
+  display: flex;
+  flex-direction: column;
+}
+
 .info-content {
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 18px;
 }
+
 .basic-info {
   display: flex;
   justify-content: space-between;
@@ -89,17 +89,6 @@ const emit = defineEmits(['addToCart'])
   flex-wrap: wrap;
   margin-top: 24px;
   gap: 24px;
-  /* border-bottom: 1px solid #e2e8f0; */
-}
-.price-details {
-  display: flex;
-  align-items: baseline;
-  gap: 16px;
-}
-
-.info-section {
-  display: flex;
-  flex-direction: column;
 }
 
 .bike-title {
@@ -132,33 +121,6 @@ const emit = defineEmits(['addToCart'])
   color: #64748b;
 }
 
-.price-section {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  margin-bottom: 24px;
-}
-
-.current-price {
-  font-size: 36px;
-  font-weight: 700;
-  color: #f53f3f;
-  margin-bottom: 8px;
-}
-
-.original-price {
-  font-size: 20px;
-  color: #94a3b8;
-  text-decoration: line-through;
-  margin-bottom: 4px;
-}
-
-.savings {
-  font-size: 16px;
-  color: #16a34a;
-  font-weight: 500;
-}
-
 .rating-section {
   display: flex;
   align-items: center;
@@ -185,27 +147,37 @@ const emit = defineEmits(['addToCart'])
   color: #64748b;
 }
 
-.specifications h3,
-.brand-info h3,
-s .features-section h3 {
+.price-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.price-details {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.current-price {
+  font-size: 36px;
+  font-weight: 700;
+  color: #f53f3f;
+  margin-bottom: 8px;
+}
+
+.original-price {
   font-size: 20px;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 32px 0 16px 0;
+  color: #94a3b8;
+  text-decoration: line-through;
+  margin-bottom: 4px;
 }
 
-.spec-content p {
-  line-height: 1.6;
-  color: #475569;
-  margin: 0;
-}
-
-.brand-description {
-  line-height: 1.6;
-  color: #475569;
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 34px;
-  margin-bottom: 14px;
+.savings {
+  font-size: 16px;
+  color: #16a34a;
+  font-weight: 500;
 }
 
 .action-buttons {
@@ -248,38 +220,24 @@ s .features-section h3 {
   background: #2563eb;
 }
 
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-}
-
-.feature-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-}
-
-.feature-icon {
-  font-size: 24px;
-  color: #3b82f6;
-  margin-top: 4px;
-}
-
-.feature-text h4 {
-  font-size: 16px;
+.brand-info h3 {
+  font-size: 20px;
   font-weight: 600;
   color: #1e293b;
-  margin: 0 0 4px 0;
+  margin: 32px 0 16px 0;
+}
+
+.brand-description {
+  line-height: 1.6;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 34px;
+  margin-bottom: 14px;
 }
 
 @media (max-width: 768px) {
   .bike-title {
     font-size: 24px;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
   }
 
   .action-buttons {

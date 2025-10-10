@@ -15,20 +15,14 @@
 <script setup>
 import { defineProps } from 'vue'
 
-// eslint-disable-next-line no-unused-vars
-const props = defineProps({
-  brand: {
-    type: String,
-    required: false,
-  },
-  product: {
-    type: String,
-    required: false,
-  },
+defineProps({
+  brand: { type: String, required: false },
+  product: { type: String, required: false },
 })
 </script>
 
 <style scoped>
+/* Breadcrumb */
 .breadcrumb ul {
   display: flex;
   list-style: none;

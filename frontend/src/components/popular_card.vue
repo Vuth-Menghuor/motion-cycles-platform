@@ -68,22 +68,7 @@ const bikes = ref([
   },
 ])
 
-// const favorites = ref(new Set())
-const visibleBikes = ref(new Set()) // track which bikes are in view
-
-// const toggleFavorite = (bikeId) => {
-//   if (favorites.value.has(bikeId)) {
-//     favorites.value.delete(bikeId)
-//   } else {
-//     favorites.value.add(bikeId)
-//   }
-//   favorites.value = new Set(favorites.value) // Trigger reactivity
-// }
-
-// const isFavorited = (bikeId) => {
-//   return favorites.value.has(bikeId)
-// }
-
+const visibleBikes = ref(new Set())
 let observer
 
 onMounted(() => {
@@ -91,30 +76,22 @@ onMounted(() => {
     (entries) => {
       entries.forEach((entry) => {
         const id = Number(entry.target.dataset.id)
-        if (entry.isIntersecting) {
-          visibleBikes.value.add(id)
-        } else {
-          visibleBikes.value.delete(id)
-        }
+        entry.isIntersecting ? visibleBikes.value.add(id) : visibleBikes.value.delete(id)
         visibleBikes.value = new Set(visibleBikes.value)
       })
     },
-    { threshold: 0.5 }, // 50% of card visible
+    { threshold: 0.5 },
   )
 
-  const cards = document.querySelectorAll('.popular-product-card')
-  cards.forEach((card) => observer.observe(card))
+  document.querySelectorAll('.popular-product-card').forEach((card) => observer.observe(card))
 })
 
-onUnmounted(() => {
-  if (observer) observer.disconnect()
-})
+onUnmounted(() => observer?.disconnect())
 </script>
 
 <template>
   <div class="bikes-container">
     <div v-for="bike in bikes" :key="bike.id" class="popular-product-card" :data-id="bike.id">
-      <!-- sale badge -->
       <div class="sale-badge" :style="{ background: bike.badge.gradient }">
         <Icon :icon="bike.badge.icon" class="sale-icon" />
         <span>{{ bike.badge.text }}</span>
@@ -122,26 +99,13 @@ onUnmounted(() => {
 
       <div class="card-header">
         <div class="product-info">
-          <label class="product-title">{{ bike.title }}<br /></label>
+          <label class="product-title">{{ bike.title }}</label>
           <span class="product-subtitle">{{ bike.subtitle }}</span>
         </div>
-        <!-- <button
-          class="favorite-btn"
-          :class="{ favorited: isFavorited(bike.id) }"
-          @click="toggleFavorite(bike.id)"
-        >
-          <Icon
-            :icon="isFavorited(bike.id) ? 'solar:heart-bold' : 'solar:heart-linear'"
-            class="fav-icon"
-          />
-        </button> -->
       </div>
 
       <div class="product-image-container">
-        <!-- Gradient background behind image -->
         <div class="bg-popular" :style="{ background: bike.bgGradient }"></div>
-
-        <!-- Product Image with slide in/out -->
         <img
           :src="bike.image"
           alt="bikes-image-transparent"
@@ -177,6 +141,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* Container */
 .bikes-container {
   display: flex;
   gap: 44px;
@@ -185,29 +150,7 @@ onUnmounted(() => {
   padding: 20px;
 }
 
-.spec-content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.spec-label {
-  font-size: 11px;
-  color: #718096;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-.popular-product-card:hover .product-image.slide-in {
-  transform: scale(1.05) rotate(2deg);
-}
-.sale-icon {
-  font-size: 22px;
-}
-.sale-badge span {
-  font-size: 12px;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-}
+/* Sale Badge */
 .sale-badge {
   position: absolute;
   top: 90px;
@@ -220,6 +163,18 @@ onUnmounted(() => {
   gap: 4px;
   z-index: 10;
 }
+
+.sale-badge span {
+  font-size: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+}
+
+.sale-icon {
+  font-size: 22px;
+}
+
+/* Card */
 .popular-product-card {
   max-width: 520px;
   background-color: white;
@@ -229,37 +184,20 @@ onUnmounted(() => {
   overflow: hidden;
   position: relative;
 }
+
+/* Card Header */
 .card-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   padding: 20px 24px 0 24px;
 }
+
 .product-info {
   flex: 1;
   font-family: 'Poppins', sans-serif;
   line-height: 1.6;
 }
-/* .favorite-btn {
-  display: flex;
-  align-items: center;
-  border: 1px solid #dee2e6;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 50%;
-  color: grey;
-  background-color: white;
-  transition: all 0.3s ease;
-}
-.favorite-btn.favorited {
-  background-color: #ffebef;
-  border-color: #ff4d6d;
-  color: #ff4d6d;
-}
-
-.favorite-btn.favorited .fav-icon {
-  color: #ff4d6d;
-} */
 
 .product-title {
   font-size: 16px;
@@ -267,15 +205,15 @@ onUnmounted(() => {
   color: #333;
   margin: 0 0 4px 0;
 }
+
 .product-subtitle {
   font-size: 14px;
   color: grey;
   font-weight: 400;
   margin: 0;
 }
-/* .fav-icon {
-  font-size: 20px;
-} */
+
+/* Product Image */
 .product-image-container {
   position: relative;
   padding: 20px;
@@ -286,7 +224,6 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
-/* Gradient background */
 .bg-popular {
   position: absolute;
   height: 200px;
@@ -319,14 +256,11 @@ onUnmounted(() => {
   transform: translateY(50px);
 }
 
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  gap: 16px;
+.popular-product-card:hover .product-image.slide-in {
+  transform: scale(1.05) rotate(2deg);
 }
 
+/* Product Specs */
 .product-specs {
   display: flex;
   justify-content: space-around;
@@ -346,6 +280,20 @@ onUnmounted(() => {
   color: white;
 }
 
+.spec-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spec-label {
+  font-size: 11px;
+  color: #718096;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .spec-text {
   font-size: 12px;
   color: #333;
@@ -356,6 +304,16 @@ onUnmounted(() => {
   font-size: 26px;
   color: black;
 }
+
+/* Card Footer */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  gap: 16px;
+}
+
 .price-section {
   display: flex;
   align-items: center;

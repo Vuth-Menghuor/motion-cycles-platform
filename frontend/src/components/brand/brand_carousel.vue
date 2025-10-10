@@ -1,7 +1,5 @@
-// Handles layout and collection of brand cards (row of cards, static or dynamic carousel).
 <script setup>
 import BrandCard from './brand_card.vue'
-
 import brand1 from '@/assets/images/brands/brand_1.png'
 import brand2 from '@/assets/images/brands/brand_2.png'
 import brand3 from '@/assets/images/brands/brand_3.png'
@@ -27,9 +25,7 @@ const brands = [
   <div class="brand-carousel">
     <div class="brand-carousel__container">
       <div class="brand-carousel__track">
-        <!-- original brand -->
         <BrandCard v-for="brand in brands" :key="brand.name" :brand="brand" />
-        <!-- duplicate brands for seamless scrolling -->
         <BrandCard v-for="brand in brands" :key="'dup-' + brand.name" :brand="brand" />
       </div>
     </div>
@@ -44,10 +40,11 @@ const brands = [
   border-radius: 16px;
   padding: 10px 0;
 }
+
 .brand-carousel__container {
   overflow: hidden;
-  /* clip-path: polygon(0% 10%, 100% 0%, 100% 90%, 0% 100%); */
 }
+
 .brand-carousel__track {
   display: flex;
   width: max-content;

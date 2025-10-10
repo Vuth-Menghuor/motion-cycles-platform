@@ -28,31 +28,18 @@
 import { defineProps, defineEmits } from 'vue'
 
 const props = defineProps({
-  payment: {
-    type: Object,
-    required: true,
-    validator: (payment) => {
-      return payment.id && payment.name
-    },
-  },
-  isSelected: {
-    type: Boolean,
-    default: false,
-  },
-  radioGroupName: {
-    type: String,
-    default: 'payment-selection',
-  },
+  payment: { type: Object, required: true, validator: (p) => p.id && p.name },
+  isSelected: { type: Boolean, default: false },
+  radioGroupName: { type: String, default: 'payment-selection' },
 })
 
 const emit = defineEmits(['select'])
 
-const selectPayment = () => {
-  emit('select', props.payment)
-}
+const selectPayment = () => emit('select', props.payment)
 </script>
 
 <style scoped>
+/* Content Section */
 .content-section {
   display: flex;
   align-items: center;
@@ -60,19 +47,21 @@ const selectPayment = () => {
   width: 100%;
 }
 
+/* Method Payment */
 .method-payment {
-  height: 18px; /* Default size (Bakong KHQR) */
+  height: 18px;
   width: auto;
 }
 
 .method-payment.credit-card {
-  height: 28px; /* Bigger size for Credit Card */
+  height: 28px;
   width: auto;
 }
 
+/* Payment Card */
 .payment-card {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
   padding: 20px;
   border: 2px solid #e5e5e5;
@@ -91,12 +80,14 @@ const selectPayment = () => {
   border-color: #14c9c9;
 }
 
+/* Radio Container */
 .radio-container {
   position: relative;
   flex-shrink: 0;
   margin-top: 2px;
 }
 
+/* Radio Input */
 .radio-input {
   appearance: none;
   width: 20px;
@@ -125,6 +116,7 @@ const selectPayment = () => {
   border-radius: 50%;
 }
 
+/* Payment Name */
 .payment-name {
   font-size: 16px;
   font-weight: 500;

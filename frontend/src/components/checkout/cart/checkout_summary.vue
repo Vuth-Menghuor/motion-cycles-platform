@@ -78,20 +78,14 @@
 </template>
 
 <script setup>
+import { computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import router from '@/router'
 import { Icon } from '@iconify/vue'
-import { defineProps, defineEmits, computed, watch, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 
 const props = defineProps({
-  cartItems: {
-    type: Array,
-    required: true,
-  },
-  promoCode: {
-    type: String,
-    required: true,
-  },
+  cartItems: { type: Array, required: true },
+  promoCode: { type: String, required: true },
 })
 
 const route = useRoute()
@@ -102,93 +96,69 @@ const emit = defineEmits([
   'update:summaryBreakdown',
 ])
 
-// Constants
 const CORRECT_PROMO = 'BOOKRIDE50'
 const PROMO_DISCOUNT = 5.0
 const SHIPPING_AMOUNT = 2.0
+const hiddenRoutes = ['/checkout/address', '/checkout/payment', '/checkout/purchase']
 
-// Delivery date
 const deliveryDate = computed(() => {
   const date = new Date()
   date.setDate(date.getDate() + 3)
-  const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }
-  return date.toLocaleDateString('en-US', options)
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 })
 
-// Promo code validation
-const isPromoValid = computed(() => {
-  return props.promoCode.trim().toUpperCase() === CORRECT_PROMO
-})
+const isPromoValid = computed(() => props.promoCode.trim().toUpperCase() === CORRECT_PROMO)
 
-// Promo icon
-const promoIcon = computed(() => {
-  return isPromoValid.value
-    ? 'fluent:checkbox-checked-20-filled'
-    : 'fluent:checkbox-checked-20-regular'
-})
+const promoIcon = computed(() =>
+  isPromoValid.value ? 'fluent:checkbox-checked-20-filled' : 'fluent:checkbox-checked-20-regular',
+)
 
-// Discount amount
-const discountAmount = computed(() => {
-  return isPromoValid.value ? PROMO_DISCOUNT : 0
-})
+const discountAmount = computed(() => (isPromoValid.value ? PROMO_DISCOUNT : 0))
 
-// Total MRP
-const totalMRP = computed(() => {
-  return (props.cartItems || []).reduce((total, item) => {
-    const price = item.originalPrice || item.price
-    return total + price * item.quantity
-  }, 0)
-})
+const totalMRP = computed(() =>
+  (props.cartItems || []).reduce(
+    (total, item) => total + (item.originalPrice || item.price) * item.quantity,
+    0,
+  ),
+)
 
-// Net price
-const netPrice = computed(() => {
-  const calculatedNet = totalMRP.value - discountAmount.value
-  return calculatedNet > 0 ? calculatedNet : 0
-})
+const netPrice = computed(() => Math.max(totalMRP.value - discountAmount.value, 0))
 
-// Shipping amount
 const shippingAmount = computed(() => SHIPPING_AMOUNT)
 
-// Final total (net price + shipping)
 const finalTotal = computed(() => netPrice.value + SHIPPING_AMOUNT)
 
-// Hide checkout button on certain routes
-const hiddenRoutes = ['/checkout/address', '/checkout/payment', '/checkout/purchase']
 const showCheckoutBtn = computed(() => !hiddenRoutes.includes(route.path))
 
+const summaryBreakdown = computed(() => ({
+  totalMRP: totalMRP.value,
+  discountAmount: discountAmount.value,
+  netPrice: netPrice.value,
+  shippingAmount: SHIPPING_AMOUNT,
+  finalTotal: finalTotal.value,
+  promoCode: props.promoCode,
+  promoDiscount: isPromoValid.value ? PROMO_DISCOUNT : 0,
+}))
+
 const navigationAndScroll = (path) => {
-  router.push(path).then(() => {
-    setTimeout(() => {
-      window.scrollTo(0, 0)
-    }, 100)
-  })
+  router.push(path).then(() => setTimeout(() => window.scrollTo(0, 0), 100))
 }
 
 const handleCheckout = () => {
-  emit('proceedToCheckout') // emit the event
+  emit('proceedToCheckout')
   navigationAndScroll('/checkout/address')
 }
 
-// Complete summary breakdown for invoice
-const summaryBreakdown = computed(() => {
-  return {
-    totalMRP: totalMRP.value,
-    discountAmount: discountAmount.value,
-    netPrice: netPrice.value,
-    shippingAmount: SHIPPING_AMOUNT,
-    finalTotal: finalTotal.value,
-    promoCode: props.promoCode,
-    promoDiscount: isPromoValid.value ? PROMO_DISCOUNT : 0,
-  }
-})
-
-// Emit final total and breakdown whenever they change
-watch(finalTotal, (newVal) => {
-  emit('update:finalTotal', newVal)
+watch(finalTotal, () => {
+  emit('update:finalTotal', finalTotal.value)
   emit('update:summaryBreakdown', summaryBreakdown.value)
 })
 
-// Emit initial values when component mounts
 onMounted(() => {
   emit('update:finalTotal', finalTotal.value)
   emit('update:summaryBreakdown', summaryBreakdown.value)
@@ -196,23 +166,31 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* Discount Price */
 .discount-price {
   color: #72c15e;
 }
+
+/* Net Price */
 .net-price {
   margin-top: 15px;
   padding-top: 15px;
   border-top: 1px solid #ddd;
 }
+
 .net-price span {
   color: black;
   font-size: 14px;
 }
+
+/* Summary Calculations */
 .summary-calculations {
   padding: 10px 16px 14px 16px;
   background-color: #f9fafb;
   border-radius: 8px;
 }
+
+/* Standard Delivery */
 .stand-delivery {
   background-color: #e8f7ff;
   display: flex;
@@ -224,6 +202,7 @@ onMounted(() => {
   color: #23272f;
 }
 
+/* Price Summary */
 .price-summary {
   height: fit-content;
 }
@@ -235,6 +214,7 @@ onMounted(() => {
   font-weight: 600;
 }
 
+/* Summary Row */
 .summary-row {
   display: flex;
   justify-content: space-between;
@@ -257,6 +237,7 @@ onMounted(() => {
   margin: 20px 0;
 }
 
+/* Promo Section */
 .promo-section {
   margin: 20px 0;
 }
@@ -268,6 +249,7 @@ onMounted(() => {
   color: #23272f;
 }
 
+/* Promo Input */
 .promo-input {
   position: relative;
   display: flex;
@@ -276,7 +258,7 @@ onMounted(() => {
 
 .promo-input input {
   width: 100%;
-  padding: 10px 40px; /* Add padding for the icons */
+  padding: 10px 40px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
@@ -287,6 +269,7 @@ onMounted(() => {
   outline: none;
 }
 
+/* Input Icon */
 .input-icon {
   position: absolute;
   font-size: 18px;
@@ -309,6 +292,7 @@ onMounted(() => {
   transform: scale(1.1);
 }
 
+/* Checkout Button */
 .checkout-btn {
   font-family: 'Poppins', sans-serif;
   width: 100%;
@@ -323,6 +307,7 @@ onMounted(() => {
   border: 1px solid #14c9c9;
 }
 
+/* Checkout Features */
 .checkout-features {
   display: flex;
   justify-content: space-around;

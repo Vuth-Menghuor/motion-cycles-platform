@@ -1,6 +1,5 @@
 <template>
   <div class="add-product-page">
-    <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb">
       <router-link to="/admin/products/manage" class="breadcrumb-item">Product List</router-link>
       <span class="breadcrumb-separator">></span>
@@ -14,7 +13,6 @@
     </nav>
 
     <div class="form-container">
-      <!-- Left Column -->
       <div class="form-column">
         <ProductInfo
           :product="product"
@@ -28,7 +26,6 @@
         <ProductDiscount :product="product" @update:product="product = $event" />
       </div>
 
-      <!-- Right Column -->
       <div class="form-column">
         <ProductImage />
         <ProductPrice :product="product" @update:product="product = $event" />
@@ -55,10 +52,8 @@ import ProductImage from '@/components/admin/products/ProductImage.vue'
 import ProductPrice from '@/components/admin/products/ProductPrice.vue'
 import ProductSpecs from '@/components/admin/products/ProductSpecs.vue'
 
-// Get route instance
 const route = useRoute()
 
-// Reactive data
 const product = ref({
   id: '',
   name: '',
@@ -86,7 +81,6 @@ const specs = ref({
   display: '',
 })
 
-// Computed properties
 const hasQueryParams = computed(() => {
   return (
     route.query.productName || route.query.brand || route.query.category || route.query.restockMode
@@ -120,7 +114,6 @@ const prefilledFields = computed(() => {
   return fields
 })
 
-// Methods
 const generateProductId = () => {
   const randomNum = Math.floor(Math.random() * 10000)
     .toString()
@@ -180,7 +173,6 @@ const resetForm = () => {
   }
 }
 
-// Initialize with random product ID and check for query parameters
 onMounted(() => {
   product.value.id = generateProductId()
 
@@ -293,8 +285,8 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 20px;
   padding: 12px 16px;
-  background-color: white;
-  border-radius: 5px;
+  background: white;
+  border-radius: 6px;
   font-size: 13px;
   color: #666;
   border: 1px solid #e9ecef;
@@ -302,7 +294,7 @@ onMounted(() => {
 }
 
 .breadcrumb-item {
-  color: grey;
+  color: #666;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s;
@@ -315,7 +307,7 @@ onMounted(() => {
 
 .breadcrumb-item.active {
   color: #ff9934;
-  font-weight: 400;
+  font-weight: 500;
   cursor: default;
 }
 

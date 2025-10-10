@@ -167,17 +167,15 @@ import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 
 const selectedView = ref('daily')
-const selectedDate = ref(new Date().toISOString().split('T')[0]) // Default to today
-const currentCalendarDate = ref(new Date()) // For calendar navigation
-const showCalendar = ref(false) // Controls calendar dropdown visibility
+const selectedDate = ref(new Date().toISOString().split('T')[0])
+const currentCalendarDate = ref(new Date())
+const showCalendar = ref(false)
 
-// Sync calendar with selected date
 watch(selectedDate, (newDate) => {
   const date = new Date(newDate)
   currentCalendarDate.value = new Date(date.getFullYear(), date.getMonth(), 1)
 })
 
-// Calendar constants
 const monthNames = [
   'January',
   'February',
@@ -192,17 +190,14 @@ const monthNames = [
   'November',
   'December',
 ]
-
 const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-// Calendar computed properties
 const currentMonthName = computed(() => monthNames[currentCalendarDate.value.getMonth()])
 const currentYear = computed(() => currentCalendarDate.value.getFullYear())
 
 const calendarDates = computed(() => {
   const year = currentCalendarDate.value.getFullYear()
   const month = currentCalendarDate.value.getMonth()
-
   const firstDay = new Date(year, month, 1)
   const startDate = new Date(firstDay)
   startDate.setDate(startDate.getDate() - firstDay.getDay())
@@ -210,9 +205,7 @@ const calendarDates = computed(() => {
   const dates = []
   const currentDate = new Date(startDate)
   const today = new Date()
-  const dataStartDate = new Date('2025-10-01') // October 1, 2025
-
-  // Reset time to start of day for accurate comparison
+  const dataStartDate = new Date('2025-10-01')
   const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   const startDateLimit = new Date(
     dataStartDate.getFullYear(),
@@ -221,15 +214,12 @@ const calendarDates = computed(() => {
   )
 
   for (let i = 0; i < 42; i++) {
-    // 6 weeks * 7 days
     const dateString = currentDate.toISOString().split('T')[0]
     const checkDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
       currentDate.getDate(),
     )
-
-    // A date is selectable if it's between Oct 1, 2025 and today (inclusive)
     const isSelectable = checkDate >= startDateLimit && checkDate <= todayNormalized
 
     dates.push({
@@ -240,26 +230,19 @@ const calendarDates = computed(() => {
     })
     currentDate.setDate(currentDate.getDate() + 1)
   }
-
   return dates
 })
 
-// Helper methods for calendar
 const isSelectedDate = (dateString) => selectedDate.value === dateString
-const isToday = (dateString) => {
-  const today = new Date().toISOString().split('T')[0]
-  return dateString === today
-}
+const isToday = (dateString) => new Date().toISOString().split('T')[0] === dateString
 
 const selectDate = (dateString) => {
   selectedDate.value = dateString
-  showCalendar.value = false // Close calendar after selection
+  showCalendar.value = false
   updateData()
 }
 
-const toggleCalendar = () => {
-  showCalendar.value = !showCalendar.value
-}
+const toggleCalendar = () => (showCalendar.value = !showCalendar.value)
 
 const previousMonth = () => {
   currentCalendarDate.value = new Date(
@@ -277,7 +260,6 @@ const nextMonth = () => {
   )
 }
 
-// Data generation functions
 const generateMockData = (startDate, days = 7) => {
   const data = []
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -286,7 +268,6 @@ const generateMockData = (startDate, days = 7) => {
   for (let i = 0; i < days; i++) {
     const currentDate = new Date(start)
     currentDate.setDate(start.getDate() + i)
-
     const baseRevenue = 3000 + Math.random() * 4000
     const baseExpense = baseRevenue * 0.75
 
@@ -308,49 +289,35 @@ const generateMockData = (startDate, days = 7) => {
   return data
 }
 
-// Generate data based on selected date
 const generateDataForDate = (dateString, view) => {
   const selectedDateObj = new Date(dateString)
   const today = new Date()
   const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-
-  // Reset time to start of day for accurate comparison
   const selectedDate = new Date(
     selectedDateObj.getFullYear(),
     selectedDateObj.getMonth(),
     selectedDateObj.getDate(),
   )
 
-  // Only show data for dates up to today
-  if (selectedDate > currentDate) {
-    return []
-  }
+  if (selectedDate > currentDate) return []
 
   if (view === 'daily') {
-    // For daily view, show the week containing the selected date (Monday to Sunday)
     const startOfWeek = new Date(selectedDateObj)
     const dayOfWeek = startOfWeek.getDay()
-    // Adjust to start from Monday: if Sunday (0), go back 6 days; otherwise go back (dayOfWeek - 1) days
     const offset = dayOfWeek === 0 ? 6 : dayOfWeek - 1
     startOfWeek.setDate(selectedDateObj.getDate() - offset)
-
     return generateMockData(startOfWeek, 7)
   } else {
-    // For monthly view, show monthly summary for the selected month
     const year = selectedDateObj.getFullYear()
     const month = selectedDateObj.getMonth()
-
-    // Find the monthly data for this month/year
     const monthlyEntry = monthlyData.value.find((item) => {
       const itemDate = new Date(`${item.period} 1, ${year}`)
       return itemDate.getMonth() === month && itemDate.getFullYear() === year
     })
-
     return monthlyEntry ? [monthlyEntry] : []
   }
 }
 
-// Reactive monthly data based on selected year
 const monthlyData = computed(() => {
   const year = new Date(selectedDate.value).getFullYear()
   const today = new Date()
@@ -480,88 +447,57 @@ const monthlyData = computed(() => {
     },
   ]
 
-  // Only return data for months that are not in the future
   return allMonthlyData.filter((item, index) => {
-    if (year < currentYear) {
-      // Past years: show all months
-      return true
-    } else if (year === currentYear) {
-      // Current year: only show months up to current month
-      return index <= currentMonth
-    } else {
-      // Future years: show no data
-      return false
-    }
+    if (year < currentYear) return true
+    if (year === currentYear) return index <= currentMonth
+    return false
   })
 })
 
 const analyticsData = ref([])
 
-const totalRevenue = computed(() => {
-  return analyticsData.value.reduce((sum, item) => sum + item.revenue, 0)
-})
-
-const totalExpense = computed(() => {
-  return analyticsData.value.reduce((sum, item) => sum + item.expense, 0)
-})
-
-const totalNetProfit = computed(() => {
-  return analyticsData.value.reduce((sum, item) => sum + item.netProfit, 0)
-})
-
-const totalOrders = computed(() => {
-  return analyticsData.value.reduce((sum, item) => sum + item.orders, 0)
-})
-
-const totalCustomers = computed(() => {
-  return analyticsData.value.reduce((sum, item) => sum + (item.customers || 0), 0)
-})
-
-const averageOrderValue = computed(() => {
-  return totalOrders.value > 0 ? Math.round(totalRevenue.value / totalOrders.value) : 0
-})
-
+const totalRevenue = computed(() =>
+  analyticsData.value.reduce((sum, item) => sum + item.revenue, 0),
+)
+const totalExpense = computed(() =>
+  analyticsData.value.reduce((sum, item) => sum + item.expense, 0),
+)
+const totalNetProfit = computed(() =>
+  analyticsData.value.reduce((sum, item) => sum + item.netProfit, 0),
+)
+const totalOrders = computed(() => analyticsData.value.reduce((sum, item) => sum + item.orders, 0))
+const totalCustomers = computed(() =>
+  analyticsData.value.reduce((sum, item) => sum + (item.customers || 0), 0),
+)
+const averageOrderValue = computed(() =>
+  totalOrders.value > 0 ? Math.round(totalRevenue.value / totalOrders.value) : 0,
+)
 const averageMargin = computed(() => {
   const margins = analyticsData.value.map((item) => item.margin)
   return margins.length > 0 ? margins.reduce((sum, margin) => sum + margin, 0) / margins.length : 0
 })
-
 const overallGrowth = computed(() => {
   const growths = analyticsData.value.map((item) => item.growth)
   return growths.length > 0 ? growths.reduce((sum, growth) => sum + growth, 0) / growths.length : 0
 })
 
-const getColspan = () => {
-  return selectedView.value === 'daily' ? 2 : 1
-}
+const getColspan = () => (selectedView.value === 'daily' ? 2 : 1)
 
-const updateData = () => {
-  analyticsData.value = generateDataForDate(selectedDate.value, selectedView.value)
-}
+const updateData = () =>
+  (analyticsData.value = generateDataForDate(selectedDate.value, selectedView.value))
 
-// Initialize data
 updateData()
 
-const formatNumber = (num) => {
-  return num.toLocaleString()
-}
+const formatNumber = (num) => num.toLocaleString()
+const formatDate = (dateString) =>
+  new Date(dateString).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
-
-const getGrowthClass = (growth) => {
-  if (growth > 0) return 'positive'
-  if (growth < 0) return 'negative'
-  return 'neutral'
-}
-
-const getGrowthIcon = (growth) => {
-  if (growth > 0) return '↗'
-  if (growth < 0) return '↘'
-  return '→'
-}
+const getGrowthClass = (growth) => (growth > 0 ? 'positive' : growth < 0 ? 'negative' : 'neutral')
+const getGrowthIcon = (growth) => (growth > 0 ? '↗' : growth < 0 ? '↘' : '→')
 
 const getStatusClass = (status) => {
   switch (status?.toLowerCase()) {

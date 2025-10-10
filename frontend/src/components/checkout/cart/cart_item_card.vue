@@ -32,55 +32,39 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, computed } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
-  item: {
-    type: Object,
-    required: true,
-  },
+  item: { type: Object, required: true },
 })
 
 defineEmits(['increaseQuantity', 'decreaseQuantity', 'removeItem'])
 
-const hasDiscount = computed(() => {
-  return (
+const hasDiscount = computed(
+  () =>
     props.item.discount &&
-    (props.item.discount.type === 'percent' || props.item.discount.type === 'fixed')
-  )
-})
+    (props.item.discount.type === 'percent' || props.item.discount.type === 'fixed'),
+)
 
 const finalPrice = computed(() => {
-  if (!hasDiscount.value) {
-    return props.item.price
-  }
-
-  if (props.item.discount.type === 'percent') {
-    return props.item.price - (props.item.price * props.item.discount.value) / 100
-  } else if (props.item.discount.type === 'fixed') {
-    return props.item.price - props.item.discount.value
-  }
-
-  return props.item.price
+  if (!hasDiscount.value) return props.item.price
+  const discount = props.item.discount
+  return discount.type === 'percent'
+    ? props.item.price - (props.item.price * discount.value) / 100
+    : props.item.price - discount.value
 })
 
 const displayDiscount = computed(() => {
   if (!hasDiscount.value) return null
-
-  if (props.item.discount.type === 'percent') {
-    return `${props.item.discount.value}% OFF`
-  } else if (props.item.discount.type === 'fixed') {
-    return `$${props.item.discount.value} OFF`
-  }
-  return null
+  const discount = props.item.discount
+  return discount.type === 'percent' ? `${discount.value}% OFF` : `$${discount.value} OFF`
 })
 
-const formatPrice = (price) => {
-  return price.toLocaleString()
-}
+const formatPrice = (price) => price.toLocaleString()
 </script>
 
 <style scoped>
+/* Subtitle and Color */
 .subtitle-color {
   display: flex;
   align-items: center;
@@ -95,12 +79,14 @@ const formatPrice = (price) => {
   font-weight: 500;
 }
 
+/* Item Name Row */
 .item-name-row {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
+/* Cart Item */
 .cart-item {
   display: flex;
   gap: 20px;
@@ -108,6 +94,7 @@ const formatPrice = (price) => {
   border-bottom: 1px solid #eee;
 }
 
+/* Item Image */
 .item-image {
   position: relative;
   flex-shrink: 0;
@@ -120,12 +107,14 @@ const formatPrice = (price) => {
   border-radius: 8px;
 }
 
+/* Discount Badge */
 .discount-badge {
   color: #14c9c9;
   font-size: 12px;
   font-weight: 500;
 }
 
+/* Item Details */
 .item-details {
   flex: 1;
   font-family: 'Poppins', sans-serif;
@@ -138,6 +127,7 @@ const formatPrice = (price) => {
   color: #333;
 }
 
+/* Item Price */
 .item-price {
   display: flex;
   gap: 10px;
@@ -156,6 +146,7 @@ const formatPrice = (price) => {
   font-size: 18px;
 }
 
+/* Item Controls */
 .item-controls {
   display: flex;
   flex-direction: column;
@@ -163,6 +154,7 @@ const formatPrice = (price) => {
   align-items: center;
 }
 
+/* Quantity Control */
 .quantity-control {
   display: flex;
   align-items: center;
@@ -193,6 +185,7 @@ const formatPrice = (price) => {
   text-align: center;
 }
 
+/* Remove Button */
 .remove-btn {
   background: none;
   border: none;
@@ -202,6 +195,7 @@ const formatPrice = (price) => {
   font-size: 14px;
 }
 
+/* Mobile Responsive */
 @media (max-width: 768px) {
   .cart-item {
     flex-direction: column;

@@ -16,24 +16,12 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  rating: {
-    type: Number,
-    required: true,
-  },
-  count: {
-    type: Number,
-    required: true,
-  },
-  total: {
-    type: Number,
-    required: true,
-  },
+  rating: { type: Number, required: true },
+  count: { type: Number, required: true },
+  total: { type: Number, required: true },
 })
 
-const percentage = computed(() => {
-  if (!props.total) return 0
-  return Math.round((props.count / props.total) * 100)
-})
+const percentage = computed(() => (props.total ? Math.round((props.count / props.total) * 100) : 0))
 </script>
 
 <style scoped>
@@ -74,9 +62,11 @@ const percentage = computed(() => {
 .rating-3 {
   background: #22c55e;
 }
+
 .rating-2 {
   background: #fbbf24;
 }
+
 .rating-1 {
   background: #ef4444;
 }

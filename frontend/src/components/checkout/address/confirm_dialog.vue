@@ -14,12 +14,13 @@
 <script setup>
 defineProps({
   visible: Boolean,
-  title: { type: String, default: 'Confirm Action' },
-  message: { type: String, default: 'Are you sure?' },
+  title: String,
+  message: String,
 })
 </script>
 
 <style scoped>
+/* Overlay */
 .confirm-overlay {
   position: fixed;
   inset: 0;
@@ -30,6 +31,7 @@ defineProps({
   z-index: 2000;
 }
 
+/* Dialog Box */
 .confirm-box {
   background: white;
   padding: 24px;
@@ -40,24 +42,28 @@ defineProps({
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
+/* Title */
 .confirm-title {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 12px;
 }
 
+/* Message */
 .confirm-message {
   font-size: 14px;
   margin-bottom: 20px;
   color: #444;
 }
 
+/* Actions */
 .confirm-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 }
 
+/* Buttons */
 .btn {
   padding: 6px 14px;
   border-radius: 4px;

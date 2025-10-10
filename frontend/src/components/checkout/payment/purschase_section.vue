@@ -43,8 +43,8 @@
 
 <script setup>
 import { ref } from 'vue'
-import image1 from '@/assets/images/payment_method/bakong_khqr.png'
 import { Icon } from '@iconify/vue'
+import image1 from '@/assets/images/payment_method/bakong_khqr.png'
 
 const emit = defineEmits(['update:formData'])
 
@@ -58,16 +58,16 @@ const selectedPayment = ref({
   image: image1,
 })
 
-const emitForm = () => {
+const emitForm = () =>
   emit('update:formData', {
     buyerName: buyerName.value,
     buyerPhone: buyerPhone.value,
     payment: selectedPayment.value,
   })
-}
 </script>
 
 <style scoped>
+/* Purchase Container */
 .purchase-container {
   max-width: 800px;
   font-family: 'Poppins', sans-serif;
@@ -102,7 +102,7 @@ const emitForm = () => {
   border-color: #14c9c9;
 }
 
-/* Payment Method */
+/* Payment Info */
 .payment-info {
   margin-bottom: 32px;
 }
@@ -114,6 +114,7 @@ const emitForm = () => {
   color: #2d2d2d;
 }
 
+/* Payment Card */
 .payment-card {
   display: flex;
   align-items: center;
@@ -129,11 +130,13 @@ const emitForm = () => {
   border-color: #f2f4f7;
 }
 
+/* Payment Logo */
 .payment-logo {
   width: 60px;
   height: auto;
 }
 
+/* Payment Details */
 .payment-details h4 {
   margin: 0;
   font-size: 15px;
@@ -146,6 +149,7 @@ const emitForm = () => {
   color: #777;
 }
 
+/* Check Icon */
 .check-icon {
   margin-left: auto;
   font-size: 24px;

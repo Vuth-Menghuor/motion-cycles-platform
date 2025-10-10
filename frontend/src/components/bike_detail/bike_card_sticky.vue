@@ -1,11 +1,9 @@
 <template>
   <div class="bike-summary">
-    <!-- Image -->
     <div class="bike-summary-image">
-      <img :src="summaryImage" :alt="imageAlt" />
+      <img :src="bike.image" :alt="bike.title" />
     </div>
 
-    <!-- Info -->
     <div class="bike-summary-info">
       <div>
         <div>
@@ -16,7 +14,6 @@
             <span>Color: {{ bike.color }}</span>
           </div>
 
-          <!-- Rating -->
           <div class="bike-summary-rating">
             <div class="bike-summary-stars">
               <span
@@ -34,7 +31,6 @@
           </div>
         </div>
 
-        <!-- Price -->
         <div>
           <div class="bike-summary-price-details">
             <div class="bike-summary-current-price">
@@ -50,7 +46,6 @@
         </div>
       </div>
 
-      <!-- Buttons -->
       <div class="bike-summary-actions">
         <button class="bike-summary-add-to-cart" @click="$emit('addToCart', bike)">
           <Icon icon="fa7-solid:cart-arrow-down" />
@@ -66,45 +61,29 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
 import { Icon } from '@iconify/vue'
 
 defineEmits(['addToCart'])
-const props = defineProps({
+defineProps({
   bike: {
     type: Object,
     required: true,
   },
 })
 
-const selectedImage = ref(props.bike.image)
-const summaryImage = computed(() => selectedImage.value)
-const imageAlt = computed(() => props.bike.title)
-
-const formatNumber = (number) => {
-  return number.toLocaleString()
-}
+const formatNumber = (number) => number.toLocaleString()
 
 const getDiscountedPrice = (bike) => {
   if (!bike.discount) return bike.price
-  if (bike.discount.type === 'percent') {
-    return bike.price - (bike.price * bike.discount.value) / 100
-  } else {
-    return bike.price - bike.discount.value
-  }
+  return bike.discount.type === 'percent'
+    ? bike.price - (bike.price * bike.discount.value) / 100
+    : bike.price - bike.discount.value
 }
 
-const getSavings = (bike) => {
-  return bike.price - getDiscountedPrice(bike)
-}
+const getSavings = (bike) => bike.price - getDiscountedPrice(bike)
 </script>
 
 <style scoped>
-.bike-summary-price-details {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
 .bike-summary {
   border: 1px solid #e2e8f0;
   border-radius: 12px;
@@ -114,7 +93,6 @@ const getSavings = (bike) => {
   margin-bottom: 38px;
 }
 
-/* Image */
 .bike-summary-image img {
   width: 100%;
   height: auto;
@@ -123,7 +101,6 @@ const getSavings = (bike) => {
   object-fit: contain;
 }
 
-/* Info */
 .bike-summary-info {
   padding: 12px 16px 20px 16px;
 }
@@ -144,7 +121,6 @@ const getSavings = (bike) => {
   color: #aaa;
 }
 
-/* Rating */
 .bike-summary-rating {
   display: flex;
   align-items: center;
@@ -170,10 +146,10 @@ const getSavings = (bike) => {
   color: #444;
 }
 
-.bike-summary-original-price {
-  font-size: 14px;
-  color: #aaa;
-  text-decoration: line-through;
+.bike-summary-price-details {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .bike-summary-current-price {
@@ -182,12 +158,17 @@ const getSavings = (bike) => {
   color: #f53f3f;
 }
 
+.bike-summary-original-price {
+  font-size: 14px;
+  color: #aaa;
+  text-decoration: line-through;
+}
+
 .bike-summary-savings {
   font-size: 14px;
   color: #16a34a;
 }
 
-/* Buttons */
 .bike-summary-actions {
   display: flex;
   gap: 10px;
@@ -216,6 +197,5 @@ const getSavings = (bike) => {
 
 .bike-summary-buy-now {
   background: #3b82f6;
-  color: white;
 }
 </style>

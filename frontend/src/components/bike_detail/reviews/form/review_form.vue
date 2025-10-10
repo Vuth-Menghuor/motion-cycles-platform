@@ -2,7 +2,6 @@
   <div class="review-submission">
     <h3 class="submission-title">Add Your Rating</h3>
 
-    <!-- Star Rating -->
     <div class="star-rating">
       <span
         v-for="i in 5"
@@ -17,7 +16,6 @@
       </span>
     </div>
 
-    <!-- Form Fields -->
     <div class="form-row">
       <div class="form-group">
         <label for="name" class="form-label">Name</label>
@@ -42,7 +40,6 @@
       </div>
     </div>
 
-    <!-- Review Text Area -->
     <div class="form-group">
       <label for="review" class="form-label">Write your review here</label>
       <textarea
@@ -54,14 +51,12 @@
       ></textarea>
     </div>
 
-    <!-- Submit Button -->
     <div class="form-actions">
       <button type="button" class="submit-button" @click="submitReview" :disabled="!isFormValid">
         Submit Review
       </button>
     </div>
 
-    <!-- Success Message -->
     <div v-if="showSuccess" class="success-message">
       <Icon icon="qlementine-icons:success-16" />
       Your review has been submitted successfully!
@@ -75,7 +70,6 @@ import { ref, computed } from 'vue'
 
 const emit = defineEmits(['submit-review'])
 
-// Reactive data
 const selectedRating = ref(0)
 const hoverRating = ref(0)
 const showSuccess = ref(false)
@@ -85,7 +79,6 @@ const formData = ref({
   review: '',
 })
 
-// Methods
 const selectRating = (rating) => {
   selectedRating.value = rating
 }
@@ -100,32 +93,23 @@ const isFormValid = computed(() => {
 })
 
 const submitReview = () => {
-  if (isFormValid.value) {
-    const reviewData = {
-      user: formData.value.name,
-      rating: selectedRating.value,
-      comment: formData.value.review,
-      email: formData.value.email,
-      date: new Date().toISOString().split('T')[0],
-    }
+  if (!isFormValid.value) return
 
-    // Emit the review data to parent component
-    emit('submit-review', reviewData)
-
-    // Show success message
-    showSuccess.value = true
-    setTimeout(() => {
-      showSuccess.value = false
-    }, 3000)
-
-    // Reset form
-    selectedRating.value = 0
-    formData.value = {
-      name: '',
-      email: '',
-      review: '',
-    }
+  const reviewData = {
+    user: formData.value.name,
+    rating: selectedRating.value,
+    comment: formData.value.review,
+    email: formData.value.email,
+    date: new Date().toISOString().split('T')[0],
   }
+
+  emit('submit-review', reviewData)
+
+  showSuccess.value = true
+  setTimeout(() => (showSuccess.value = false), 3000)
+
+  selectedRating.value = 0
+  formData.value = { name: '', email: '', review: '' }
 }
 </script>
 
@@ -147,7 +131,6 @@ const submitReview = () => {
   margin: 0 0 16px 0;
 }
 
-/* Star Rating */
 .star-rating {
   display: flex;
   gap: 4px;
@@ -171,7 +154,6 @@ const submitReview = () => {
   color: #fbbf24;
 }
 
-/* Form Layout */
 .form-row {
   display: flex;
   gap: 16px;
@@ -194,7 +176,6 @@ const submitReview = () => {
   margin-bottom: 6px;
 }
 
-/* Input Styles */
 .form-input,
 .form-textarea {
   width: 100%;
@@ -212,6 +193,7 @@ const submitReview = () => {
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
+  border-color: #3b82f6;
 }
 
 .form-input::placeholder,
@@ -224,7 +206,6 @@ const submitReview = () => {
   min-height: 100px;
 }
 
-/* Submit Button */
 .form-actions {
   display: flex;
   justify-content: flex-end;
@@ -246,7 +227,15 @@ const submitReview = () => {
     opacity 0.2s ease;
 }
 
-/* Success Message */
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submit-button:hover:not(:disabled) {
+  background-color: #2563eb;
+}
+
 .success-message {
   display: flex;
   align-items: center;
@@ -275,7 +264,6 @@ const submitReview = () => {
   }
 }
 
-/* Responsive */
 @media (max-width: 640px) {
   .review-submission {
     padding: 20px;
