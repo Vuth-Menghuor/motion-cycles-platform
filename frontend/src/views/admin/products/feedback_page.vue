@@ -4,7 +4,8 @@
     <FeedbackFilters
       v-model:customerSearch="customerSearch"
       v-model:ratingFilter="ratingFilter"
-      v-model:productFilter="productFilter"
+      v-model:categoryFilter="categoryFilter"
+      v-model:brandFilter="brandFilter"
       v-model:dateFilter="dateFilter"
       @clearFilters="clearFilters"
     />
@@ -61,7 +62,7 @@ import FeedbackPagination from '@/components/admin/feedback/FeedbackPagination.v
 import FeedbackProductCard from '@/components/admin/feedback/FeedbackProductCard.vue'
 
 // Constants
-const ITEMS_PER_PAGE = 20
+const ITEMS_PER_PAGE = 10
 
 // Reactive state
 const currentPage = ref(1)
@@ -69,21 +70,23 @@ const router = useRouter()
 
 // Filter states
 const ratingFilter = ref('')
-const productFilter = ref('Trail Pro Carbon')
+const categoryFilter = ref('')
+const brandFilter = ref('')
 const dateFilter = ref('')
 const customerSearch = ref('')
 
 // Sample data generation
 const generateSampleFeedback = () => {
-  const productNames = [
-    'Trail Pro Carbon',
-    'Road Race Elite',
-    'Mountain Bike Aluminum',
-    'Gravel Sport',
-    'Time Trial Aero',
+  const products = [
+    { name: 'Trail Pro Carbon', category: 'mountain', brand: 'Trek' },
+    { name: 'Road Race Elite', category: 'road', brand: 'Giant' },
+    { name: 'Mountain Bike Aluminum', category: 'mountain', brand: 'Specialized' },
+    { name: 'Gravel Sport', category: 'road', brand: 'Cannondale' },
+    { name: 'Time Trial Aero', category: 'road', brand: 'Santa Cruz' },
   ]
-  const customerNames = ['John Smith', 'Sarah Johnson', 'Mike Davis', 'Emma Wilson', 'Chris Brown']
-  const customerAvatars = [
+
+  const customers = ['John Smith', 'Sarah Johnson', 'Mike Davis', 'Emma Wilson', 'Chris Brown']
+  const avatars = [
     'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face',
     'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=40&h=40&fit=crop&crop=face',
     'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face',
@@ -99,31 +102,27 @@ const generateSampleFeedback = () => {
   ]
   const statuses = ['Pending', 'Reviewed', 'Responded']
 
-  const feedback = []
-
-  for (let i = 0; i < 25; i++) {
-    const randomNum = Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(4, '0')
-    const rating = Math.floor(Math.random() * 5) + 1
-
+  return Array.from({ length: 25 }, () => {
+    const product = products[Math.floor(Math.random() * products.length)]
     const date = new Date()
     date.setDate(date.getDate() - Math.floor(Math.random() * 30))
 
-    feedback.push({
-      id: `F${randomNum}B`,
-      productName: productNames[Math.floor(Math.random() * productNames.length)],
-      customerName: customerNames[Math.floor(Math.random() * customerNames.length)],
-      customerAvatar: customerAvatars[Math.floor(Math.random() * customerAvatars.length)],
-      rating: rating,
+    return {
+      id: `F${Math.floor(Math.random() * 10000)
+        .toString()
+        .padStart(4, '0')}B`,
+      productName: product.name,
+      category: product.category,
+      brand: product.brand,
+      customerName: customers[Math.floor(Math.random() * customers.length)],
+      customerAvatar: avatars[Math.floor(Math.random() * avatars.length)],
+      rating: Math.floor(Math.random() * 5) + 1,
       comment: comments[Math.floor(Math.random() * comments.length)],
-      date: date.toLocaleDateString(),
+      date: date.toISOString().split('T')[0],
       status: statuses[Math.floor(Math.random() * statuses.length)],
       selected: false,
-    })
-  }
-
-  return feedback
+    }
+  })
 }
 
 // Sample product data
@@ -134,6 +133,8 @@ const sampleProducts = {
     price: 2499.99,
     rating: 4.8,
     image: 'https://via.placeholder.com/400x200?text=Trail+Pro+Carbon',
+    category: 'mountain',
+    brand: 'Trek',
   },
   'Road Race Elite': {
     name: 'Road Race Elite',
@@ -141,6 +142,8 @@ const sampleProducts = {
     price: 3299.99,
     rating: 4.9,
     image: 'https://via.placeholder.com/400x200?text=Road+Race+Elite',
+    category: 'road',
+    brand: 'Giant',
   },
   'Mountain Bike Aluminum': {
     name: 'Mountain Bike Aluminum',
@@ -148,26 +151,52 @@ const sampleProducts = {
     price: 899.99,
     rating: 4.2,
     image: 'https://via.placeholder.com/400x200?text=Mountain+Bike+Aluminum',
+    category: 'mountain',
+    brand: 'Specialized',
+  },
+  'Gravel Sport': {
+    name: 'Gravel Sport',
+    description: 'Versatile gravel bike for mixed terrain adventures.',
+    price: 1899.99,
+    rating: 4.6,
+    image: 'https://via.placeholder.com/400x200?text=Gravel+Sport',
+    category: 'road',
+    brand: 'Cannondale',
+  },
+  'Time Trial Aero': {
+    name: 'Time Trial Aero',
+    description: 'Aerodynamic time trial bike for speed and performance.',
+    price: 4199.99,
+    rating: 4.9,
+    image: 'https://via.placeholder.com/400x200?text=Time+Trial+Aero',
+    category: 'road',
+    brand: 'Santa Cruz',
   },
 }
 
-// Data
+// ===========================================
+// DATA
+// ===========================================
+
 const feedback = ref(generateSampleFeedback())
 
-// Computed properties
+// ===========================================
+// COMPUTED PROPERTIES
+// ===========================================
+
 const totalItems = computed(() => filteredFeedback.value.length)
 
 const filteredFeedback = computed(() => {
   return feedback.value.filter((item) => {
-    const matchesRating = !ratingFilter.value || item.rating.toString() === ratingFilter.value
-    const matchesProduct = !productFilter.value || item.productName === productFilter.value
-    const matchesDate =
-      !dateFilter.value || item.date === new Date(dateFilter.value).toLocaleDateString()
-    const matchesCustomer =
+    const matches = [
+      !ratingFilter.value || item.rating.toString() === ratingFilter.value,
+      !categoryFilter.value || item.category === categoryFilter.value,
+      !brandFilter.value || item.brand === brandFilter.value,
+      !dateFilter.value || item.date === dateFilter.value,
       !customerSearch.value ||
-      item.customerName.toLowerCase().includes(customerSearch.value.toLowerCase())
-
-    return matchesRating && matchesProduct && matchesDate && matchesCustomer
+        item.customerName.toLowerCase().includes(customerSearch.value.toLowerCase()),
+    ]
+    return matches.every(Boolean)
   })
 })
 
@@ -180,23 +209,31 @@ const paginatedFeedback = computed(() => {
 const selectedFeedback = computed(() => feedback.value.filter((item) => item.selected))
 
 const selectedProduct = computed(() => {
-  if (productFilter.value && sampleProducts[productFilter.value]) {
-    return sampleProducts[productFilter.value]
-  }
-  return null
+  if (filteredFeedback.value.length === 0) return null
+
+  // Count product occurrences
+  const productCounts = {}
+  filteredFeedback.value.forEach((item) => {
+    productCounts[item.productName] = (productCounts[item.productName] || 0) + 1
+  })
+
+  // Find most common product
+  const mostCommonProduct = Object.keys(productCounts).reduce((a, b) =>
+    productCounts[a] > productCounts[b] ? a : b,
+  )
+
+  return sampleProducts[mostCommonProduct] || sampleProducts['Trail Pro Carbon']
 })
 
-// Methods
+// ===========================================
+// METHODS
+// ===========================================
+
 const toggleSelectFeedback = (feedbackId) => {
   const item = feedback.value.find((f) => f.id === feedbackId)
   if (item) {
     item.selected = !item.selected
-    updateSelectAllState()
   }
-}
-
-const updateSelectAllState = () => {
-  // Method kept for compatibility but selectAll functionality removed
 }
 
 const goToPage = (page) => {
@@ -205,7 +242,10 @@ const goToPage = (page) => {
   }
 }
 
-// Navigation methods
+// ===========================================
+// NAVIGATION METHODS
+// ===========================================
+
 const viewFeedback = (feedbackId) => {
   console.log('View feedback:', feedbackId)
   router.push(`/admin/feedback/view/${feedbackId}`)
@@ -228,7 +268,10 @@ const deleteFeedback = (feedbackId) => {
   }
 }
 
-// Bulk operations
+// ===========================================
+// BULK OPERATIONS METHODS
+// ===========================================
+
 const bulkMarkReviewed = () => {
   selectedFeedback.value.forEach((item) => {
     item.status = 'Reviewed'
@@ -245,30 +288,36 @@ const bulkDelete = () => {
   }
 }
 
+// ===========================================
+// UTILITY METHODS
+// ===========================================
+
 const clearFilters = () => {
   ratingFilter.value = ''
-  productFilter.value = ''
+  categoryFilter.value = ''
+  brandFilter.value = ''
   dateFilter.value = ''
   customerSearch.value = ''
   currentPage.value = 1
 }
 
-// Watchers
-watch(
-  () => feedback.value.map((p) => p.selected),
-  () => updateSelectAllState(),
-  { deep: true },
-)
+// ===========================================
+// WATCHERS
+// ===========================================
 
+// Watchers
 watch(currentPage, () => {
   // Reset page when changing pages
 })
 
 // Watch filters to reset to page 1
-watch([ratingFilter, productFilter, dateFilter, customerSearch], () => {
+watch([ratingFilter, categoryFilter, brandFilter, dateFilter, customerSearch], () => {
   currentPage.value = 1
 })
 </script>
+
+// =========================================== // STYLES //
+===========================================
 
 <style scoped>
 /* Page Layout */
@@ -287,6 +336,10 @@ watch([ratingFilter, productFilter, dateFilter, customerSearch], () => {
   gap: 24px;
   flex: 1;
   overflow-y: scroll;
+}
+
+.feedback-section {
+  flex: 1;
 }
 
 .main-content.two-column .product-section {

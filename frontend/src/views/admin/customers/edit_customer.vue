@@ -272,7 +272,7 @@ const validateForm = () => {
   }
 
   // Optional field validations
-  if (form.phone?.trim() && !/^[\+]?[1-9][\d]{0,15}$/.test(form.phone.replace(/[\s\-\(\)]/g, ''))) {
+  if (form.phone?.trim() && !/^[+]?[1-9][\d]{0,15}$/.test(form.phone.replace(/[\s\-()]/g, ''))) {
     errors.phone = 'Please enter a valid phone number'
     isValid = false
   }

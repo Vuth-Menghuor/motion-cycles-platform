@@ -12,7 +12,7 @@
 
       <div class="card-info">
         <div class="feedback-id">{{ feedback.id }}</div>
-        <div class="feedback-date">{{ feedback.date }}</div>
+        <div class="feedback-date">{{ formatDate(feedback.date) }}</div>
       </div>
 
       <div class="card-status">
@@ -100,6 +100,14 @@ const props = defineProps({
 const emit = defineEmits(['view', 'respond', 'delete', 'toggle-select'])
 
 // Methods
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
 const handleCardClick = (event) => {
   // Don't toggle if clicking on buttons or checkbox
   if (event.target.closest('.card-actions') || event.target.closest('.card-checkbox')) {
