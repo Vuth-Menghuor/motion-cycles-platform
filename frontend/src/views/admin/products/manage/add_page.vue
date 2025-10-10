@@ -4,17 +4,28 @@
     <nav class="breadcrumb">
       <router-link to="/admin/products/manage" class="breadcrumb-item">Product List</router-link>
       <span class="breadcrumb-separator">></span>
-      <span class="breadcrumb-item active">Add Product</span>
-      <span class="breadcrumb-separator">></span>
-      <router-link to="/admin/products/edit/1" class="breadcrumb-item">Edit Product</router-link>
+      <span class="breadcrumb-item active">{{
+        route.query.restockMode
+          ? 'Restock Product'
+          : hasQueryParams
+            ? 'Add Discount'
+            : 'Add Product'
+      }}</span>
     </nav>
 
     <div class="form-container">
       <!-- Left Column -->
       <div class="form-column">
-        <ProductInfo :product="product" @update:product="product = $event" />
+        <ProductInfo
+          :product="product"
+          @update:product="product = $event"
+          :prefilled-fields="prefilledFields"
+          :restock-mode="!!route.query.restockMode"
+          :stock-alert="route.query.stockAlert"
+        />
         <ProductDescription :product="product" @update:product="product = $event" />
         <ProductQuality :product="product" @update:product="product = $event" />
+        <ProductDiscount :product="product" @update:product="product = $event" />
       </div>
 
       <!-- Right Column -->
@@ -26,6 +37,7 @@
           @update:specs="specs = $event"
           @add-product="addProduct"
           @discard="discardForm"
+          :prefilled-fields="prefilledFields"
         />
       </div>
     </div>
@@ -33,13 +45,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import ProductInfo from '@/components/admin/products/ProductInfo.vue'
 import ProductDescription from '@/components/admin/products/ProductDescription.vue'
 import ProductQuality from '@/components/admin/products/ProductQuality.vue'
+import ProductDiscount from '@/components/admin/products/ProductDiscount.vue'
 import ProductImage from '@/components/admin/products/ProductImage.vue'
 import ProductPrice from '@/components/admin/products/ProductPrice.vue'
 import ProductSpecs from '@/components/admin/products/ProductSpecs.vue'
+
+// Get route instance
+const route = useRoute()
 
 // Reactive data
 const product = ref({
@@ -47,11 +64,16 @@ const product = ref({
   name: '',
   brand: '',
   category: '',
+  quantity: '',
   highlight: '',
   description: '',
   quality: '',
   price: '',
   discountCode: '',
+  discountType: '',
+  discountValue: '',
+  discountStartDate: '',
+  discountExpireDate: '',
   color: '',
 })
 
@@ -64,12 +86,58 @@ const specs = ref({
   display: '',
 })
 
+// Computed properties
+const hasQueryParams = computed(() => {
+  return (
+    route.query.productName || route.query.brand || route.query.category || route.query.restockMode
+  )
+})
+
+const prefilledFields = computed(() => {
+  const fields = {}
+  if (route.query.productName) fields.name = true
+  if (route.query.brand) fields.brand = true
+  if (route.query.category) fields.category = true
+  // For restocking, don't prefill quantity so user can modify it
+  if (route.query.quantity && !route.query.restockMode) fields.quantity = true
+  if (route.query.highlight) fields.highlight = true
+  if (route.query.description) fields.description = true
+  if (route.query.quality) fields.quality = true
+  if (route.query.price) fields.price = true
+  if (route.query.color) fields.color = true
+  if (route.query.discountCode) fields.discountCode = true
+  if (route.query.discountType) fields.discountType = true
+  if (route.query.discountValue) fields.discountValue = true
+  if (route.query.discountStartDate) fields.discountStartDate = true
+  if (route.query.discountEndDate) fields.discountExpireDate = true
+  // Specs fields
+  if (route.query.range) fields.range = true
+  if (route.query.hubMotor) fields.hubMotor = true
+  if (route.query.payload) fields.payload = true
+  if (route.query.controller) fields.controller = true
+  if (route.query.weight) fields.weight = true
+  if (route.query.display) fields.display = true
+  return fields
+})
+
 // Methods
 const generateProductId = () => {
   const randomNum = Math.floor(Math.random() * 10000)
     .toString()
     .padStart(4, '0')
   return `P${randomNum}I`
+}
+
+const convertDateFormat = (dateString) => {
+  // Convert from MM/DD/YYYY to YYYY-MM-DD format
+  if (!dateString || dateString === 'N/A') return ''
+
+  const parts = dateString.split('/')
+  if (parts.length === 3) {
+    const [month, day, year] = parts
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  }
+  return dateString
 }
 
 const addProduct = () => {
@@ -90,10 +158,16 @@ const resetForm = () => {
     name: '',
     brand: '',
     category: '',
+    quantity: '',
     highlight: '',
     description: '',
     quality: '',
     price: '',
+    discountCode: '',
+    discountType: '',
+    discountValue: '',
+    discountStartDate: '',
+    discountExpireDate: '',
     color: '',
   }
   specs.value = {
@@ -106,9 +180,110 @@ const resetForm = () => {
   }
 }
 
-// Initialize with random product ID
+// Initialize with random product ID and check for query parameters
 onMounted(() => {
   product.value.id = generateProductId()
+
+  // Check for query parameters from discount management page or stock page
+  const {
+    productName,
+    brand,
+    category,
+    discountCode,
+    discountType,
+    discountValue,
+    discountStartDate,
+    discountEndDate,
+    currentStock,
+    quantity,
+    productId,
+    restockMode,
+    highlight,
+    description,
+    quality,
+    price,
+    color,
+    range,
+    hubMotor,
+    payload,
+    controller,
+    weight,
+    display,
+  } = route.query
+
+  if (productName) {
+    product.value.name = productName
+  }
+  if (brand) {
+    product.value.brand = brand
+  }
+  if (category) {
+    product.value.category = category
+  }
+  if (currentStock) {
+    product.value.quantity = currentStock
+  }
+  if (quantity) {
+    product.value.quantity = quantity
+  }
+  if (productId && restockMode) {
+    // For restocking, use the existing product ID
+    product.value.id = productId
+  }
+  if (highlight) {
+    product.value.highlight = highlight
+  }
+  if (description) {
+    product.value.description = description
+  }
+  if (quality) {
+    product.value.quality = quality
+  }
+  if (price) {
+    product.value.price = price
+  }
+  if (color) {
+    product.value.color = color
+  }
+  if (discountCode) {
+    product.value.discountCode = discountCode
+  }
+  if (discountType && discountType !== 'N/A') {
+    product.value.discountType = discountType
+  }
+  if (discountValue && discountValue !== 'N/A') {
+    product.value.discountValue = discountValue
+  }
+  if (discountStartDate && discountStartDate !== 'N/A') {
+    // Convert date from MM/DD/YYYY to YYYY-MM-DD format for HTML date input
+    const convertedStartDate = convertDateFormat(discountStartDate)
+    product.value.discountStartDate = convertedStartDate
+  }
+  if (discountEndDate && discountEndDate !== 'N/A') {
+    // Convert date from MM/DD/YYYY to YYYY-MM-DD format for HTML date input
+    const convertedEndDate = convertDateFormat(discountEndDate)
+    product.value.discountExpireDate = convertedEndDate
+  }
+
+  // Handle specs information
+  if (range) {
+    specs.value.range = range
+  }
+  if (hubMotor) {
+    specs.value.hubMotor = hubMotor
+  }
+  if (payload) {
+    specs.value.payload = payload
+  }
+  if (controller) {
+    specs.value.controller = controller
+  }
+  if (weight) {
+    specs.value.weight = weight
+  }
+  if (display) {
+    specs.value.display = display
+  }
 })
 </script>
 

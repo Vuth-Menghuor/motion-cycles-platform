@@ -208,7 +208,6 @@ export default {
           animation: {
             duration: 800,
           },
-          clip: false,
         },
       })
     },

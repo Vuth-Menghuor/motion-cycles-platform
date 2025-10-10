@@ -78,11 +78,11 @@ const customerSearch = ref('')
 // Sample data generation
 const generateSampleFeedback = () => {
   const products = [
-    { name: 'Trail Pro Carbon', category: 'mountain', brand: 'Trek' },
-    { name: 'Road Race Elite', category: 'road', brand: 'Giant' },
-    { name: 'Mountain Bike Aluminum', category: 'mountain', brand: 'Specialized' },
-    { name: 'Gravel Sport', category: 'road', brand: 'Cannondale' },
-    { name: 'Time Trial Aero', category: 'road', brand: 'Santa Cruz' },
+    { name: 'Trail Pro Carbon', category: 'Mountain Bike', brand: 'Trek' },
+    { name: 'Road Race Elite', category: 'Road Bike', brand: 'Giant' },
+    { name: 'Mountain Bike Aluminum', category: 'Mountain Bike', brand: 'Specialized' },
+    { name: 'Gravel Sport', category: 'Road Bike', brand: 'Cannondale' },
+    { name: 'Time Trial Aero', category: 'Road Bike', brand: 'Bianchi' },
   ]
 
   const customers = ['John Smith', 'Sarah Johnson', 'Mike Davis', 'Emma Wilson', 'Chris Brown']
@@ -132,7 +132,8 @@ const sampleProducts = {
     description: 'High-performance carbon trail bike designed for aggressive riding.',
     price: 2499.99,
     rating: 4.8,
-    category: 'mountain',
+    image: 'https://picsum.photos/400/200?random=1',
+    category: 'Mountain Bike',
     brand: 'Trek',
   },
   'Road Race Elite': {
@@ -140,7 +141,8 @@ const sampleProducts = {
     description: 'Professional road racing bike with aerodynamic design.',
     price: 3299.99,
     rating: 4.9,
-    category: 'road',
+    image: 'https://picsum.photos/400/200?random=2',
+    category: 'Road Bike',
     brand: 'Giant',
   },
   'Mountain Bike Aluminum': {
@@ -148,7 +150,8 @@ const sampleProducts = {
     description: 'Durable aluminum mountain bike perfect for all-terrain adventures.',
     price: 899.99,
     rating: 4.2,
-    category: 'mountain',
+    image: 'https://picsum.photos/400/200?random=3',
+    category: 'Mountain Bike',
     brand: 'Specialized',
   },
   'Gravel Sport': {
@@ -156,7 +159,8 @@ const sampleProducts = {
     description: 'Versatile gravel bike for mixed terrain adventures.',
     price: 1899.99,
     rating: 4.6,
-    category: 'road',
+    image: 'https://picsum.photos/400/200?random=4',
+    category: 'Road Bike',
     brand: 'Cannondale',
   },
   'Time Trial Aero': {
@@ -164,8 +168,9 @@ const sampleProducts = {
     description: 'Aerodynamic time trial bike for speed and performance.',
     price: 4199.99,
     rating: 4.9,
-    category: 'road',
-    brand: 'Santa Cruz',
+    image: 'https://picsum.photos/400/200?random=5',
+    category: 'Road Bike',
+    brand: 'Bianchi',
   },
 }
 

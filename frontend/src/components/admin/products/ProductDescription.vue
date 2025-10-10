@@ -8,6 +8,7 @@
         v-model="localProduct.highlight"
         placeholder="Add highlight text..."
         :disabled="disabled"
+        :class="{ 'prefilled-field': prefilledFields?.highlight }"
       ></textarea>
     </div>
 
@@ -17,6 +18,7 @@
         v-model="localProduct.description"
         placeholder="Add product description..."
         :disabled="disabled"
+        :class="{ 'prefilled-field': prefilledFields?.description }"
       ></textarea>
     </div>
   </div>
@@ -33,6 +35,10 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false,
+  },
+  prefilledFields: {
+    type: Object,
+    default: () => ({}),
   },
 })
 
@@ -87,7 +93,7 @@ textarea {
   font-size: 14px;
   font-family: 'Poppins', sans-serif;
   resize: vertical;
-  min-height: 154px;
+  min-height: 100px;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -111,5 +117,11 @@ textarea:disabled {
   color: #a0aec0;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.prefilled-field {
+  background-color: #f0fff4 !important;
+  border-color: #48bb78 !important;
+  color: #22543d !important;
 }
 </style>

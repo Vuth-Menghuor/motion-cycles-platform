@@ -807,7 +807,6 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: scroll;
   min-width: 0;
 }
 

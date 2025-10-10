@@ -9,6 +9,7 @@
         v-model="localSpecs.range"
         placeholder="Enter Range"
         :disabled="disabled"
+        :class="{ 'prefilled-field': prefilledFields?.range }"
       />
     </div>
 
@@ -19,6 +20,7 @@
         v-model="localSpecs.hubMotor"
         placeholder="Enter Hub Motor"
         :disabled="disabled"
+        :class="{ 'prefilled-field': prefilledFields?.hubMotor }"
       />
     </div>
 
@@ -29,6 +31,7 @@
         v-model="localSpecs.payload"
         placeholder="Enter Total Payload"
         :disabled="disabled"
+        :class="{ 'prefilled-field': prefilledFields?.payload }"
       />
     </div>
 
@@ -39,6 +42,7 @@
         v-model="localSpecs.controller"
         placeholder="Enter Controller"
         :disabled="disabled"
+        :class="{ 'prefilled-field': prefilledFields?.controller }"
       />
     </div>
 
@@ -49,12 +53,19 @@
         v-model="localSpecs.weight"
         placeholder="Enter Weight"
         :disabled="disabled"
+        :class="{ 'prefilled-field': prefilledFields?.weight }"
       />
     </div>
 
     <div class="spec-group">
       <span class="spec-label">Display</span>
-      <input type="text" v-model="localSpecs.display" placeholder="-" :disabled="disabled" />
+      <input
+        type="text"
+        v-model="localSpecs.display"
+        placeholder="-"
+        :disabled="disabled"
+        :class="{ 'prefilled-field': prefilledFields?.display }"
+      />
     </div>
 
     <div class="form-actions">
@@ -85,6 +96,10 @@ const props = defineProps({
     type: String,
     default: 'add',
     validator: (value) => ['add', 'edit'].includes(value),
+  },
+  prefilledFields: {
+    type: Object,
+    default: () => ({}),
   },
 })
 
@@ -157,6 +172,12 @@ input:disabled {
   color: #a0aec0;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.prefilled-field {
+  background-color: #f0fff4 !important;
+  border-color: #48bb78 !important;
+  color: #22543d !important;
 }
 
 /* Button Actions */

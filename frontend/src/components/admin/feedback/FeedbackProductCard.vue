@@ -1,10 +1,7 @@
 <template>
   <div class="product-card">
     <div class="product-image-container">
-      <img v-if="product.image" :src="product.image" :alt="product.name" class="product-image" />
-      <div v-else class="product-image-placeholder">
-        <span>{{ product.name }}</span>
-      </div>
+      <img :src="product.image" :alt="product.name" class="product-image" />
     </div>
     <div class="product-info">
       <h3 class="product-name">{{ product.name }}</h3>
@@ -56,20 +53,6 @@ defineProps({
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.product-image-placeholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  text-align: center;
-  padding: 20px;
 }
 
 .product-info {

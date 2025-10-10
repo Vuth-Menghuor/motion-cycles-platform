@@ -2,9 +2,7 @@
   <div class="discount-page">
     <!-- Breadcrumb Navigation -->
     <nav class="breadcrumb">
-      <span class="breadcrumb-item active">Discount Management</span>
-      <span class="breadcrumb-separator">></span>
-      <router-link to="/admin/discounts/add" class="breadcrumb-item">Add Discount</router-link>
+      <span class="breadcrumb-item active">Product & Discount Management</span>
     </nav>
 
     <!-- Discounts Table -->
@@ -22,8 +20,9 @@
             </th>
             <th>Product ID</th>
             <th>Discount Code</th>
-            <th>Product</th>
-            <th>Name</th>
+            <th>Product Name</th>
+            <th>Brand</th>
+            <th>Category</th>
             <th>Type</th>
             <th>Value</th>
             <th>Status</th>
@@ -36,7 +35,7 @@
           <tr
             v-for="discount in paginatedDiscounts"
             :key="discount.id"
-            :class="{ selected: discount.selected }"
+            :class="{ selected: discount.selected, 'no-discount-row': !discount.hasDiscount }"
             @click="toggleOrderSelection(discount)"
             class="clickable-row"
           >
@@ -52,7 +51,8 @@
             <td class="product-id">{{ discount.id }}</td>
             <td class="discount-code">{{ discount.code }}</td>
             <td class="discount-product">{{ discount.product }}</td>
-            <td class="discount-name">{{ discount.name }}</td>
+            <td class="discount-brand">{{ discount.brand }}</td>
+            <td class="discount-category">{{ discount.category }}</td>
             <td>{{ discount.type }}</td>
             <td>
               {{ discount.type === 'Percentage' ? discount.value + '%' : '$' + discount.value }}
@@ -69,21 +69,25 @@
             <td>{{ discount.endDate }}</td>
             <td class="actions-column">
               <div class="action-buttons">
-                <button
-                  @click="editDiscount(discount.id)"
-                  class="btn-action btn-edit"
-                  title="Edit Discount"
-                >
-                  <Icon icon="mdi:pencil" />
-                </button>
-                <span class="action-separator">|</span>
-                <button
-                  @click="deleteDiscount(discount.id)"
-                  class="btn-action btn-delete"
-                  title="Delete Discount"
-                >
-                  <Icon icon="mdi:delete" />
-                </button>
+                <template v-if="discount.hasDiscount">
+                  <button
+                    @click="editProduct(discount.id)"
+                    class="btn-action btn-edit"
+                    title="Edit Product"
+                  >
+                    <Icon icon="mdi:pencil" />
+                  </button>
+                </template>
+                <template v-else>
+                  <button
+                    @click="addDiscount(discount)"
+                    class="btn-action btn-add-discount"
+                    title="Add Discount"
+                    type="button"
+                  >
+                    <Icon icon="mdi:plus" />
+                  </button>
+                </template>
               </div>
             </td>
           </tr>
@@ -93,7 +97,7 @@
 
     <!-- Bulk Actions (shown when items are selected) -->
     <div v-if="selectedDiscounts.length > 0" class="bulk-actions">
-      <span class="selected-count">{{ selectedDiscounts.length }} discount(s) selected</span>
+      <span class="selected-count">{{ selectedDiscounts.length }} product(s) selected</span>
       <div class="bulk-buttons">
         <button @click="bulkDelete" class="btn-bulk btn-bulk-delete">
           <Icon icon="mdi:delete" />
@@ -105,7 +109,7 @@
     <!-- Pagination -->
     <div class="pagination-container">
       <div class="pagination-info">
-        Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} discounts (Page
+        Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} products (Page
         {{ currentPage }} of {{ totalPages }})
       </div>
       <div class="pagination-controls">
@@ -153,16 +157,9 @@ const router = useRouter()
 
 // Sample data generation
 const generateSampleDiscounts = () => {
-  const names = [
-    'Summer Sale',
-    'New Customer',
-    'Loyalty Program',
-    'Clearance',
-    'Flash Sale',
-    'Holiday Discount',
-  ]
+  const categories = ['Road Bike', 'Mountain Bike']
   const types = ['Percentage', 'Fixed Amount']
-  const statuses = ['Active', 'Inactive', 'Expired']
+  const statuses = ['Active', 'Inactive', 'Expired', 'No Discount']
   const discountCodes = [
     'SUMMER2025',
     'WELCOME10',
@@ -184,11 +181,29 @@ const generateSampleDiscounts = () => {
     'Cyclocross Race',
     'Touring Comfort',
     'Downhill Extreme',
+    'Urban Commuter',
+    'Hybrid Adventure',
+    'Electric City Bike',
+    'Folding Compact',
+    'Kids Balance Bike',
+    'Cargo Family Bike',
+  ]
+  const brands = [
+    'Cannondale',
+    'Trek',
+    'Bianchi',
+    'Giant',
+    'Cervélo',
+    'Specialized',
+    'Shimano',
+    'Calnago',
   ]
 
   const discounts = []
 
-  for (let i = 0; i < 45; i++) {
+  // Generate products with discounts (about 60% of total)
+  const discountCount = Math.floor(45 * 0.6)
+  for (let i = 0; i < discountCount; i++) {
     const type = types[Math.floor(Math.random() * types.length)]
     const value =
       type === 'Percentage'
@@ -206,13 +221,36 @@ const generateSampleDiscounts = () => {
         .padStart(4, '0')}I`,
       code: discountCodes[Math.floor(Math.random() * discountCodes.length)],
       product: products[Math.floor(Math.random() * products.length)],
-      name: names[Math.floor(Math.random() * names.length)],
+      brand: brands[Math.floor(Math.random() * brands.length)],
+      category: categories[Math.floor(Math.random() * categories.length)],
       type: type,
       value: value.toString(),
-      status: statuses[Math.floor(Math.random() * statuses.length)],
+      status: statuses[Math.floor(Math.random() * 3)], // Only Active, Inactive, Expired
       startDate: startDate.toLocaleDateString(),
       endDate: endDate.toLocaleDateString(),
       selected: false,
+      hasDiscount: true,
+    })
+  }
+
+  // Generate products without discounts (remaining 40%)
+  const noDiscountCount = 45 - discountCount
+  for (let i = 0; i < noDiscountCount; i++) {
+    discounts.push({
+      id: `P${Math.floor(Math.random() * 10000)
+        .toString()
+        .padStart(4, '0')}I`,
+      code: 'N/A',
+      product: products[Math.floor(Math.random() * products.length)],
+      brand: brands[Math.floor(Math.random() * brands.length)],
+      category: categories[Math.floor(Math.random() * categories.length)],
+      type: 'N/A',
+      value: 'N/A',
+      status: 'No Discount',
+      startDate: 'N/A',
+      endDate: 'N/A',
+      selected: false,
+      hasDiscount: false,
     })
   }
 
@@ -280,22 +318,63 @@ const goToPage = (page) => {
   }
 }
 
-const editDiscount = (discountId) => {
-  console.log('Edit discount:', discountId)
-  // Navigate to edit page with discount ID
-  router.push(`/admin/discounts/edit/${discountId}`)
+const editProduct = (productId) => {
+  console.log('Edit product:', productId)
+  // Find the product data
+  const product = discounts.value.find((d) => d.id === productId)
+  if (product) {
+    // Generate complete product information based on available data
+    const completeProductInfo = {
+      productName: product.product,
+      brand: product.brand,
+      category: product.category,
+      quantity: product.hasDiscount ? '25' : '15', // Default quantities
+      highlight: `${product.product} - ${product.category}`,
+      description: `Complete description for ${product.product}. This is a high-quality ${product.category.toLowerCase()} from ${product.brand}.`,
+      quality: product.hasDiscount ? 'High' : 'Standard',
+      price: product.hasDiscount ? '2999' : '1899', // Default prices
+      color: product.hasDiscount ? 'Black' : 'Blue', // Default colors
+      discountCode: product.code !== 'N/A' ? product.code : '',
+      discountType: product.type !== 'N/A' ? product.type : '',
+      discountValue: product.value !== 'N/A' ? product.value : '',
+      discountStartDate: product.startDate !== 'N/A' ? product.startDate : '',
+      discountEndDate: product.endDate !== 'N/A' ? product.endDate : '',
+      // Specs information
+      range: product.category === 'Road Bike' ? 'N/A' : '100km',
+      hubMotor: product.category === 'Road Bike' ? 'N/A' : '750W',
+      payload: '120kg',
+      controller: product.category === 'Road Bike' ? 'Basic' : 'LCD Display',
+      weight: product.category === 'Road Bike' ? '15kg' : '25kg',
+      display: product.category === 'Road Bike' ? 'None' : 'Digital',
+    }
+
+    // Navigate to edit product page with complete product information
+    router.push({
+      path: `/admin/products/edit/${productId}`,
+      query: completeProductInfo,
+    })
+  } else {
+    // Fallback if product not found
+    router.push(`/admin/products/edit/${productId}`)
+  }
 }
 
-const deleteDiscount = (discountId) => {
-  if (confirm(`Delete discount ${discountId}?`)) {
-    const index = discounts.value.findIndex((discount) => discount.id === discountId)
-    if (index > -1) {
-      discounts.value.splice(index, 1)
-      if (paginatedDiscounts.value.length === 0 && currentPage.value > 1) {
-        currentPage.value--
-      }
-    }
-  }
+const addDiscount = (discount) => {
+  console.log('Add discount for product:', discount)
+  // Navigate to add discount page with product details
+  router.push({
+    path: '/admin/products/add',
+    query: {
+      productName: discount.product,
+      brand: discount.brand,
+      category: discount.category,
+      discountCode: discount.code !== 'N/A' ? discount.code : '',
+      discountType: discount.type !== 'N/A' ? discount.type : '',
+      discountValue: discount.value !== 'N/A' ? discount.value : '',
+      discountStartDate: discount.startDate !== 'N/A' ? discount.startDate : '',
+      discountEndDate: discount.endDate !== 'N/A' ? discount.endDate : '',
+    },
+  })
 }
 
 const bulkDelete = () => {
@@ -401,8 +480,12 @@ watch(currentPage, () => {
   color: #2d3748;
 }
 
-.discounts-table tbody tr:hover {
-  background-color: #f7fafc;
+.discounts-table tbody tr.no-discount-row {
+  background-color: #fef5e7;
+}
+
+.discounts-table tbody tr.no-discount-row:hover {
+  background-color: #fdeaa7;
 }
 
 .discounts-table tbody tr.selected {
@@ -454,13 +537,24 @@ watch(currentPage, () => {
   color: #2d3748;
 }
 
-/* Discount Name Column */
-.discount-name {
+/* Discount Brand Column */
+.discount-brand {
   font-weight: 500;
-  max-width: 200px;
+  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: #2d3748;
+}
+
+/* Discount Category Column */
+.discount-category {
+  font-weight: 500;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #2d3748;
 }
 
 /* Status Badge */
@@ -483,22 +577,20 @@ watch(currentPage, () => {
   color: #742a2a;
 }
 
-.status-expired {
+.status-no-discount {
   background-color: #e2e8f0;
   color: #4a5568;
 }
 
 /* Actions Column */
 .actions-column {
-  width: 80px;
-  text-align: center;
+  display: flex;
 }
 
 .action-buttons {
   display: flex;
   gap: 8px;
-  justify-content: center;
-  margin: 0 auto;
+  justify-content: flex-start;
   align-items: center;
 }
 
@@ -533,13 +625,13 @@ watch(currentPage, () => {
   transform: translateY(-1px);
 }
 
-.btn-delete {
-  background-color: #e53e3e;
+.btn-add-discount {
+  background-color: #48bb78;
   color: white;
 }
 
-.btn-delete:hover {
-  background-color: #c53030;
+.btn-add-discount:hover {
+  background-color: #38a169;
   transform: translateY(-1px);
 }
 
@@ -685,8 +777,12 @@ watch(currentPage, () => {
     padding: 12px 8px;
   }
 
-  .discount-name {
-    max-width: 150px;
+  .discount-category {
+    max-width: 120px;
+  }
+
+  .discount-brand {
+    max-width: 120px;
   }
 }
 
@@ -706,7 +802,7 @@ watch(currentPage, () => {
   }
 
   .actions-column {
-    width: 100px;
+    width: 140px;
   }
 
   .action-buttons {
@@ -748,6 +844,14 @@ watch(currentPage, () => {
 
   .discount-product {
     max-width: 140px;
+  }
+
+  .discount-brand {
+    max-width: 100px;
+  }
+
+  .discount-category {
+    max-width: 100px;
   }
 
   .pagination-controls {

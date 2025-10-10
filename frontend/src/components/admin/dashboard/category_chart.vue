@@ -64,23 +64,17 @@ export default {
           maintainAspectRatio: false,
           cutout: '60%',
           hover: {
-            mode: 'nearest',
-            intersect: true,
+            mode: null,
           },
           plugins: {
             legend: { display: false },
-            tooltip: {
-              enabled: true,
-              callbacks: {
-                label: function (context) {
-                  return `${context.label}: ${context.parsed}%`
-                },
-              },
-            },
+            // tooltip: {
+            //   enabled: false,
+            // },
           },
           animation: {
-            animateScale: true,
-            animateRotate: true,
+            animateScale: false,
+            animateRotate: false,
             duration: 800,
           },
         },

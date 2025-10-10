@@ -29,6 +29,7 @@
             <th>Quality</th>
             <th>Price</th>
             <th>Color</th>
+            <th>Quantity</th>
             <th class="actions-column">Action</th>
           </tr>
         </thead>
@@ -63,6 +64,7 @@
             </td>
             <td class="price">${{ product.price }}</td>
             <td>{{ product.color }}</td>
+            <td>{{ product.quantity }}</td>
             <td class="actions-column">
               <div class="action-buttons">
                 <button
@@ -149,7 +151,16 @@ const router = useRouter()
 
 // Sample data generation
 const generateSampleProducts = () => {
-  const brands = ['Trek', 'Giant', 'Specialized', 'Cannondale', 'Santa Cruz']
+  const brands = [
+    'Cannondale',
+    'Trek',
+    'Bianchi',
+    'Giant',
+    'CERVÉLO',
+    'Specialized',
+    'Shimano',
+    'Calnago',
+  ]
   const categories = ['Mountain Bike', 'Road Bike']
   const qualities = ['New', 'Second Hand']
   const colors = ['Black', 'White', 'Red', 'Blue', 'Green', 'Silver', 'Gray', 'Yellow']
@@ -177,6 +188,7 @@ const generateSampleProducts = () => {
       quality: qualities[Math.floor(Math.random() * qualities.length)],
       price: (Math.floor(Math.random() * 4000) + 500).toString(),
       color: colors[Math.floor(Math.random() * colors.length)],
+      quantity: (Math.floor(Math.random() * 50) + 1).toString(),
       selected: false,
     })
   }
@@ -683,7 +695,9 @@ watch(currentPage, () => {
   .products-table th:nth-child(6),
   .products-table td:nth-child(6),
   .products-table th:nth-child(7),
-  .products-table td:nth-child(7) {
+  .products-table td:nth-child(7),
+  .products-table th:nth-child(8),
+  .products-table td:nth-child(8) {
     display: none;
   }
 

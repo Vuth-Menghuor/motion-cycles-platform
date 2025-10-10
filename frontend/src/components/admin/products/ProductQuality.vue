@@ -4,7 +4,7 @@
 
     <div class="form-group">
       <label>Product Quality</label>
-      <select v-model="localProduct.quality" :disabled="disabled">
+      <select v-model="localProduct.quality" :disabled="disabled || prefilledFields.quality">
         <option value="">Select Quality</option>
         <option value="New">New</option>
         <option value="Refurbished">Refurbished</option>
@@ -25,6 +25,10 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false,
+  },
+  prefilledFields: {
+    type: Object,
+    default: () => ({}),
   },
 })
 
@@ -98,5 +102,13 @@ select:disabled {
   color: #a0aec0;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+/* Special styling for prefilled fields */
+select:disabled {
+  background-color: #e6fffa;
+  color: #38a169;
+  border-color: #9ae6b4;
+  opacity: 1;
 }
 </style>

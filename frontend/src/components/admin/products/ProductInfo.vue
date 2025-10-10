@@ -19,28 +19,60 @@
         type="text"
         v-model="localProduct.name"
         placeholder="Enter product name"
-        :disabled="disabled"
+        :disabled="disabled || prefilledFields.name"
       />
     </div>
 
     <div class="form-group">
       <label>Product Brand</label>
-      <select v-model="localProduct.brand" :disabled="disabled">
+      <select v-model="localProduct.brand" :disabled="disabled || prefilledFields.brand">
         <option value="">Select Brand</option>
-        <option value="Brand A">Brand A</option>
-        <option value="Brand B">Brand B</option>
-        <option value="Brand C">Brand C</option>
+        <option value="Cannondale">Cannondale</option>
+        <option value="Trek">Trek</option>
+        <option value="Bianchi">Bianchi</option>
+        <option value="Giant">Giant</option>
+        <option value="CERVÉLO">CERVÉLO</option>
+        <option value="Specialized">Specialized</option>
+        <option value="Shimano">Shimano</option>
+        <option value="Calnago">Calnago</option>
       </select>
     </div>
 
     <div class="form-group">
       <label>Product Category</label>
-      <select v-model="localProduct.category" :disabled="disabled">
+      <select v-model="localProduct.category" :disabled="disabled || prefilledFields.category">
         <option value="">Select Category</option>
-        <option value="Electronics">Electronics</option>
-        <option value="Vehicles">Vehicles</option>
-        <option value="Accessories">Accessories</option>
+        <option value="Road Bike">Road Bike</option>
+        <option value="Mountain Bike">Mountain Bike</option>
       </select>
+    </div>
+
+    <div class="form-group">
+      <label>Quantity</label>
+      <input
+        type="number"
+        v-model="localProduct.quantity"
+        placeholder="Enter quantity"
+        min="0"
+        :disabled="disabled || prefilledFields.quantity"
+      />
+      <div v-if="restockMode && !prefilledFields.quantity" class="quantity-message">
+        <span v-if="stockAlert === 'Normal'" class="alert-normal"
+          >Stock levels are normal - add more quantity to increase inventory</span
+        >
+        <span v-else-if="stockAlert === 'Warning'" class="alert-warning"
+          >Stock levels are getting low - consider restocking soon</span
+        >
+        <span v-else-if="stockAlert === 'Low Stock'" class="alert-low-stock"
+          >⚠️ Low stock alert - urgent restocking recommended</span
+        >
+        <span v-else-if="stockAlert === 'Critical'" class="alert-critical"
+          >🚨 Critical stock alert - immediate restocking required</span
+        >
+        <span v-else class="alert-default"
+          >Enter the new total quantity to restock this product</span
+        >
+      </div>
     </div>
   </div>
 </template>
@@ -56,6 +88,18 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false,
+  },
+  prefilledFields: {
+    type: Object,
+    default: () => ({}),
+  },
+  restockMode: {
+    type: Boolean,
+    default: false,
+  },
+  stockAlert: {
+    type: String,
+    default: '',
   },
 })
 
@@ -146,6 +190,15 @@ select:disabled {
   opacity: 0.6;
 }
 
+/* Special styling for prefilled fields */
+input:disabled:not([readonly]),
+select:disabled {
+  background-color: #e6fffa;
+  color: #38a169;
+  border-color: #9ae6b4;
+  opacity: 1;
+}
+
 /* Special styling for Product ID field */
 .form-group:first-child input:disabled {
   background-color: #e6fffa;
@@ -153,5 +206,39 @@ select:disabled {
   font-weight: 500;
   border-color: #9ae6b4;
   cursor: not-allowed;
+}
+
+.quantity-message {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.alert-normal {
+  color: #38a169;
+}
+
+.alert-warning {
+  color: #dd6b20;
+}
+
+.alert-low-stock {
+  color: #e53e3e;
+  font-weight: 600;
+}
+
+.alert-critical {
+  color: #c53030;
+  font-weight: 700;
+  background-color: #fed7d7;
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #e53e3e;
+  font-style: normal;
+}
+
+.alert-default {
+  color: #38a169;
 }
 </style>

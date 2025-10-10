@@ -53,85 +53,87 @@
 
       <!-- Customer Details -->
       <template v-else>
-        <!-- Customer Information Section -->
-        <div class="content-section">
-          <div class="section-header">
-            <h2><Icon icon="mdi:account-details" /> Customer Information</h2>
-          </div>
-          <div class="section-content">
-            <div class="info-list">
-              <div class="info-row">
-                <span class="info-label">Full Name:</span>
-                <span class="info-value">{{ customer.name }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Email Address:</span>
-                <span class="info-value">{{ customer.email }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Phone Number:</span>
-                <span class="info-value">{{ customer.phone || 'Not provided' }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Registration Date:</span>
-                <span class="info-value">{{ formatDate(customer.registration_date) }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Total Orders:</span>
-                <span class="info-value">{{ customer.total_orders }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Account Status:</span>
-                <span :class="`status-badge status-${customer.status}`" class="info-value">
-                  {{ formatStatus(customer.status) }}
-                </span>
+        <div class="customer-view-inner">
+          <!-- Customer Information Section -->
+          <div class="content-section">
+            <div class="section-header">
+              <h2><Icon icon="mdi:account-details" /> Customer Information</h2>
+            </div>
+            <div class="section-content">
+              <div class="info-list">
+                <div class="info-row">
+                  <span class="info-label">Full Name:</span>
+                  <span class="info-value">{{ customer.name }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Email Address:</span>
+                  <span class="info-value">{{ customer.email }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Phone Number:</span>
+                  <span class="info-value">{{ customer.phone || 'Not provided' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Registration Date:</span>
+                  <span class="info-value">{{ formatDate(customer.registration_date) }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Total Orders:</span>
+                  <span class="info-value">{{ customer.total_orders }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Account Status:</span>
+                  <span :class="`status-badge status-${customer.status}`" class="info-value">
+                    {{ formatStatus(customer.status) }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Recent Orders Section -->
-        <div class="content-section">
-          <div class="section-header">
-            <h2><Icon icon="mdi:history" /> Recent Orders</h2>
-          </div>
-          <div class="section-content">
-            <div
-              v-if="customer.recent_orders && customer.recent_orders.length > 0"
-              class="orders-grid"
-            >
-              <div v-for="order in customer.recent_orders" :key="order.id" class="order-card">
-                <div class="order-header">
-                  <div class="order-info">
-                    <h4 class="order-number">{{ order.order_number }}</h4>
-                    <span class="order-date">{{ formatDate(order.created_at) }}</span>
+          <!-- Recent Orders Section -->
+          <div class="content-section">
+            <div class="section-header">
+              <h2><Icon icon="mdi:history" /> Recent Orders</h2>
+            </div>
+            <div class="section-content">
+              <div
+                v-if="customer.recent_orders && customer.recent_orders.length > 0"
+                class="orders-grid"
+              >
+                <div v-for="order in customer.recent_orders" :key="order.id" class="order-card">
+                  <div class="order-header">
+                    <div class="order-info">
+                      <h4 class="order-number">{{ order.order_number }}</h4>
+                      <span class="order-date">{{ formatDate(order.created_at) }}</span>
+                    </div>
+                    <div class="order-status">
+                      <span :class="`status-badge status-${order.status}`">{{
+                        formatStatus(order.status)
+                      }}</span>
+                    </div>
                   </div>
-                  <div class="order-status">
-                    <span :class="`status-badge status-${order.status}`">{{
-                      formatStatus(order.status)
-                    }}</span>
+                  <div class="order-details">
+                    <div class="order-items">
+                      <span class="items-count">{{ order.items_count }} item(s)</span>
+                    </div>
+                    <div class="order-total">
+                      <span class="total-amount">${{ order.total_amount }}</span>
+                    </div>
                   </div>
-                </div>
-                <div class="order-details">
-                  <div class="order-items">
-                    <span class="items-count">{{ order.items_count }} item(s)</span>
+                  <div class="order-actions">
+                    <router-link :to="`/admin/orders/view/${order.id}`" class="btn btn-small">
+                      <Icon icon="mdi:eye" />
+                      View Order
+                    </router-link>
                   </div>
-                  <div class="order-total">
-                    <span class="total-amount">${{ order.total_amount }}</span>
-                  </div>
-                </div>
-                <div class="order-actions">
-                  <router-link :to="`/admin/orders/view/${order.id}`" class="btn btn-small">
-                    <Icon icon="mdi:eye" />
-                    View Order
-                  </router-link>
                 </div>
               </div>
-            </div>
-            <div v-else class="no-orders">
-              <Icon icon="mdi:package-variant-closed" class="no-orders-icon" />
-              <h4>No orders yet</h4>
-              <p>This customer hasn't placed any orders.</p>
+              <div v-else class="no-orders">
+                <Icon icon="mdi:package-variant-closed" class="no-orders-icon" />
+                <h4>No orders yet</h4>
+                <p>This customer hasn't placed any orders.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -605,6 +607,13 @@ onMounted(() => {
   background: white;
   color: #333;
   transition: all 0.2s ease;
+}
+
+.customer-view-inner {
+  overflow-y: scroll;
+  max-height: calc(100vh - 200px);
+  border-top: 1px solid #e2e8f0;
+  height: 680px;
 }
 
 .btn:hover {

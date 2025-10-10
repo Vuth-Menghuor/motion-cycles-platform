@@ -1,12 +1,5 @@
 <template>
   <div class="stock-page">
-    <!-- Breadcrumb Navigation -->
-    <nav class="breadcrumb">
-      <span class="breadcrumb-item active">Stock Management</span>
-      <span class="breadcrumb-separator">></span>
-      <router-link to="/admin/stock/add" class="breadcrumb-item">Add Stock</router-link>
-    </nav>
-
     <!-- Stock Table -->
     <div class="table-container">
       <table class="stock-table">
@@ -22,6 +15,7 @@
             </th>
             <th>Product ID</th>
             <th>Product Name</th>
+            <th>Brand</th>
             <th>Category</th>
             <th>Current Stock</th>
             <th>Minimum Stock</th>
@@ -48,6 +42,7 @@
             </td>
             <td class="product-id">{{ item.productId }}</td>
             <td class="product-name">{{ item.productName }}</td>
+            <td class="brand">{{ item.brand }}</td>
             <td class="category">{{ item.category }}</td>
             <td class="stock-quantity">{{ item.currentStock }}</td>
             <td>{{ item.minimumStock }}</td>
@@ -123,6 +118,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
+import { useRouter } from 'vue-router'
 
 // Constants
 const ITEMS_PER_PAGE = 50
@@ -130,6 +126,7 @@ const ITEMS_PER_PAGE = 50
 // Reactive state
 const selectAll = ref(false)
 const currentPage = ref(1)
+const router = useRouter()
 
 // Sample data generation
 const generateSampleStock = () => {
@@ -145,6 +142,16 @@ const generateSampleStock = () => {
   ]
 
   const categories = ['Mountain Bike', 'Road Bike']
+  const brands = [
+    'Cannondale',
+    'Trek',
+    'Bianchi',
+    'Giant',
+    'CERVÉLO',
+    'Specialized',
+    'Shimano',
+    'Calnago',
+  ]
 
   const stock = []
 
@@ -169,6 +176,7 @@ const generateSampleStock = () => {
       id: `S${randomNum}K`,
       productId: `P${randomNum}I`,
       productName: productNames[Math.floor(Math.random() * productNames.length)],
+      brand: brands[Math.floor(Math.random() * brands.length)],
       category: categories[Math.floor(Math.random() * categories.length)],
       currentStock: currentStock,
       minimumStock: minimumStock,
@@ -253,24 +261,68 @@ const getStockAlert = (item) => {
 }
 
 const bulkRestock = () => {
-  const selectedIds = selectedStock.value.map((item) => item.id)
-  const quantity = prompt(`Enter stock quantity to add to ${selectedIds.length} selected items:`)
-  if (quantity !== null && !isNaN(quantity)) {
-    selectedStock.value.forEach((item) => {
-      item.currentStock += parseInt(quantity)
-      item.lastUpdated = new Date().toLocaleDateString()
+  const selectedItems = selectedStock.value
 
-      // Update status
-      if (item.currentStock === 0) {
-        item.status = 'Out of Stock'
-      } else if (item.currentStock <= item.minimumStock) {
-        item.status = 'Low Stock'
-      } else {
-        item.status = 'In Stock'
-      }
-    })
-    selectAll.value = false
+  if (selectedItems.length === 0) {
+    alert('Please select at least one item to restock.')
+    return
   }
+
+  if (selectedItems.length === 1) {
+    // Single item selected - navigate to add page with complete product details
+    const item = selectedItems[0]
+    restockProduct(item)
+  } else {
+    // Multiple items selected - for now, just navigate with the first item
+    // You could implement bulk restocking logic here
+    const item = selectedItems[0]
+    restockProduct(item, selectedItems.length)
+  }
+}
+
+const restockProduct = (item, bulkCount = 1) => {
+  // For restocking, suggest a quantity higher than current stock
+  const suggestedQuantity = item.currentStock + Math.max(5, Math.ceil(item.currentStock * 0.2))
+
+  // Get the stock alert status
+  const stockAlert = getStockAlert(item)
+
+  // Generate complete product information based on available stock data
+  const completeProductInfo = {
+    productName: item.productName,
+    brand: item.brand,
+    category: item.category,
+    quantity: suggestedQuantity.toString(), // Suggest higher quantity for restocking
+    productId: item.productId,
+    restockMode: 'true',
+    stockAlert: stockAlert, // Pass the stock alert status
+    // Generate additional product details based on category and brand
+    highlight: `${item.productName} - ${item.category} by ${item.brand}`,
+    description: `Complete description for ${item.productName}. This is a high-quality ${item.category.toLowerCase()} from ${item.brand}. Perfect for ${item.category === 'Mountain Bike' ? 'off-road adventures and trails' : 'road cycling and commuting'}.`,
+    quality:
+      item.brand === 'Cannondale' || item.brand === 'Trek' || item.brand === 'Specialized'
+        ? 'High'
+        : 'Standard',
+    price: item.category === 'Mountain Bike' ? '2999' : '1899', // Default prices based on category
+    color: item.category === 'Mountain Bike' ? 'Black' : 'Blue', // Default colors
+    // Specs information based on category
+    range: item.category === 'Road Bike' ? 'N/A' : '100km',
+    hubMotor: item.category === 'Road Bike' ? 'N/A' : '750W',
+    payload: '120kg',
+    controller: item.category === 'Road Bike' ? 'Basic' : 'LCD Display',
+    weight: item.category === 'Road Bike' ? '15kg' : '25kg',
+    display: item.category === 'Road Bike' ? 'None' : 'Digital',
+  }
+
+  if (bulkCount > 1) {
+    completeProductInfo.bulkCount = bulkCount.toString()
+  }
+
+  // Navigate to add page with complete product information
+  router.push({
+    path: '/admin/products/add',
+    query: completeProductInfo,
+  })
 }
 
 // Watchers
@@ -289,43 +341,6 @@ watch(currentPage, () => {
 /* Page Layout */
 .stock-page {
   min-height: auto;
-}
-
-/* Breadcrumb Navigation */
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  border-radius: 5px;
-  font-size: 13px;
-  color: #666;
-  background-color: white;
-  border: 1px solid #e9ecef;
-  font-family: 'Poppins', sans-serif;
-}
-
-.breadcrumb-item {
-  color: grey;
-  text-decoration: none;
-  cursor: pointer;
-  transition: color 0.3s;
-}
-
-.breadcrumb-item:hover {
-  color: #ff9934;
-  text-decoration: underline;
-}
-
-.breadcrumb-item.active {
-  color: #ff9934;
-  font-weight: 400;
-  cursor: default;
-}
-
-.breadcrumb-separator {
-  margin: 0 12px;
-  color: #999;
 }
 
 /* Table Container */
@@ -406,6 +421,16 @@ watch(currentPage, () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Brand Column */
+.brand {
+  font-weight: 500;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #4a5568;
 }
 
 /* Category Column */
@@ -626,6 +651,10 @@ watch(currentPage, () => {
   .product-name {
     max-width: 150px;
   }
+
+  .brand {
+    max-width: 120px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -682,6 +711,10 @@ watch(currentPage, () => {
 
   .product-name {
     max-width: 120px;
+  }
+
+  .brand {
+    max-width: 100px;
   }
 
   .pagination-controls {

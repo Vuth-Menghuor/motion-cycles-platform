@@ -6,7 +6,9 @@
       <span class="breadcrumb-separator">></span>
       <router-link to="/admin/products/add" class="breadcrumb-item">Add Product</router-link>
       <span class="breadcrumb-separator">></span>
-      <span class="breadcrumb-item active">Edit Product</span>
+      <span class="breadcrumb-item active">{{
+        hasQueryParams ? 'Edit Discount' : 'Edit Product'
+      }}</span>
     </nav>
 
     <!-- Product ID Selector -->
@@ -37,6 +39,7 @@
           :product="product"
           @update:product="product = $event"
           :disabled="isFormDisabled"
+          :prefilled-fields="prefilledFields"
         />
         <ProductDescription
           :product="product"
@@ -44,6 +47,12 @@
           :disabled="isFormDisabled"
         />
         <ProductQuality
+          :product="product"
+          @update:product="product = $event"
+          :disabled="isFormDisabled"
+          :prefilled-fields="prefilledFields"
+        />
+        <ProductDiscount
           :product="product"
           @update:product="product = $event"
           :disabled="isFormDisabled"
@@ -57,6 +66,7 @@
           :product="product"
           @update:product="product = $event"
           :disabled="isFormDisabled"
+          :prefilled-fields="prefilledFields"
         />
         <ProductSpecs
           :specs="specs"
@@ -81,12 +91,17 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import ProductInfo from '@/components/admin/products/ProductInfo.vue'
 import ProductDescription from '@/components/admin/products/ProductDescription.vue'
 import ProductQuality from '@/components/admin/products/ProductQuality.vue'
+import ProductDiscount from '@/components/admin/products/ProductDiscount.vue'
 import ProductImage from '@/components/admin/products/ProductImage.vue'
 import ProductPrice from '@/components/admin/products/ProductPrice.vue'
 import ProductSpecs from '@/components/admin/products/ProductSpecs.vue'
+
+// Get route instance
+const route = useRoute()
 
 // Props
 const props = defineProps({
@@ -111,17 +126,42 @@ if (props.id) {
 // Computed properties
 const isFormDisabled = computed(() => !isProductLoaded.value)
 
+const hasQueryParams = computed(() => {
+  return (
+    route.query.productName ||
+    route.query.brand ||
+    route.query.category ||
+    route.query.quantity ||
+    route.query.restockMode
+  )
+})
+
+const prefilledFields = computed(() => {
+  const fields = {}
+  if (route.query.productName) fields.name = true
+  if (route.query.brand) fields.brand = true
+  if (route.query.category) fields.category = true
+  if (route.query.quantity) fields.quantity = true
+  if (route.query.quality) fields.quality = true
+  if (route.query.price) fields.price = true
+  if (route.query.color) fields.color = true
+  return fields
+})
+
 // Form data
 const product = ref({
   id: '',
   name: '',
   brand: '',
   category: '',
+  quantity: '',
   highlight: '',
   description: '',
   quality: '',
   price: '',
   discountCode: '',
+  discountStartDate: '',
+  discountExpireDate: '',
   color: '',
 })
 
@@ -139,39 +179,48 @@ const MOCK_PRODUCTS = {
   P0000I: {
     id: 'P0000I',
     name: 'Electric Bike Model A',
-    brand: 'Brand A',
-    category: 'Electronics',
+    brand: 'Cannondale',
+    category: 'Road Bike',
+    quantity: '25',
     highlight: 'High-performance electric bike',
     description:
       'This is a detailed description of the Electric Bike Model A with advanced features and specifications.',
     quality: 'High',
     price: '2999',
     discountCode: 'ELECTRIC25',
+    discountStartDate: '2025-10-01',
+    discountExpireDate: '2025-12-31',
     color: 'Black',
   },
   P0001I: {
     id: 'P0001I',
     name: 'Mountain Bike Pro',
-    brand: 'Brand B',
-    category: 'Vehicles',
+    brand: 'Trek',
+    category: 'Mountain Bike',
+    quantity: '15',
     highlight: 'Professional mountain biking experience',
     description:
       'Designed for extreme terrains and professional riders, this mountain bike offers superior performance.',
     quality: 'Premium',
     price: '1899',
     discountCode: 'MOUNTAIN15',
+    discountStartDate: '2025-10-15',
+    discountExpireDate: '2025-11-15',
     color: 'Red',
   },
   P0002I: {
     id: 'P0002I',
     name: 'City Cruiser',
-    brand: 'Brand C',
-    category: 'Vehicles',
+    brand: 'Giant',
+    category: 'Road Bike',
+    quantity: '30',
     highlight: 'Comfortable urban commuting',
     description: 'Perfect for city commuting with comfortable seating and reliable performance.',
     quality: 'Standard',
     price: '899',
     discountCode: 'CITY10',
+    discountStartDate: '2025-09-01',
+    discountExpireDate: '2025-10-31',
     color: 'Blue',
   },
 }
@@ -204,6 +253,17 @@ const MOCK_SPECS = {
 }
 
 // Methods
+const convertDateFormat = (dateString) => {
+  // Convert from MM/DD/YYYY to YYYY-MM-DD format
+  if (!dateString || dateString === 'N/A') return ''
+
+  const parts = dateString.split('/')
+  if (parts.length === 3) {
+    const [month, day, year] = parts
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  }
+  return dateString
+}
 const loadProduct = () => {
   const productId = selectedProductId.value.trim()
 
@@ -245,11 +305,14 @@ const resetForm = () => {
     name: '',
     brand: '',
     category: '',
+    quantity: '',
     highlight: '',
     description: '',
     quality: '',
     price: '',
     discountCode: '',
+    discountStartDate: '',
+    discountExpireDate: '',
     color: '',
   }
   specs.value = {
@@ -288,6 +351,97 @@ watch(
 onMounted(() => {
   if (props.id) {
     loadProduct()
+  }
+
+  // Check for query parameters from discount management page
+  const {
+    productName,
+    brand,
+    category,
+    quantity,
+    highlight,
+    description,
+    quality,
+    price,
+    color,
+    discountCode,
+    discountType,
+    discountValue,
+    discountStartDate,
+    discountEndDate,
+    range,
+    hubMotor,
+    payload,
+    controller,
+    weight,
+    display,
+  } = route.query
+
+  if (productName) {
+    product.value.name = productName
+  }
+  if (brand) {
+    product.value.brand = brand
+  }
+  if (category) {
+    product.value.category = category
+  }
+  if (quantity) {
+    product.value.quantity = quantity
+  }
+  if (highlight) {
+    product.value.highlight = highlight
+  }
+  if (description) {
+    product.value.description = description
+  }
+  if (quality) {
+    product.value.quality = quality
+  }
+  if (price) {
+    product.value.price = price
+  }
+  if (color) {
+    product.value.color = color
+  }
+  if (discountCode) {
+    product.value.discountCode = discountCode
+  }
+  if (discountType && discountType !== 'N/A') {
+    product.value.discountType = discountType
+  }
+  if (discountValue && discountValue !== 'N/A') {
+    product.value.discountValue = discountValue
+  }
+  if (discountStartDate && discountStartDate !== 'N/A') {
+    // Convert date from MM/DD/YYYY to YYYY-MM-DD format for HTML date input
+    const convertedStartDate = convertDateFormat(discountStartDate)
+    product.value.discountStartDate = convertedStartDate
+  }
+  if (discountEndDate && discountEndDate !== 'N/A') {
+    // Convert date from MM/DD/YYYY to YYYY-MM-DD format for HTML date input
+    const convertedEndDate = convertDateFormat(discountEndDate)
+    product.value.discountExpireDate = convertedEndDate
+  }
+
+  // Handle specs information
+  if (range) {
+    specs.value.range = range
+  }
+  if (hubMotor) {
+    specs.value.hubMotor = hubMotor
+  }
+  if (payload) {
+    specs.value.payload = payload
+  }
+  if (controller) {
+    specs.value.controller = controller
+  }
+  if (weight) {
+    specs.value.weight = weight
+  }
+  if (display) {
+    specs.value.display = display
   }
 })
 </script>

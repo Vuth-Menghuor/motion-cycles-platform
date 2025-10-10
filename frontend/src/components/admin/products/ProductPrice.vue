@@ -8,23 +8,13 @@
         type="text"
         v-model="localProduct.price"
         placeholder="Enter price"
-        :disabled="disabled"
-      />
-    </div>
-
-    <div class="form-group">
-      <label>Discount Code</label>
-      <input
-        type="text"
-        v-model="localProduct.discountCode"
-        placeholder="Enter discount code (optional)"
-        :disabled="disabled"
+        :disabled="disabled || prefilledFields.price"
       />
     </div>
 
     <div class="form-group">
       <label>Product Color</label>
-      <select v-model="localProduct.color" :disabled="disabled">
+      <select v-model="localProduct.color" :disabled="disabled || prefilledFields.color">
         <option value="">Select Colors</option>
         <option value="Red">Red</option>
         <option value="Blue">Blue</option>
@@ -53,6 +43,10 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false,
+  },
+  prefilledFields: {
+    type: Object,
+    default: () => ({}),
   },
 })
 
@@ -133,6 +127,15 @@ select:disabled {
   color: #a0aec0;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+/* Special styling for prefilled fields */
+input:disabled:not([readonly]),
+select:disabled {
+  background-color: #e6fffa;
+  color: #38a169;
+  border-color: #9ae6b4;
+  opacity: 1;
 }
 
 .warning-message {

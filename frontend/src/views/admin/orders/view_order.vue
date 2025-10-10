@@ -54,77 +54,79 @@
       <!-- Order Details -->
       <template v-else>
         <!-- Customer Information Section -->
-        <div class="content-section">
-          <div class="section-header">
-            <h2><Icon icon="mdi:account" /> Customer Information</h2>
-          </div>
-          <div class="section-content">
-            <div class="info-list">
-              <div class="info-row">
-                <span class="info-label">Customer Name:</span>
-                <span class="info-value">{{ order.customer_name }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Email:</span>
-                <span class="info-value">{{ order.customer_email || 'N/A' }}</span>
-              </div>
-              <div class="info-row">
-                <span class="info-label">Phone:</span>
-                <span class="info-value">{{ order.customer_phone || 'N/A' }}</span>
+        <div class="order-details">
+          <div class="content-section">
+            <div class="section-header">
+              <h2><Icon icon="mdi:account" /> Customer Information</h2>
+            </div>
+            <div class="section-content">
+              <div class="info-list">
+                <div class="info-row">
+                  <span class="info-label">Customer Name:</span>
+                  <span class="info-value">{{ order.customer_name }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Email:</span>
+                  <span class="info-value">{{ order.customer_email || 'N/A' }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Phone:</span>
+                  <span class="info-value">{{ order.customer_phone || 'N/A' }}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Order Items Section -->
-        <div class="content-section">
-          <div class="section-header">
-            <h2><Icon icon="mdi:cart" /> Order Items</h2>
-          </div>
-          <div class="section-content">
-            <div class="items-grid">
-              <div v-for="item in order.items" :key="item.id" class="item-card">
-                <img :src="item.image" :alt="item.name" class="item-image" />
-                <div class="item-details">
-                  <div class="item-name">{{ item.name }}</div>
-                  <div class="item-category">{{ getCategoryName(item.category) }}</div>
-                  <div class="item-meta">
-                    <span class="meta-item">Qty: {{ item.quantity }}</span>
-                    <span class="meta-item">Price: ${{ item.price }}</span>
-                    <span class="meta-item total"
-                      >Total: ${{ (item.quantity * item.price).toFixed(2) }}</span
-                    >
+          <!-- Order Items Section -->
+          <div class="content-section">
+            <div class="section-header">
+              <h2><Icon icon="mdi:cart" /> Order Items</h2>
+            </div>
+            <div class="section-content">
+              <div class="items-grid">
+                <div v-for="item in order.items" :key="item.id" class="item-card">
+                  <img :src="item.image" :alt="item.name" class="item-image" />
+                  <div class="item-details">
+                    <div class="item-name">{{ item.name }}</div>
+                    <div class="item-category">{{ getCategoryName(item.category) }}</div>
+                    <div class="item-meta">
+                      <span class="meta-item">Qty: {{ item.quantity }}</span>
+                      <span class="meta-item">Price: ${{ item.price }}</span>
+                      <span class="meta-item total"
+                        >Total: ${{ (item.quantity * item.price).toFixed(2) }}</span
+                      >
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Order Summary Section -->
-        <div class="content-section">
-          <div class="section-header">
-            <h2><Icon icon="mdi:receipt" /> Order Summary</h2>
-          </div>
-          <div class="section-content">
-            <div class="summary-card">
-              <div class="summary-row">
-                <span>Subtotal</span>
-                <span>${{ order.subtotal || order.total_amount }}</span>
-              </div>
-              <div v-if="order.discount_amount > 0" class="summary-row discount">
-                <span>Discount</span>
-                <span>-${{ order.discount_amount }}</span>
-              </div>
-              <div class="summary-row shipping">
-                <span>Shipping</span>
-                <span>${{ order.shipping_amount || 0 }}</span>
-              </div>
-              <div class="summary-row total">
-                <span><strong>Total Amount</strong></span>
-                <span class="total-amount"
-                  ><strong>${{ totalAmount.toFixed(2) }}</strong></span
-                >
+          <!-- Order Summary Section -->
+          <div class="content-section">
+            <div class="section-header">
+              <h2><Icon icon="mdi:receipt" /> Order Summary</h2>
+            </div>
+            <div class="section-content">
+              <div class="summary-card">
+                <div class="summary-row">
+                  <span>Subtotal</span>
+                  <span>${{ order.subtotal || order.total_amount }}</span>
+                </div>
+                <div v-if="order.discount_amount > 0" class="summary-row discount">
+                  <span>Discount</span>
+                  <span>-${{ order.discount_amount }}</span>
+                </div>
+                <div class="summary-row shipping">
+                  <span>Shipping</span>
+                  <span>${{ order.shipping_amount || 0 }}</span>
+                </div>
+                <div class="summary-row total">
+                  <span><strong>Total Amount</strong></span>
+                  <span class="total-amount"
+                    ><strong>${{ totalAmount.toFixed(2) }}</strong></span
+                  >
+                </div>
               </div>
             </div>
           </div>
@@ -382,11 +384,11 @@ onMounted(() => {
   color: #666;
 }
 
-/* ===== CONTENT SECTIONS ===== */
-.content-section {
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
-  overflow: hidden;
+/* ===== ORDER DETAILS CONTAINER ===== */
+.order-details {
+  overflow-y: scroll;
+  height: calc(100vh - 200px);
+  max-height: 680px;
 }
 
 .section-header {

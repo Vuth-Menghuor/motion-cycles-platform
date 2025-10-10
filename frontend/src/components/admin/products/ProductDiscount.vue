@@ -9,7 +9,39 @@
         v-model="localProduct.discountCode"
         placeholder="Enter discount code (optional)"
         :disabled="disabled"
+        :class="{ 'prefilled-field': prefilledFields?.discountCode }"
       />
+    </div>
+
+    <!-- Discount Type and Value -->
+    <div v-if="localProduct.discountCode" class="discount-details">
+      <div class="form-group">
+        <label>Discount Type</label>
+        <select
+          v-model="localProduct.discountType"
+          :disabled="disabled"
+          :class="{ 'prefilled-field': prefilledFields?.discountType }"
+        >
+          <option value="">Select Type</option>
+          <option value="Percentage">Percentage</option>
+          <option value="Fixed Amount">Fixed Amount</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Discount Value</label>
+        <input
+          type="text"
+          v-model="localProduct.discountValue"
+          :placeholder="
+            localProduct.discountType === 'Percentage'
+              ? 'Enter percentage (e.g., 10)'
+              : 'Enter amount (e.g., 50)'
+          "
+          :disabled="disabled"
+          :class="{ 'prefilled-field': prefilledFields?.discountValue }"
+        />
+      </div>
     </div>
 
     <!-- Validity Period (only shown when discount code is entered) -->
@@ -23,6 +55,7 @@
           v-model="localProduct.discountStartDate"
           :min="today"
           :disabled="disabled"
+          :class="{ 'prefilled-field': prefilledFields?.discountStartDate }"
         />
       </div>
 
@@ -33,6 +66,7 @@
           v-model="localProduct.discountExpireDate"
           :min="localProduct.discountStartDate || today"
           :disabled="disabled"
+          :class="{ 'prefilled-field': prefilledFields?.discountExpireDate }"
         />
       </div>
     </div>
@@ -50,6 +84,10 @@ const props = defineProps({
   disabled: {
     type: Boolean,
     default: false,
+  },
+  prefilledFields: {
+    type: Object,
+    default: () => ({}),
   },
 })
 
@@ -98,7 +136,8 @@ label {
   font-weight: 400;
 }
 
-input {
+input,
+select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #e2e8f0;
@@ -112,17 +151,35 @@ input {
   max-width: -webkit-fill-available;
 }
 
-input:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: #4299e1;
   box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
 }
 
-input:disabled {
+select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+input:disabled,
+select:disabled {
   background-color: #f7fafc;
   color: #a0aec0;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.prefilled-field {
+  background-color: #f0fff4 !important;
+  border-color: #48bb78 !important;
+  color: #22543d !important;
 }
 
 /* Validity Period Section */
