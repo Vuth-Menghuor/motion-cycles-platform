@@ -248,6 +248,7 @@ export default {
             duration: 1000,
             easing: 'easeInOutQuart',
           },
+          clip: false,
         },
       })
     },
