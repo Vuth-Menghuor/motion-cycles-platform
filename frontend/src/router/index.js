@@ -31,9 +31,14 @@ const routes = [
     path: '/',
     component: Public_layout,
     children: [
-      // Home page
+      // Home page - redirect to authentication first
       {
         path: '/',
+        redirect: '/authentication/sign_in',
+      },
+      // Home page (accessible after authentication)
+      {
+        path: '/home',
         name: 'Home',
         component: Home_view,
       },

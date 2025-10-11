@@ -99,8 +99,6 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue'
-
 // Define props for the invoice component
 defineProps({
   invoiceNumber: { type: String, required: true },

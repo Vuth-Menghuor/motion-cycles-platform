@@ -110,7 +110,7 @@ const navigate = (path) => {
 }
 
 // Function to go to home page
-const goToHome = () => navigate('/')
+const goToHome = () => navigate('/home')
 
 // Function to go to favorites page
 const goToFav = () => navigate('/favorites')

@@ -1,5 +1,5 @@
 <template>
-  <router-link to="/">
+  <router-link to="/home">
     <button class="guest-button">Continue as Guest</button>
   </router-link>
 </template>

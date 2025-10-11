@@ -101,20 +101,8 @@ const login = async () => {
   try {
     // Attempt to login using the auth store
     await authStore.login(email.value, password.value)
-
-    // Redirect after login
-    let redirectTo = '/'
-
-    // If there's a redirect query parameter, use it
-    if (route.query.redirect) {
-      redirectTo = route.query.redirect
-    }
-    // Otherwise, redirect admin users to dashboard
-    else if (authStore.isAdmin()) {
-      redirectTo = '/admin/dashboard'
-    }
-
-    router.push(redirectTo)
+    // Redirect to the intended page or home
+    router.push(route.query.redirect || '/home')
   } catch (e) {
     // Handle different error statuses
     const status = e.response?.status

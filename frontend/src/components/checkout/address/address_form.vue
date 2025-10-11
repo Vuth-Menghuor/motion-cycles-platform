@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, reactive, watch, computed } from 'vue'
+import { reactive, watch, computed } from 'vue'
 
 // Define the props for the component
 const props = defineProps({

@@ -13,8 +13,6 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue'
-
 defineProps({
   brand: { type: String, required: false },
   product: { type: String, required: false },

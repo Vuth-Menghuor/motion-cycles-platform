@@ -25,8 +25,6 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
-
 // Define the props for the component
 const props = defineProps({
   payment: { type: Object, required: true, validator: (p) => p.id && p.name },

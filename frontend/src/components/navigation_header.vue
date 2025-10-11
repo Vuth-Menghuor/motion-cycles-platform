@@ -92,13 +92,9 @@
             ]"
             :key="brand"
           >
-            <router-link
-              :to="{ name: 'BrandPage', params: { id: brand.toLowerCase(), brandName: brand } }"
-              class="brand-link"
-              :style="{ color: colors.brandName }"
-            >
+            <a @click="goToBrand(brand)" class="brand-link" :style="{ color: colors.brandName }">
               {{ brand }}
-            </router-link>
+            </a>
           </li>
         </ul>
       </div>
@@ -173,8 +169,9 @@ const navigate = (path) => {
 
 // Navigation functions
 const goToCart = () => navigate('/checkout/cart')
-const goToHome = () => navigate('/')
+const goToHome = () => navigate('/home')
 const goToAuth = () => navigate('/authentication/sign_in')
+const goToBrand = (brandName) => navigate(`/brands/${brandName}`)
 
 // Function to handle click outside to close sidebar
 const handleClickOutside = (event) => {
