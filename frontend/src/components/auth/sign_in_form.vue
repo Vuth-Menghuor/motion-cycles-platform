@@ -1,43 +1,3 @@
-<script setup>
-import { Icon } from '@iconify/vue'
-import Guest_button from './guest_button.vue'
-import { ref } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { useRoute, useRouter } from 'vue-router'
-
-const router = useRouter()
-const route = useRoute()
-const authStore = useAuthStore()
-
-const email = ref('')
-const password = ref('')
-const errorMessage = ref('')
-const isLoading = ref(false)
-const showPassword = ref(false)
-
-const login = async () => {
-  if (isLoading.value) return
-
-  errorMessage.value = ''
-  isLoading.value = true
-
-  try {
-    await authStore.login(email.value, password.value)
-    router.push(route.query.redirect || '/')
-  } catch (e) {
-    const status = e.response?.status
-    errorMessage.value =
-      status === 401
-        ? 'Invalid email or password. Please try again.'
-        : status === 422
-          ? 'Please check your email and password format.'
-          : 'Login failed. Please try again later.'
-  } finally {
-    isLoading.value = false
-  }
-}
-</script>
-
 <template>
   <div class="auth-container">
     <div class="auth-card">
@@ -111,6 +71,53 @@ const login = async () => {
     </div>
   </div>
 </template>
+
+<script setup>
+import { Icon } from '@iconify/vue'
+import Guest_button from './guest_button.vue'
+import { ref } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useRoute, useRouter } from 'vue-router'
+
+// Get router and route instances
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
+
+// Reactive data for form inputs and state
+const email = ref('')
+const password = ref('')
+const errorMessage = ref('')
+const isLoading = ref(false)
+const showPassword = ref(false)
+
+// Function to handle user login
+const login = async () => {
+  if (isLoading.value) return // Prevent multiple submissions
+
+  errorMessage.value = '' // Clear previous errors
+  isLoading.value = true // Show loading state
+
+  try {
+    // Attempt to login using the auth store
+    await authStore.login(email.value, password.value)
+    // Redirect to the intended page or home
+    router.push(route.query.redirect || '/')
+  } catch (e) {
+    // Handle different error statuses
+    const status = e.response?.status
+    if (status === 401) {
+      errorMessage.value = 'Invalid email or password. Please try again.'
+    } else if (status === 422) {
+      errorMessage.value = 'Please check your email and password format.'
+    } else {
+      errorMessage.value = 'Login failed. Please try again later.'
+    }
+  } finally {
+    isLoading.value = false // Reset loading state
+  }
+}
+</script>
 
 <style scoped>
 .auth-card {

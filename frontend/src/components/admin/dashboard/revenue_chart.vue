@@ -49,6 +49,7 @@ ChartJS.register(
 
 export default {
   name: 'RevenueChart',
+  // Data properties for the component
   data() {
     return {
       selectedPeriod: 'daily',
@@ -90,20 +91,24 @@ export default {
       },
     }
   },
+  // Lifecycle hook to initialize the chart when component is mounted
   mounted() {
     this.initChart()
   },
+  // Lifecycle hook to destroy the chart before unmounting
   beforeUnmount() {
     if (this.chart) {
       this.chart.destroy()
     }
   },
   methods: {
+    // Method to initialize the chart
     initChart() {
       const ctx = this.$refs.chartCanvas.getContext('2d')
       this.createChart(ctx)
     },
 
+    // Method to create or update the chart
     createChart(ctx) {
       if (this.chart) {
         this.chart.destroy()
@@ -112,7 +117,8 @@ export default {
       const data = this.chartData[this.selectedPeriod]
       const datasets = []
 
-      if (this.selectedType === 'revenue' || this.selectedType === 'both') {
+      // Determine which datasets to add based on selected type
+      if (this.selectedType === 'revenue') {
         datasets.push({
           label: 'Revenue ($)',
           data: data.revenue,
@@ -126,9 +132,7 @@ export default {
           pointRadius: 6,
           pointHoverRadius: 8,
         })
-      }
-
-      if (this.selectedType === 'profit' || this.selectedType === 'both') {
+      } else if (this.selectedType === 'profit') {
         datasets.push({
           label: 'Profit ($)',
           data: data.profit,
@@ -142,6 +146,41 @@ export default {
           pointRadius: 6,
           pointHoverRadius: 8,
         })
+      } else if (this.selectedType === 'both') {
+        datasets.push({
+          label: 'Revenue ($)',
+          data: data.revenue,
+          borderColor: '#42A5F5',
+          backgroundColor: 'rgba(66, 165, 245, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#42A5F5',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+        })
+        datasets.push({
+          label: 'Profit ($)',
+          data: data.profit,
+          borderColor: '#66BB6A',
+          backgroundColor: 'rgba(102, 187, 106, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#66BB6A',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8,
+        })
+      }
+
+      // Determine if legend should be shown
+      let showLegend
+      if (this.selectedType === 'both') {
+        showLegend = true
+      } else {
+        showLegend = false
       }
 
       this.chart = new ChartJS(ctx, {
@@ -159,7 +198,7 @@ export default {
           },
           plugins: {
             legend: {
-              display: this.selectedType === 'both',
+              display: showLegend,
               position: 'top',
               labels: {
                 usePointStyle: true,
@@ -236,6 +275,7 @@ export default {
       })
     },
 
+    // Method to update the chart when filters change
     updateChart() {
       if (this.chart) {
         this.createChart(this.chart.ctx)

@@ -166,16 +166,19 @@
 import { ref, computed, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 
+// Reactive data
 const selectedView = ref('daily')
 const selectedDate = ref(new Date().toISOString().split('T')[0])
 const currentCalendarDate = ref(new Date())
 const showCalendar = ref(false)
 
+// Watch for date changes
 watch(selectedDate, (newDate) => {
   const date = new Date(newDate)
   currentCalendarDate.value = new Date(date.getFullYear(), date.getMonth(), 1)
 })
 
+// Constants
 const monthNames = [
   'January',
   'February',
@@ -192,6 +195,7 @@ const monthNames = [
 ]
 const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+// Computed properties for calendar
 const currentMonthName = computed(() => monthNames[currentCalendarDate.value.getMonth()])
 const currentYear = computed(() => currentCalendarDate.value.getFullYear())
 
@@ -233,6 +237,7 @@ const calendarDates = computed(() => {
   return dates
 })
 
+// Calendar functions
 const isSelectedDate = (dateString) => selectedDate.value === dateString
 const isToday = (dateString) => new Date().toISOString().split('T')[0] === dateString
 
@@ -260,6 +265,7 @@ const nextMonth = () => {
   )
 }
 
+// Data generation functions
 const generateMockData = (startDate, days = 7) => {
   const data = []
   const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -299,7 +305,11 @@ const generateDataForDate = (dateString, view) => {
     selectedDateObj.getDate(),
   )
 
-  if (selectedDate > currentDate) return []
+  if (selectedDate > currentDate) {
+    return []
+  } else {
+    // Proceed with data generation
+  }
 
   if (view === 'daily') {
     const startOfWeek = new Date(selectedDateObj)
@@ -448,14 +458,21 @@ const monthlyData = computed(() => {
   ]
 
   return allMonthlyData.filter((item, index) => {
-    if (year < currentYear) return true
-    if (year === currentYear) return index <= currentMonth
-    return false
+    let include = false
+    if (year < currentYear) {
+      include = true
+    } else if (year === currentYear) {
+      include = index <= currentMonth
+    } else {
+      include = false
+    }
+    return include
   })
 })
 
 const analyticsData = ref([])
 
+// Summary computed properties
 const totalRevenue = computed(() =>
   analyticsData.value.reduce((sum, item) => sum + item.revenue, 0),
 )
@@ -481,6 +498,7 @@ const overallGrowth = computed(() => {
   return growths.length > 0 ? growths.reduce((sum, growth) => sum + growth, 0) / growths.length : 0
 })
 
+// Utility functions
 const getColspan = () => (selectedView.value === 'daily' ? 2 : 1)
 
 const updateData = () =>
@@ -496,21 +514,38 @@ const formatDate = (dateString) =>
     year: 'numeric',
   })
 
-const getGrowthClass = (growth) => (growth > 0 ? 'positive' : growth < 0 ? 'negative' : 'neutral')
-const getGrowthIcon = (growth) => (growth > 0 ? '↗' : growth < 0 ? '↘' : '→')
+const getGrowthClass = (growth) => {
+  if (growth > 0) {
+    return 'positive'
+  } else if (growth < 0) {
+    return 'negative'
+  } else {
+    return 'neutral'
+  }
+}
+
+const getGrowthIcon = (growth) => {
+  if (growth > 0) {
+    return '↗'
+  } else if (growth < 0) {
+    return '↘'
+  } else {
+    return '→'
+  }
+}
 
 const getStatusClass = (status) => {
-  switch (status?.toLowerCase()) {
-    case 'excellent':
-      return 'excellent'
-    case 'good':
-      return 'good'
-    case 'fair':
-      return 'fair'
-    case 'poor':
-      return 'poor'
-    default:
-      return 'neutral'
+  const lowerStatus = status?.toLowerCase()
+  if (lowerStatus === 'excellent') {
+    return 'excellent'
+  } else if (lowerStatus === 'good') {
+    return 'good'
+  } else if (lowerStatus === 'fair') {
+    return 'fair'
+  } else if (lowerStatus === 'poor') {
+    return 'poor'
+  } else {
+    return 'neutral'
   }
 }
 </script>

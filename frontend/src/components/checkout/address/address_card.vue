@@ -26,16 +26,23 @@
 </template>
 
 <script setup>
+// Define the props for the component
 const props = defineProps({
   address: { type: Object, required: true },
   isSelected: { type: Boolean, default: false },
   radioGroupName: { type: String, default: 'address-selection' },
 })
 
+// Define the events the component can emit
 const emit = defineEmits(['select', 'edit', 'remove'])
 
+// Function to select the address
 const selectAddress = () => emit('select', props.address)
+
+// Function to edit the address
 const editAddress = () => emit('edit', props.address)
+
+// Function to remove the address
 const removeAddress = () => emit('remove', props.address.id)
 </script>
 

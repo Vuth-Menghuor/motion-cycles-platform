@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-// Create API instance
+// Create API instance with base URL and timeout
 const api = axios.create({
   baseURL: 'http://localhost:8100/api',
   timeout: 15000,
@@ -11,6 +11,7 @@ const api = axios.create({
  * Handles order creation, payment tracking, and invoice generation
  */
 
+// Function to create a new order
 export const createOrder = async (orderData) => {
   try {
     const response = await api.post('/orders', orderData)
@@ -21,6 +22,7 @@ export const createOrder = async (orderData) => {
   }
 }
 
+// Function to check the payment status of an order
 export const checkOrderPaymentStatus = async (orderId) => {
   try {
     const response = await api.post(`/orders/${orderId}/check-payment`)
@@ -31,6 +33,7 @@ export const checkOrderPaymentStatus = async (orderId) => {
   }
 }
 
+// Function to confirm payment for an order
 export const confirmOrderPayment = async (orderId, notes = null) => {
   try {
     const response = await api.post(`/orders/${orderId}/confirm-payment`, {
@@ -43,6 +46,7 @@ export const confirmOrderPayment = async (orderId, notes = null) => {
   }
 }
 
+// Function to get details of a specific order
 export const getOrder = async (orderId) => {
   try {
     const response = await api.get(`/orders/${orderId}`)
@@ -53,14 +57,24 @@ export const getOrder = async (orderId) => {
   }
 }
 
+// Function to list orders with optional filters
 export const listOrders = async (filters = {}) => {
   try {
     const params = new URLSearchParams()
 
-    if (filters.payment_status) params.append('payment_status', filters.payment_status)
-    if (filters.order_status) params.append('order_status', filters.order_status)
-    if (filters.per_page) params.append('per_page', filters.per_page)
-    if (filters.page) params.append('page', filters.page)
+    // Add filters to query parameters if provided
+    if (filters.payment_status) {
+      params.append('payment_status', filters.payment_status)
+    }
+    if (filters.order_status) {
+      params.append('order_status', filters.order_status)
+    }
+    if (filters.per_page) {
+      params.append('per_page', filters.per_page)
+    }
+    if (filters.page) {
+      params.append('page', filters.page)
+    }
 
     const response = await api.get(`/orders?${params.toString()}`)
     return response.data
@@ -90,6 +104,7 @@ export const createOrderWithPayment = async ({
   accountName = null,
 }) => {
   try {
+    // Prepare order data
     const orderData = {
       customer_name: customerName,
       customer_phone: customerPhone,
@@ -112,7 +127,7 @@ export const createOrderWithPayment = async ({
       payment_method: paymentMethod,
     }
 
-    // Add Bakong-specific fields if needed
+    // Add Bakong-specific fields if payment method is Bakong KHQR
     if (paymentMethod === 'Bakong KHQR') {
       orderData.bakong_account = bakongAccount || 'vuth_menghuor@aclb'
       orderData.account_name = accountName || 'MOTION CYCLE'
@@ -144,6 +159,7 @@ export const pollForPaymentCompletion = async (
       try {
         attempts++
 
+        // Call progress callback if provided
         if (onProgress) {
           onProgress(attempts, maxAttempts)
         }
@@ -152,6 +168,7 @@ export const pollForPaymentCompletion = async (
 
         const result = await checkOrderPaymentStatus(orderId)
 
+        // Check if payment is completed
         if (result.success && result.payment_status === 'completed') {
           console.log('🎉 Payment completed for order:', orderId)
           resolve(result)
@@ -177,6 +194,7 @@ export const pollForPaymentCompletion = async (
   })
 }
 
+// Export all functions as default
 export default {
   createOrder,
   checkOrderPaymentStatus,

@@ -3,7 +3,10 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
 
+// Get the current route
 const route = useRoute()
+
+// Computed property to get the current step from route meta
 const currentStep = computed(() => Number(route.meta.step) || 1)
 </script>
 

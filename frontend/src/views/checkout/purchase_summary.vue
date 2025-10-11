@@ -240,7 +240,11 @@ const promoDiscountAmount = computed(() => {
   }
 
   // Fallback calculation
-  return actualPromoCode.value.trim().toUpperCase() === CORRECT_PROMO ? PROMO_DISCOUNT : 0
+  if (actualPromoCode.value.trim().toUpperCase() === CORRECT_PROMO) {
+    return PROMO_DISCOUNT
+  } else {
+    return 0
+  }
 })
 
 const discountAmount = computed(() => {
@@ -261,7 +265,11 @@ const netPrice = computed(() => {
 
   // Fallback calculation
   const calculatedNet = totalMRP.value - discountAmount.value
-  return calculatedNet > 0 ? calculatedNet : 0
+  if (calculatedNet > 0) {
+    return calculatedNet
+  } else {
+    return 0
+  }
 })
 
 const totalPrice = computed(() => {
@@ -294,15 +302,16 @@ const transactionDate = computed(() => {
       day: 'numeric',
     }
     return date.toLocaleDateString('en-US', options)
+  } else {
+    const date = new Date()
+    const options = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }
+    return date.toLocaleDateString('en-US', options)
   }
-  const date = new Date()
-  const options = {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }
-  return date.toLocaleDateString('en-US', options)
 })
 
 const paymentMethod = computed(() => actualPaymentMethod.value)

@@ -1,63 +1,3 @@
-<script setup>
-import { Icon } from '@iconify/vue'
-import Guest_button from './guest_button.vue'
-import { useAuthStore } from '@/stores/auth'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-
-const auth = useAuthStore()
-const router = useRouter()
-
-const username = ref('')
-const email = ref('')
-const password = ref('')
-const terms = ref(true)
-const isLoading = ref(false)
-const errorMessage = ref('')
-const showPassword = ref(false)
-
-const register = async () => {
-  errorMessage.value = ''
-
-  if (!username.value || !email.value || !password.value) {
-    errorMessage.value = 'All fields are required'
-    return
-  }
-
-  if (!terms.value) {
-    errorMessage.value = 'You must agree to the Terms & Conditions'
-    return
-  }
-
-  isLoading.value = true
-
-  try {
-    await auth.register({
-      username: username.value,
-      name: username.value,
-      email: email.value,
-      password: password.value,
-      password_confirmation: password.value,
-      terms: terms.value ? 1 : 0,
-    })
-
-    router.push('/authentication/sign_in')
-  } catch (error) {
-    const status = error.response?.status
-    const data = error.response?.data
-
-    errorMessage.value =
-      status === 422 && data?.errors
-        ? Object.values(data.errors)[0][0]
-        : status === 500
-          ? 'Server error. Please try again later.'
-          : data?.message || 'Registration failed'
-  } finally {
-    isLoading.value = false
-  }
-}
-</script>
-
 <template>
   <div class="auth-container">
     <div class="auth-card">
@@ -164,6 +104,74 @@ const register = async () => {
     </div>
   </div>
 </template>
+
+<script setup>
+import { Icon } from '@iconify/vue'
+import Guest_button from './guest_button.vue'
+import { useAuthStore } from '@/stores/auth'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+// Get auth store and router
+const auth = useAuthStore()
+const router = useRouter()
+
+// Reactive data for form inputs and state
+const username = ref('')
+const email = ref('')
+const password = ref('')
+const terms = ref(true)
+const isLoading = ref(false)
+const errorMessage = ref('')
+const showPassword = ref(false)
+
+// Function to handle user registration
+const register = async () => {
+  errorMessage.value = '' // Clear previous errors
+
+  // Basic validation
+  if (!username.value || !email.value || !password.value) {
+    errorMessage.value = 'All fields are required'
+    return
+  }
+
+  if (!terms.value) {
+    errorMessage.value = 'You must agree to the Terms & Conditions'
+    return
+  }
+
+  isLoading.value = true // Show loading state
+
+  try {
+    // Attempt to register the user
+    await auth.register({
+      username: username.value,
+      name: username.value,
+      email: email.value,
+      password: password.value,
+      password_confirmation: password.value,
+      terms: terms.value ? 1 : 0,
+    })
+
+    // Redirect to sign in page after successful registration
+    router.push('/authentication/sign_in')
+  } catch (error) {
+    // Handle different error statuses
+    const status = error.response?.status
+    const data = error.response?.data
+
+    if (status === 422 && data?.errors) {
+      errorMessage.value = Object.values(data.errors)[0][0] // First validation error
+    } else if (status === 500) {
+      errorMessage.value = 'Server error. Please try again later.'
+    } else {
+      errorMessage.value = data?.message || 'Registration failed'
+    }
+  } finally {
+    isLoading.value = false // Reset loading state
+  }
+}
+</script>
 
 <style scoped>
 .auth-card {

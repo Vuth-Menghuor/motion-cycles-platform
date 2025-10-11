@@ -108,15 +108,21 @@ export default {
     }
   },
   methods: {
+    // Navigate to home page
     goHome() {
       this.$router.push('/')
     },
+
+    // Go back to previous page
     goBack() {
       this.$router.go(-1)
     },
+
+    // Handle search functionality
     handleSearch() {
+      // Check if search query is not empty
       if (this.searchQuery.trim()) {
-        // Redirect to home with search query or your search page
+        // Redirect to home with search query
         this.$router.push({
           path: '/',
           query: { search: this.searchQuery },

@@ -63,7 +63,10 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 
+// Define emits for parent component communication
 defineEmits(['addToCart'])
+
+// Define props for the component
 defineProps({
   bike: {
     type: Object,
@@ -71,15 +74,22 @@ defineProps({
   },
 })
 
+// Function to format numbers with commas
 const formatNumber = (number) => number.toLocaleString()
 
+// Function to calculate the discounted price
 const getDiscountedPrice = (bike) => {
-  if (!bike.discount) return bike.price
-  return bike.discount.type === 'percent'
-    ? bike.price - (bike.price * bike.discount.value) / 100
-    : bike.price - bike.discount.value
+  if (!bike.discount) {
+    return bike.price // No discount, return original price
+  }
+  if (bike.discount.type === 'percent') {
+    return bike.price - (bike.price * bike.discount.value) / 100 // Percentage discount
+  } else {
+    return bike.price - bike.discount.value // Fixed amount discount
+  }
 }
 
+// Function to calculate savings amount
 const getSavings = (bike) => bike.price - getDiscountedPrice(bike)
 </script>
 

@@ -47,9 +47,12 @@
 export default {
   name: 'UnauthorizedPage',
   methods: {
+    // Navigate to home page
     goHome() {
       this.$router.push('/')
     },
+
+    // Go back to previous page
     goBack() {
       this.$router.go(-1)
     },

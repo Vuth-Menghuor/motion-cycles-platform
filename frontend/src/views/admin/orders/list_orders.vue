@@ -219,6 +219,7 @@ const selectedStatus = ref('')
 const selectedPaymentMethod = ref('')
 const selectedCategory = ref('')
 
+// Sample data for generating mock orders
 const sampleData = {
   customers: [
     'John Doe',
@@ -239,6 +240,7 @@ const sampleData = {
   statuses: ['completed', 'processing', 'pending', 'confirmed', 'cancelled'],
 }
 
+// Helper functions for generating mock data
 const generateId = (prefix, num) => `${prefix}-${String(num).padStart(3, '0')}`
 const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)]
 const randomDate = () => {
@@ -247,6 +249,7 @@ const randomDate = () => {
   return date.toISOString()
 }
 
+// Generate mock orders
 const mockOrders = Array.from({ length: 12 }, (_, i) => ({
   id: i + 1,
   order_number: generateId('ORD', i + 1),
@@ -269,9 +272,11 @@ const mockOrders = Array.from({ length: 12 }, (_, i) => ({
 
 const orders = ref(mockOrders)
 
+// Filter orders based on search and filters
 const filteredOrders = computed(() => {
   let filtered = orders.value
 
+  // Apply search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(
@@ -282,14 +287,17 @@ const filteredOrders = computed(() => {
     )
   }
 
+  // Apply status filter
   if (selectedStatus.value) {
     filtered = filtered.filter((order) => order.order_status === selectedStatus.value)
   }
 
+  // Apply payment method filter
   if (selectedPaymentMethod.value) {
     filtered = filtered.filter((order) => order.payment_method === selectedPaymentMethod.value)
   }
 
+  // Apply category filter
   if (selectedCategory.value) {
     filtered = filtered.filter((order) =>
       order.items.some((item) => item.category === selectedCategory.value),
@@ -299,18 +307,28 @@ const filteredOrders = computed(() => {
   return filtered
 })
 
+// Calculate total pages
 const totalPages = computed(() => Math.ceil(filteredOrders.value.length / ITEMS_PER_PAGE))
+
+// Get orders for current page
 const paginatedOrders = computed(() => {
   const start = (currentPage.value - 1) * ITEMS_PER_PAGE
   return filteredOrders.value.slice(start, start + ITEMS_PER_PAGE)
 })
 
+// Total items count
 const totalItems = computed(() => filteredOrders.value.length)
+
+// Start item number for pagination
 const startItem = computed(() => (currentPage.value - 1) * ITEMS_PER_PAGE + 1)
+
+// End item number for pagination
 const endItem = computed(() => Math.min(currentPage.value * ITEMS_PER_PAGE, totalItems.value))
 
+// Get selected orders
 const selectedOrders = computed(() => orders.value.filter((order) => order.selected))
 
+// Calculate visible page numbers for pagination
 const visiblePages = computed(() => {
   const maxVisible = 5
   let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
@@ -323,12 +341,17 @@ const visiblePages = computed(() => {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 })
 
+// Change to a specific page
 const changePage = (page) => {
-  if (page >= 1 && page <= totalPages.value) currentPage.value = page
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
 }
 
+// Format status for display
 const formatStatus = (status) => status.charAt(0).toUpperCase() + status.slice(1)
 
+// Format date for display
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -339,16 +362,27 @@ const formatDate = (dateString) => {
   })
 }
 
+// Format payment method for display
 const formatPaymentMethod = (method) => {
   const methods = { bakong: 'Bakong' }
-  return methods[method] || method.charAt(0).toUpperCase() + method.slice(1)
+  if (methods[method]) {
+    return methods[method]
+  } else {
+    return method.charAt(0).toUpperCase() + method.slice(1)
+  }
 }
 
+// Get category name for display
 const getCategoryName = (category) => {
   const categories = { mountain: 'Mountain', road: 'Road' }
-  return categories[category] || category.charAt(0).toUpperCase() + category.slice(1)
+  if (categories[category]) {
+    return categories[category]
+  } else {
+    return category.charAt(0).toUpperCase() + category.slice(1)
+  }
 }
 
+// Delete a single order
 const deleteOrder = (order) => {
   if (confirm(`Delete order ${order.order_number}?`)) {
     orders.value = orders.value.filter((o) => o.id !== order.id)
@@ -356,13 +390,16 @@ const deleteOrder = (order) => {
   }
 }
 
+// Debounced search to avoid too many filters
 const debouncedSearch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => (currentPage.value = 1), 500)
 }
 
+// Apply filters and reset to first page
 const applyFilters = () => (currentPage.value = 1)
 
+// Clear all filters
 const clearFilters = () => {
   searchQuery.value = ''
   selectedStatus.value = ''
@@ -371,31 +408,39 @@ const clearFilters = () => {
   currentPage.value = 1
 }
 
+// Toggle select all for current page
 const toggleSelectAll = () => {
   paginatedOrders.value.forEach((order) => (order.selected = selectAll.value))
 }
 
+// Update select all state based on selected items
 const updateSelectAllState = () => {
   const selectedCount = paginatedOrders.value.filter((order) => order.selected).length
   selectAll.value = selectedCount === paginatedOrders.value.length && selectedCount > 0
 }
 
+// Toggle selection for a single order
 const toggleOrderSelection = (order) => {
   order.selected = !order.selected
   updateSelectAllState()
 }
 
+// Bulk delete selected orders
 const bulkDelete = () => {
   const selectedIds = selectedOrders.value.map((order) => order.order_number)
   if (confirm(`Delete ${selectedIds.length} selected order(s)?`)) {
     orders.value = orders.value.filter((order) => !order.selected)
     selectAll.value = false
-    if (paginatedOrders.value.length === 0 && currentPage.value > 1) currentPage.value--
+    if (paginatedOrders.value.length === 0 && currentPage.value > 1) {
+      currentPage.value--
+    }
   }
 }
 
+// Lifecycle hooks
 onMounted(() => {})
 
+// Watchers
 watch(
   () => orders.value.map((o) => o.selected),
   () => updateSelectAllState(),

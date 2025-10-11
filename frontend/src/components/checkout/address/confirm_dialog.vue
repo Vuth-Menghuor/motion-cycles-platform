@@ -12,6 +12,7 @@
 </template>
 
 <script setup>
+// Define the props for the confirmation dialog
 defineProps({
   visible: Boolean,
   title: String,

@@ -46,11 +46,16 @@ import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import image1 from '@/assets/images/payment_method/bakong_khqr.png'
 
+// Define the events the component can emit
 const emit = defineEmits(['update:formData'])
 
+// Reactive data for buyer name
 const buyerName = ref('')
+
+// Reactive data for buyer phone
 const buyerPhone = ref('')
 
+// Reactive data for selected payment method
 const selectedPayment = ref({
   id: 1,
   name: 'Bakong KHQR',
@@ -58,6 +63,7 @@ const selectedPayment = ref({
   image: image1,
 })
 
+// Function to emit form data when input changes
 const emitForm = () =>
   emit('update:formData', {
     buyerName: buyerName.value,

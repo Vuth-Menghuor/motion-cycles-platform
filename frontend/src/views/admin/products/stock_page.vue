@@ -129,6 +129,7 @@ const selectAll = ref(false)
 const currentPage = ref(1)
 const router = useRouter()
 
+// Sample data for generating stock
 const sampleData = {
   names: [
     'Trail Pro Carbon',
@@ -153,20 +154,27 @@ const sampleData = {
   ],
 }
 
+// Utility functions
 const generateId = (prefix) =>
   `${prefix}${Math.floor(Math.random() * 10000)
     .toString()
     .padStart(4, '0')}`
 const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)]
 
+// Generate sample stock data
 const generateSampleStock = () => {
   return Array.from({ length: 55 }, () => {
     const currentStock = Math.floor(Math.random() * 100)
     const minimumStock = Math.floor(Math.random() * 20) + 5
 
     let status = 'In Stock'
-    if (currentStock === 0) status = 'Out of Stock'
-    else if (currentStock <= minimumStock) status = 'Low Stock'
+    if (currentStock === 0) {
+      status = 'Out of Stock'
+    } else if (currentStock <= minimumStock) {
+      status = 'Low Stock'
+    } else {
+      // Status remains 'In Stock'
+    }
 
     const lastUpdated = new Date()
     lastUpdated.setDate(lastUpdated.getDate() - Math.floor(Math.random() * 30))
@@ -188,6 +196,7 @@ const generateSampleStock = () => {
 
 const stock = ref(generateSampleStock())
 
+// Computed properties
 const totalItems = computed(() => stock.value.length)
 const totalPages = computed(() => Math.ceil(totalItems.value / ITEMS_PER_PAGE))
 const startItem = computed(() => (currentPage.value - 1) * ITEMS_PER_PAGE + 1)
@@ -207,11 +216,14 @@ const visiblePages = computed(() => {
 
   if (end - start + 1 < maxVisible) {
     start = Math.max(1, end - maxVisible + 1)
+  } else {
+    // No adjustment needed for start page
   }
 
   return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 })
 
+// Selection methods
 const toggleSelectAll = () => {
   paginatedStock.value.forEach((item) => (item.selected = selectAll.value))
 }
@@ -226,27 +238,111 @@ const updateSelectAllState = () => {
   selectAll.value = selectedCount === paginatedStock.value.length && selectedCount > 0
 }
 
+// Pagination methods
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
     selectAll.value = false
+  } else {
+    // Page is out of range, do nothing
   }
 }
 
+// Stock alert function
 const getStockAlert = (item) => {
-  if (item.currentStock === 0) return 'Critical'
-  if (item.currentStock <= item.minimumStock) return 'Low Stock'
-  if (item.currentStock <= item.minimumStock * 1.5) return 'Warning'
-  return 'Normal'
+  if (item.currentStock === 0) {
+    return 'Critical'
+  } else if (item.currentStock <= item.minimumStock) {
+    return 'Low Stock'
+  } else if (item.currentStock <= item.minimumStock * 1.5) {
+    return 'Warning'
+  } else {
+    return 'Normal'
+  }
 }
 
+// Bulk actions
 const bulkRestock = () => {
   const selected = selectedStock.value
-  if (!selected.length) return alert('Please select at least one item to restock.')
+  if (!selected.length) {
+    return alert('Please select at least one item to restock.')
+  } else {
+    // Proceed with restocking
+  }
 
   const item = selected[0]
   const suggestedQuantity = item.currentStock + Math.max(5, Math.ceil(item.currentStock * 0.2))
   const stockAlert = getStockAlert(item)
+
+  let highlight
+  if (item.category === 'Mountain Bike') {
+    highlight = `${item.productName} - ${item.category} by ${item.brand}`
+  } else {
+    highlight = `${item.productName} - ${item.category} by ${item.brand}`
+  }
+
+  let description
+  if (item.category === 'Mountain Bike') {
+    description = `Complete description for ${item.productName}. This is a high-quality ${item.category.toLowerCase()} from ${item.brand}. Perfect for off-road adventures and trails.`
+  } else {
+    description = `Complete description for ${item.productName}. This is a high-quality ${item.category.toLowerCase()} from ${item.brand}. Perfect for road cycling and commuting.`
+  }
+
+  let quality
+  if (['Cannondale', 'Trek', 'Specialized'].includes(item.brand)) {
+    quality = 'High'
+  } else {
+    quality = 'Standard'
+  }
+
+  let price
+  if (item.category === 'Mountain Bike') {
+    price = '2999'
+  } else {
+    price = '1899'
+  }
+
+  let color
+  if (item.category === 'Mountain Bike') {
+    color = 'Black'
+  } else {
+    color = 'Blue'
+  }
+
+  let range
+  if (item.category === 'Road Bike') {
+    range = 'N/A'
+  } else {
+    range = '100km'
+  }
+
+  let hubMotor
+  if (item.category === 'Road Bike') {
+    hubMotor = 'N/A'
+  } else {
+    hubMotor = '750W'
+  }
+
+  let controller
+  if (item.category === 'Road Bike') {
+    controller = 'Basic'
+  } else {
+    controller = 'LCD Display'
+  }
+
+  let weight
+  if (item.category === 'Road Bike') {
+    weight = '15kg'
+  } else {
+    weight = '25kg'
+  }
+
+  let display
+  if (item.category === 'Road Bike') {
+    display = 'None'
+  } else {
+    display = 'Digital'
+  }
 
   const productInfo = {
     productName: item.productName,
@@ -256,24 +352,29 @@ const bulkRestock = () => {
     productId: item.productId,
     restockMode: 'true',
     stockAlert,
-    highlight: `${item.productName} - ${item.category} by ${item.brand}`,
-    description: `Complete description for ${item.productName}. This is a high-quality ${item.category.toLowerCase()} from ${item.brand}. Perfect for ${item.category === 'Mountain Bike' ? 'off-road adventures and trails' : 'road cycling and commuting'}.`,
-    quality: ['Cannondale', 'Trek', 'Specialized'].includes(item.brand) ? 'High' : 'Standard',
-    price: item.category === 'Mountain Bike' ? '2999' : '1899',
-    color: item.category === 'Mountain Bike' ? 'Black' : 'Blue',
-    range: item.category === 'Road Bike' ? 'N/A' : '100km',
-    hubMotor: item.category === 'Road Bike' ? 'N/A' : '750W',
+    highlight: highlight,
+    description: description,
+    quality: quality,
+    price: price,
+    color: color,
+    range: range,
+    hubMotor: hubMotor,
     payload: '120kg',
-    controller: item.category === 'Road Bike' ? 'Basic' : 'LCD Display',
-    weight: item.category === 'Road Bike' ? '15kg' : '25kg',
-    display: item.category === 'Road Bike' ? 'None' : 'Digital',
+    controller: controller,
+    weight: weight,
+    display: display,
   }
 
-  if (selected.length > 1) productInfo.bulkCount = selected.length.toString()
+  if (selected.length > 1) {
+    productInfo.bulkCount = selected.length.toString()
+  } else {
+    // Single item, no bulk count needed
+  }
 
   router.push({ path: '/admin/products/add', query: productInfo })
 }
 
+// Watchers
 watch(
   () => stock.value.map((p) => p.selected),
   () => updateSelectAllState(),

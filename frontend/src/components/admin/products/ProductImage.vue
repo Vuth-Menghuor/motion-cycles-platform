@@ -24,8 +24,9 @@
 
       <div
         class="drop-zone"
-        :class="{ disabled: disabled }"
-        @dragover.prevent="disabled ? null : $event"
+        :class="{ disabled: disabled, 'drag-over': isDragOver }"
+        @dragover.prevent="handleDragOver"
+        @dragleave.prevent="handleDragLeave"
         @drop.prevent="disabled ? null : handleDrop($event)"
         :style="{ cursor: disabled ? 'not-allowed' : 'pointer' }"
       >
@@ -68,6 +69,7 @@
 import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
 
+// Define props for the component
 const props = defineProps({
   disabled: {
     type: Boolean,
@@ -75,19 +77,35 @@ const props = defineProps({
   },
 })
 
-const fileInput = ref(null)
-const images = ref([])
-const isDragOver = ref(false)
+// References for DOM elements and data
+const fileInput = ref(null) // Reference to the hidden file input
+const images = ref([]) // Array to store image data URLs
+const isDragOver = ref(false) // Flag for drag over state
 
+// Function to trigger file input click
 const triggerFileUpload = () => {
   fileInput.value?.click()
 }
 
+// Handle file selection from input
 const handleFileSelect = (event) => {
   const files = Array.from(event.target.files)
   processFiles(files)
 }
 
+// Handle drag over event
+const handleDragOver = () => {
+  if (!props.disabled) {
+    isDragOver.value = true
+  }
+}
+
+// Handle drag leave event
+const handleDragLeave = () => {
+  isDragOver.value = false
+}
+
+// Handle drag and drop
 const handleDrop = (event) => {
   if (props.disabled) return
   isDragOver.value = false
@@ -98,6 +116,7 @@ const handleDrop = (event) => {
   }
 }
 
+// Process selected files and convert to data URLs
 const processFiles = (files) => {
   files.forEach((file) => {
     const reader = new FileReader()
@@ -108,10 +127,12 @@ const processFiles = (files) => {
   })
 }
 
+// Remove an image by index
 const removeImage = (index) => {
   images.value.splice(index, 1)
 }
 
+// Cancel upload and clear images
 const cancelUpload = () => {
   images.value = []
   if (fileInput.value) {

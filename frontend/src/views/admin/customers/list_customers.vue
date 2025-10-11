@@ -172,6 +172,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 
+// Mock data for customers
 const mockCustomers = [
   {
     id: 1,
@@ -295,6 +296,7 @@ const mockCustomers = [
   },
 ]
 
+// Reactive data
 const customers = ref(mockCustomers.map((c) => ({ ...c, selected: false })))
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
@@ -303,9 +305,13 @@ const selectedStatus = ref('')
 const selectAll = ref(false)
 let searchTimeout = null
 
+// Computed properties
+
+// Filter customers based on search and status
 const filteredCustomers = computed(() => {
   let filtered = customers.value
 
+  // Apply search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     filtered = filtered.filter(
@@ -316,6 +322,7 @@ const filteredCustomers = computed(() => {
     )
   }
 
+  // Apply status filter
   if (selectedStatus.value) {
     filtered = filtered.filter((c) => c.status === selectedStatus.value)
   }
@@ -323,18 +330,28 @@ const filteredCustomers = computed(() => {
   return filtered
 })
 
+// Calculate total pages
 const totalPages = computed(() => Math.ceil(filteredCustomers.value.length / itemsPerPage.value))
+
+// Get customers for current page
 const paginatedCustomers = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
   return filteredCustomers.value.slice(start, start + itemsPerPage.value)
 })
 
+// Total items count
 const totalItems = computed(() => filteredCustomers.value.length)
+
+// Start item number for pagination
 const startItem = computed(() => (currentPage.value - 1) * itemsPerPage.value + 1)
+
+// End item number for pagination
 const endItem = computed(() => Math.min(currentPage.value * itemsPerPage.value, totalItems.value))
 
+// Get selected customers
 const selectedCustomers = computed(() => customers.value.filter((c) => c.selected))
 
+// Calculate visible page numbers for pagination
 const visiblePages = computed(() => {
   const maxVisible = 5
   let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
@@ -347,12 +364,19 @@ const visiblePages = computed(() => {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 })
 
+// Functions
+
+// Change to a specific page
 const changePage = (page) => {
-  if (page >= 1 && page <= totalPages.value) currentPage.value = page
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
 }
 
+// Format status for display
 const formatStatus = (status) => status.charAt(0).toUpperCase() + status.slice(1)
 
+// Format date for display
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
@@ -363,6 +387,7 @@ const formatDate = (dateString) => {
   })
 }
 
+// Delete a single customer
 const deleteCustomer = (customer) => {
   if (confirm(`Delete customer ${customer.name}?`)) {
     customers.value = customers.value.filter((c) => c.id !== customer.id)
@@ -370,44 +395,55 @@ const deleteCustomer = (customer) => {
   }
 }
 
+// Debounced search to avoid too many filters
 const debouncedSearch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => (currentPage.value = 1), 500)
 }
 
+// Apply filters and reset to first page
 const applyFilters = () => (currentPage.value = 1)
 
+// Clear all filters
 const clearFilters = () => {
   searchQuery.value = ''
   selectedStatus.value = ''
   currentPage.value = 1
 }
 
+// Toggle select all for current page
 const toggleSelectAll = () => {
   paginatedCustomers.value.forEach((c) => (c.selected = selectAll.value))
 }
 
+// Update select all state based on selected items
 const updateSelectAllState = () => {
   const selectedCount = paginatedCustomers.value.filter((c) => c.selected).length
   selectAll.value = selectedCount === paginatedCustomers.value.length && selectedCount > 0
 }
 
+// Toggle selection for a single customer
 const toggleCustomerSelection = (customer) => {
   customer.selected = !customer.selected
   updateSelectAllState()
 }
 
+// Bulk delete selected customers
 const bulkDelete = () => {
   const selectedNames = selectedCustomers.value.map((c) => c.name)
   if (confirm(`Delete ${selectedNames.length} selected customer(s)?`)) {
     customers.value = customers.value.filter((c) => !c.selected)
     selectAll.value = false
-    if (paginatedCustomers.value.length === 0 && currentPage.value > 1) currentPage.value--
+    if (paginatedCustomers.value.length === 0 && currentPage.value > 1) {
+      currentPage.value--
+    }
   }
 }
 
+// Lifecycle hooks
 onMounted(() => {})
 
+// Watchers
 watch(
   () => customers.value.map((c) => c.selected),
   () => updateSelectAllState(),

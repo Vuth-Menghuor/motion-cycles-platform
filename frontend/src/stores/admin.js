@@ -2,13 +2,16 @@
 export default {
   namespaced: true,
 
+  // State object containing all admin-related data
   state: {
+    // Dashboard statistics
     dashboardStats: {
       totalProducts: 14000,
       totalRevenue: 14000,
       totalCustomers: 1300,
     },
 
+    // Revenue data for charts
     revenueData: {
       labels: [
         'January',
@@ -27,11 +30,13 @@ export default {
       values: [65, 70, 68, 80, 75, 68, 90, 85, 78, 88, 72, 82],
     },
 
+    // Category distribution data
     categoryDistribution: [
       { name: 'Mountain Bikes', percentage: 40, color: '#42A5F5' },
       { name: 'Road Bikes', percentage: 60, color: '#EF5350' },
     ],
 
+    // Stock alerts data
     stockAlerts: [
       {
         status: 'LOW',
@@ -56,12 +61,14 @@ export default {
       },
     ],
 
+    // Stock status data
     stockStatus: [
       { name: 'FULL', percentage: 40, color: '#42A5F5' },
       { name: 'Normal', percentage: 30, color: '#FFA726' },
       { name: 'LOW', percentage: 30, color: '#EF5350' },
     ],
 
+    // Current user information
     user: {
       name: 'Vuth Menghuor',
       email: 'vuth@example.com',
@@ -70,42 +77,58 @@ export default {
     },
   },
 
+  // Getters to access state data
   getters: {
+    // Get dashboard statistics
     getDashboardStats: (state) => state.dashboardStats,
+    // Get revenue data
     getRevenueData: (state) => state.revenueData,
+    // Get category distribution
     getCategoryDistribution: (state) => state.categoryDistribution,
+    // Get stock alerts
     getStockAlerts: (state) => state.stockAlerts,
+    // Get stock status
     getStockStatus: (state) => state.stockStatus,
+    // Get current user
     getCurrentUser: (state) => state.user,
   },
 
+  // Mutations to update state
   mutations: {
+    // Set dashboard statistics
     SET_DASHBOARD_STATS(state, stats) {
       state.dashboardStats = { ...state.dashboardStats, ...stats }
     },
 
+    // Set revenue data
     SET_REVENUE_DATA(state, data) {
       state.revenueData = data
     },
 
+    // Set category distribution
     SET_CATEGORY_DISTRIBUTION(state, categories) {
       state.categoryDistribution = categories
     },
 
+    // Set stock alerts
     SET_STOCK_ALERTS(state, alerts) {
       state.stockAlerts = alerts
     },
 
+    // Set stock status
     SET_STOCK_STATUS(state, status) {
       state.stockStatus = status
     },
 
+    // Set user information
     SET_USER(state, user) {
       state.user = { ...state.user, ...user }
     },
   },
 
+  // Actions for async operations
   actions: {
+    // Fetch dashboard statistics
     async fetchDashboardStats({ commit }) {
       try {
         // Replace with actual API call
@@ -123,6 +146,7 @@ export default {
       }
     },
 
+    // Fetch revenue data
     async fetchRevenueData({ commit }, period = 'monthly') {
       try {
         // Replace with actual API call
@@ -153,6 +177,7 @@ export default {
       }
     },
 
+    // Fetch category distribution
     async fetchCategoryDistribution({ commit }) {
       try {
         // Replace with actual API call
@@ -170,6 +195,7 @@ export default {
       }
     },
 
+    // Fetch stock alerts
     async fetchStockAlerts({ commit }) {
       try {
         // Replace with actual API call
@@ -206,6 +232,7 @@ export default {
       }
     },
 
+    // Fetch stock status
     async fetchStockStatus({ commit }) {
       try {
         // Replace with actual API call
@@ -224,6 +251,7 @@ export default {
       }
     },
 
+    // Update user profile
     async updateUserProfile({ commit }, userData) {
       try {
         // Replace with actual API call

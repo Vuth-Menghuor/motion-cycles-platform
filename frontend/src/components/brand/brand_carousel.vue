@@ -1,3 +1,14 @@
+<template>
+  <div class="brand-carousel">
+    <div class="brand-carousel__container">
+      <div class="brand-carousel__track">
+        <BrandCard v-for="brand in brands" :key="brand.name" :brand="brand" />
+        <BrandCard v-for="brand in brands" :key="'dup-' + brand.name" :brand="brand" />
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import BrandCard from './brand_card.vue'
 import brand1 from '@/assets/images/brands/brand_1.png'
@@ -20,17 +31,6 @@ const brands = [
   { id: 'colnago', name: 'Colnago', logo: brand8 },
 ]
 </script>
-
-<template>
-  <div class="brand-carousel">
-    <div class="brand-carousel__container">
-      <div class="brand-carousel__track">
-        <BrandCard v-for="brand in brands" :key="brand.name" :brand="brand" />
-        <BrandCard v-for="brand in brands" :key="'dup-' + brand.name" :brand="brand" />
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .brand-carousel {

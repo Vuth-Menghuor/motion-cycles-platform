@@ -68,45 +68,52 @@
 import { Icon } from '@iconify/vue'
 import { ref, computed } from 'vue'
 
+// Define emits for parent component communication
 const emit = defineEmits(['submit-review'])
 
-const selectedRating = ref(0)
-const hoverRating = ref(0)
-const showSuccess = ref(false)
+// Reactive data for rating and form state
+const selectedRating = ref(0) // Currently selected star rating
+const hoverRating = ref(0) // Rating on hover
+const showSuccess = ref(false) // Flag to show success message
 const formData = ref({
   name: '',
   email: '',
   review: '',
 })
 
+// Function to select a rating
 const selectRating = (rating) => {
   selectedRating.value = rating
 }
 
+// Computed property to check if form is valid
 const isFormValid = computed(() => {
-  return (
-    selectedRating.value > 0 &&
-    formData.value.name.trim() &&
-    formData.value.email.trim() &&
-    formData.value.review.trim()
-  )
+  const hasRating = selectedRating.value > 0
+  const hasName = formData.value.name.trim().length > 0
+  const hasEmail = formData.value.email.trim().length > 0
+  const hasReview = formData.value.review.trim().length > 0
+  return hasRating && hasName && hasEmail && hasReview
 })
 
+// Function to submit the review
 const submitReview = () => {
-  if (!isFormValid.value) return
+  if (!isFormValid.value) return // Don't submit if form is invalid
 
+  // Prepare review data
   const reviewData = {
     user: formData.value.name,
     rating: selectedRating.value,
     comment: formData.value.review,
     email: formData.value.email,
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
   }
 
+  // Emit the review data to parent component
   emit('submit-review', reviewData)
 
+  // Show success message and reset form
   showSuccess.value = true
-  setTimeout(() => (showSuccess.value = false), 3000)
+  setTimeout(() => (showSuccess.value = false), 3000) // Hide after 3 seconds
 
   selectedRating.value = 0
   formData.value = { name: '', email: '', review: '' }

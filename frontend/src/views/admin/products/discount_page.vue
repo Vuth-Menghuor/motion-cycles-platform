@@ -148,6 +148,7 @@ const selectAll = ref(false)
 const currentPage = ref(1)
 const router = useRouter()
 
+// Sample data for generating discounts
 const sampleData = {
   categories: ['Road Bike', 'Mountain Bike'],
   types: ['Percentage', 'Fixed Amount'],
@@ -192,6 +193,7 @@ const sampleData = {
   ],
 }
 
+// Utility functions
 const generateId = () =>
   `P${Math.floor(Math.random() * 10000)
     .toString()
@@ -199,6 +201,7 @@ const generateId = () =>
 
 const randomItem = (array) => array[Math.floor(Math.random() * array.length)]
 
+// Generate a single discount
 const generateDiscount = (hasDiscount = true) => {
   if (!hasDiscount) {
     return {
@@ -215,46 +218,52 @@ const generateDiscount = (hasDiscount = true) => {
       selected: false,
       hasDiscount: false,
     }
-  }
+  } else {
+    const type = randomItem(sampleData.types)
+    const value =
+      type === 'Percentage'
+        ? Math.floor(Math.random() * 50) + 5
+        : Math.floor(Math.random() * 100) + 10
+    const startDate = new Date()
+    startDate.setDate(startDate.getDate() - Math.floor(Math.random() * 30))
+    const endDate = new Date(startDate)
+    endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 90) + 30)
 
-  const type = randomItem(sampleData.types)
-  const value =
-    type === 'Percentage'
-      ? Math.floor(Math.random() * 50) + 5
-      : Math.floor(Math.random() * 100) + 10
-  const startDate = new Date()
-  startDate.setDate(startDate.getDate() - Math.floor(Math.random() * 30))
-  const endDate = new Date(startDate)
-  endDate.setDate(endDate.getDate() + Math.floor(Math.random() * 90) + 30)
-
-  return {
-    id: generateId(),
-    code: randomItem(sampleData.codes),
-    product: randomItem(sampleData.products),
-    brand: randomItem(sampleData.brands),
-    category: randomItem(sampleData.categories),
-    type,
-    value: value.toString(),
-    status: randomItem(sampleData.statuses.slice(0, 3)),
-    startDate: startDate.toLocaleDateString(),
-    endDate: endDate.toLocaleDateString(),
-    selected: false,
-    hasDiscount: true,
+    return {
+      id: generateId(),
+      code: randomItem(sampleData.codes),
+      product: randomItem(sampleData.products),
+      brand: randomItem(sampleData.brands),
+      category: randomItem(sampleData.categories),
+      type,
+      value: value.toString(),
+      status: randomItem(sampleData.statuses.slice(0, 3)),
+      startDate: startDate.toLocaleDateString(),
+      endDate: endDate.toLocaleDateString(),
+      selected: false,
+      hasDiscount: true,
+    }
   }
 }
 
+// Generate sample discounts
 const generateSampleDiscounts = () => {
   const discounts = []
   const discountCount = Math.floor(45 * 0.6)
 
-  for (let i = 0; i < discountCount; i++) discounts.push(generateDiscount(true))
-  for (let i = 0; i < 45 - discountCount; i++) discounts.push(generateDiscount(false))
+  for (let i = 0; i < discountCount; i++) {
+    discounts.push(generateDiscount(true))
+  }
+  for (let i = 0; i < 45 - discountCount; i++) {
+    discounts.push(generateDiscount(false))
+  }
 
   return discounts
 }
 
 const discounts = ref(generateSampleDiscounts())
 
+// Pagination computed properties
 const totalItems = computed(() => discounts.value.length)
 const totalPages = computed(() => Math.ceil(totalItems.value / ITEMS_PER_PAGE))
 const startItem = computed(() => (currentPage.value - 1) * ITEMS_PER_PAGE + 1)
@@ -272,11 +281,16 @@ const visiblePages = computed(() => {
   let start = Math.max(1, currentPage.value - Math.floor(maxVisible / 2))
   let end = Math.min(totalPages.value, start + maxVisible - 1)
 
-  if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1)
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1)
+  } else {
+    // No adjustment needed for start page
+  }
 
   return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 })
 
+// Selection methods
 const toggleSelectAll = () =>
   paginatedDiscounts.value.forEach((d) => (d.selected = selectAll.value))
 
@@ -290,36 +304,155 @@ const updateSelectAllState = () => {
   selectAll.value = selected === paginatedDiscounts.value.length && selected > 0
 }
 
+// Pagination methods
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
     selectAll.value = false
+  } else {
+    // Page is out of range, do nothing
   }
 }
 
-const createProductInfo = (product) => ({
-  productName: product.product,
-  brand: product.brand,
-  category: product.category,
-  quantity: product.hasDiscount ? '25' : '15',
-  highlight: `${product.product} - ${product.category}`,
-  description: `Complete description for ${product.product}. This is a high-quality ${product.category.toLowerCase()} from ${product.brand}.`,
-  quality: product.hasDiscount ? 'High' : 'Standard',
-  price: product.hasDiscount ? '2999' : '1899',
-  color: product.hasDiscount ? 'Black' : 'Blue',
-  discountCode: product.code !== 'N/A' ? product.code : '',
-  discountType: product.type !== 'N/A' ? product.type : '',
-  discountValue: product.value !== 'N/A' ? product.value : '',
-  discountStartDate: product.startDate !== 'N/A' ? product.startDate : '',
-  discountEndDate: product.endDate !== 'N/A' ? product.endDate : '',
-  range: product.category === 'Road Bike' ? 'N/A' : '100km',
-  hubMotor: product.category === 'Road Bike' ? 'N/A' : '750W',
-  payload: '120kg',
-  controller: product.category === 'Road Bike' ? 'Basic' : 'LCD Display',
-  weight: product.category === 'Road Bike' ? '15kg' : '25kg',
-  display: product.category === 'Road Bike' ? 'None' : 'Digital',
-})
+// Product info creation
+const createProductInfo = (product) => {
+  let quantity
+  if (product.hasDiscount) {
+    quantity = '25'
+  } else {
+    quantity = '15'
+  }
 
+  let highlight
+  if (product.hasDiscount) {
+    highlight = `${product.product} - ${product.category}`
+  } else {
+    highlight = `${product.product} - ${product.category}`
+  }
+
+  let description
+  if (product.hasDiscount) {
+    description = `Complete description for ${product.product}. This is a high-quality ${product.category.toLowerCase()} from ${product.brand}.`
+  } else {
+    description = `Complete description for ${product.product}. This is a high-quality ${product.category.toLowerCase()} from ${product.brand}.`
+  }
+
+  let quality
+  if (product.hasDiscount) {
+    quality = 'High'
+  } else {
+    quality = 'Standard'
+  }
+
+  let price
+  if (product.hasDiscount) {
+    price = '2999'
+  } else {
+    price = '1899'
+  }
+
+  let color
+  if (product.hasDiscount) {
+    color = 'Black'
+  } else {
+    color = 'Blue'
+  }
+
+  let discountCode
+  if (product.code !== 'N/A') {
+    discountCode = product.code
+  } else {
+    discountCode = ''
+  }
+
+  let discountType
+  if (product.type !== 'N/A') {
+    discountType = product.type
+  } else {
+    discountType = ''
+  }
+
+  let discountValue
+  if (product.value !== 'N/A') {
+    discountValue = product.value
+  } else {
+    discountValue = ''
+  }
+
+  let discountStartDate
+  if (product.startDate !== 'N/A') {
+    discountStartDate = product.startDate
+  } else {
+    discountStartDate = ''
+  }
+
+  let discountEndDate
+  if (product.endDate !== 'N/A') {
+    discountEndDate = product.endDate
+  } else {
+    discountEndDate = ''
+  }
+
+  let range
+  if (product.category === 'Road Bike') {
+    range = 'N/A'
+  } else {
+    range = '100km'
+  }
+
+  let hubMotor
+  if (product.category === 'Road Bike') {
+    hubMotor = 'N/A'
+  } else {
+    hubMotor = '750W'
+  }
+
+  let controller
+  if (product.category === 'Road Bike') {
+    controller = 'Basic'
+  } else {
+    controller = 'LCD Display'
+  }
+
+  let weight
+  if (product.category === 'Road Bike') {
+    weight = '15kg'
+  } else {
+    weight = '25kg'
+  }
+
+  let display
+  if (product.category === 'Road Bike') {
+    display = 'None'
+  } else {
+    display = 'Digital'
+  }
+
+  return {
+    productName: product.product,
+    brand: product.brand,
+    category: product.category,
+    quantity: quantity,
+    highlight: highlight,
+    description: description,
+    quality: quality,
+    price: price,
+    color: color,
+    discountCode: discountCode,
+    discountType: discountType,
+    discountValue: discountValue,
+    discountStartDate: discountStartDate,
+    discountEndDate: discountEndDate,
+    range: range,
+    hubMotor: hubMotor,
+    payload: '120kg',
+    controller: controller,
+    weight: weight,
+    display: display,
+  }
+}
+
+// Product actions
 const editProduct = (productId) => {
   const product = discounts.value.find((d) => d.id === productId)
   if (product) {
@@ -356,9 +489,12 @@ const bulkDelete = () => {
     if (paginatedDiscounts.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
+  } else {
+    // User cancelled bulk deletion
   }
 }
 
+// Watchers
 watch(() => discounts.value.map((p) => p.selected), updateSelectAllState, { deep: true })
 watch(currentPage, () => (selectAll.value = false))
 </script>

@@ -1,345 +1,3 @@
-<script setup>
-/**
- * Checkout Purchase Page - Final Step
- *
- * This is the final checkout step where customers:
- * 1. Review their order details
- * 2. Complete payment using Bakong KHQR
- * 3. Get real-time payment confirmation
- *
- * Features:
- * - Bakong KHQR integration with real banking apps
- * - Automatic payment detection (no manual confirmation needed)
- * - Real-time payment status updates
- * - Order processing and invoice generation
- */
-
-import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
-import { useCartStore } from '@/stores/cart'
-import { storeToRefs } from 'pinia'
-
-// Bakong Payment API Services
-import {
-  generateKHQRIndividualWithImage, // Generate QR codes for payments
-  checkPaymentStatus, // Check if payment completed
-} from '@/services/khqr'
-
-// UI Components
-import Navigation_header from '@/components/navigation_header.vue'
-import Indecator_process from '@/components/checkout/cart/indecator_process.vue'
-import Checkout_summary from '@/components/checkout/cart/checkout_summary.vue'
-import Purschase_section from '@/components/checkout/payment/purschase_section.vue'
-
-// ============================================
-// STORE & ROUTER SETUP
-// ============================================
-const router = useRouter()
-const cartStore = useCartStore()
-const { cartItems } = storeToRefs(cartStore)
-
-// ============================================
-// FORM DATA & PURCHASE INFO
-// ============================================
-const promoCode = ref('BOOKRIDE50') // Promo code for discounts
-const formData = ref({
-  buyerName: '', // Customer name
-  buyerPhone: '', // Customer phone
-  payment: null, // Selected payment method
-})
-
-const purchaseAmount = ref(0) // Total amount to pay
-const isProcessing = ref(false) // Loading state during payment
-const paymentStatus = ref('pending') // pending | processing | success | failed
-
-// ============================================
-// BAKONG KHQR PAYMENT DATA
-// ============================================
-const khqrData = ref(null) // QR code data from API
-const khqrQrImageUrl = ref('') // Generated QR image URL for display
-
-// ============================================
-// AUTOMATIC PAYMENT DETECTION
-// ============================================
-const pollingAttempts = ref(0) // Current check attempt
-const maxPollingAttempts = 20 // Max attempts (10 minutes at 30-second intervals)
-const pollingInterval = ref(null) // Timer for periodic checks
-const showManualConfirmation = ref(false) // Show manual button if auto-detection fails
-
-// QR code image generator helper
-const generateQRImageUrl = (qrString) => {
-  const encodedText = encodeURIComponent(qrString)
-  return `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedText}`
-}
-
-// Total amount from cart (reactive)
-const totalAmount = computed(() => {
-  const cartTotal = cartItems.value.reduce((total, item) => {
-    return total + (item.originalPrice || item.price) * item.quantity
-  }, 0)
-  const discount = promoCode.value.trim().toUpperCase() === 'BOOKRIDE50' ? 5.0 : 0
-  const netPrice = Math.max(cartTotal - discount, 0)
-  const shipping = 2.0
-  return netPrice + shipping
-})
-
-// Keep purchaseAmount in sync
-watch(
-  totalAmount,
-  (newVal) => {
-    purchaseAmount.value = newVal
-  },
-  { immediate: true },
-)
-
-// Update handlers
-const updateFormData = (data) => {
-  formData.value = data
-}
-const updatePromoCode = (newCode) => {
-  promoCode.value = newCode
-}
-
-const navigationAndScroll = (path) => {
-  router.push(path).then(() => {
-    setTimeout(() => {
-      window.scrollTo(0, 0)
-    }, 100)
-  })
-}
-
-// Return to payment page
-const returnToPayment = () => {
-  navigationAndScroll('/checkout/payment')
-}
-
-// ============================================
-// MAIN PURCHASE HANDLER
-// ============================================
-/**
- * Handle the final purchase submission
- * 1. Validates customer information
- * 2. Generates KHQR payment code
- * 3. Starts automatic payment detection
- */
-const handlePurchase = async () => {
-  // Validation: Check required fields
-  if (!formData.value.buyerName || !formData.value.buyerPhone) {
-    alert('Please fill in all required fields')
-    return
-  }
-  if (!formData.value.payment) {
-    alert('Please select a payment method')
-    return
-  }
-
-  // Process Bakong KHQR Payment
-  if (formData.value.payment.name === 'Bakong KHQR') {
-    isProcessing.value = true
-    paymentStatus.value = 'processing'
-
-    try {
-      // Step 1: Prepare payment request data
-      const requestData = {
-        bakong_account: 'vuth_menghuor@aclb', // Merchant's Bakong account
-        account_name: 'MOTION CYCLE', // Display name for customer
-        amount: totalAmount.value, // Total amount to pay
-        currency: 'USD', // Payment currency (USD/KHR)
-        track_payment: true, // Enable real-time payment detection
-        include_image: false, // Generate QR image URL separately for better control
-      }
-
-      // Step 2: Call API
-      const khqrResponse = await generateKHQRIndividualWithImage(requestData)
-
-      // Step 3: Process API response
-      if (khqrResponse && khqrResponse.success) {
-        // Get the QR string from the response
-        const qrString = khqrResponse.data?.qr_string
-
-        if (qrString) {
-          khqrData.value = {
-            ...khqrResponse.data,
-            tracking_enabled: !!khqrResponse.data.md5,
-          }
-          // Generate QR code image from the QR string
-          khqrQrImageUrl.value = generateQRImageUrl(qrString)
-
-          // Start automatic payment detection if MD5 is available
-          if (khqrResponse.data.md5) {
-            startPaymentPolling(khqrResponse.data.md5)
-          } else {
-            showManualConfirmation.value = true
-          }
-        } else {
-          throw new Error('QR string not found in API response')
-        }
-      } else {
-        const errorMsg = khqrResponse?.message || khqrResponse?.error || 'Failed to generate KHQR'
-        throw new Error(errorMsg)
-      }
-    } catch (error) {
-      let errorMessage = 'Unknown error occurred'
-
-      // Handle different types of errors
-      if (error.response?.data?.error) {
-        errorMessage = error.response.data.error
-      } else if (error.response?.data?.message) {
-        errorMessage = error.response.data.message
-      } else if (error.message) {
-        errorMessage = error.message
-      }
-
-      // Special handling for common API errors
-      if (errorMessage.includes('403') || errorMessage.includes('CloudFront')) {
-        errorMessage =
-          'API Configuration Error: Please check if Bakong API is properly configured for production mode.'
-      } else if (errorMessage.includes('timeout')) {
-        errorMessage = 'Connection timeout: Please check your internet connection and try again.'
-      } else if (errorMessage.includes('Network Error')) {
-        errorMessage = 'Network error: Cannot connect to payment service. Please try again.'
-      }
-
-      alert(
-        `❌ Failed to generate payment QR code:\n\n${errorMessage}\n\nPlease try again or contact support if the problem persists.`,
-      )
-      paymentStatus.value = 'failed'
-    } finally {
-      isProcessing.value = false
-    }
-  } else {
-    // Handle other payment methods here if needed
-    alert('Payment method not yet implemented')
-  }
-}
-
-// Confirm payment manually (for demo purposes)
-const confirmPayment = () => {
-  paymentStatus.value = 'success'
-
-  // Store order data for invoice
-  localStorage.setItem(
-    'lastOrderData',
-    JSON.stringify({
-      cartItems: cartItems.value,
-      formData: formData.value,
-      totalAmount: totalAmount.value,
-      promoCode: promoCode.value,
-      paymentMethod: 'Bakong KHQR',
-      timestamp: new Date().toISOString(),
-      paymentType: 'manual_confirmation',
-      summaryBreakdown: summaryBreakdown.value, // Include detailed breakdown
-    }),
-  )
-
-  // Clear cart
-  cartStore.clearCart()
-
-  // Navigate to summary
-  setTimeout(() => {
-    // Keep the success modal visible during navigation
-    router.push('/checkout/purchase/summary')
-  }, 5000)
-}
-
-// Payment detection polling
-const startPaymentPolling = (md5) => {
-  if (!md5) {
-    console.warn('No MD5 hash available for payment tracking')
-    showManualConfirmation.value = true
-    return
-  }
-
-  pollingAttempts.value = 0 // Start at 0 - will increment only when we actually check
-  showManualConfirmation.value = false
-
-  const checkPayment = async () => {
-    try {
-      // Only increment attempts when we actually start checking for payments
-      pollingAttempts.value++
-
-      const result = await checkPaymentStatus(md5)
-
-      if (result.success && result.payment_status === 'completed') {
-        stopPaymentPolling()
-        paymentStatus.value = 'success'
-
-        // Store complete order data and navigate to summary
-        localStorage.setItem(
-          'lastOrderData',
-          JSON.stringify({
-            cartItems: cartItems.value,
-            formData: formData.value,
-            totalAmount: totalAmount.value,
-            promoCode: promoCode.value,
-            paymentMethod: 'Bakong KHQR',
-            timestamp: new Date().toISOString(),
-            paymentType: 'automatic_detection',
-            summaryBreakdown: summaryBreakdown.value, // Include detailed breakdown
-          }),
-        )
-
-        // Clear cart after successful payment
-        cartStore.clearCart()
-
-        // Navigate to success page after 5 second delay
-        setTimeout(() => {
-          // Keep the success modal visible during navigation
-          router.push('/checkout/purchase/summary')
-        }, 5000)
-        return
-      }
-
-      // Continue polling if not completed and within limits
-      if (pollingAttempts.value < maxPollingAttempts) {
-        console.log(
-          `⏰ Scheduling next check in 30 seconds... (${pollingAttempts.value}/${maxPollingAttempts})`,
-        )
-        pollingInterval.value = setTimeout(checkPayment, 30000) // Check every 30 seconds
-      } else {
-        showManualConfirmation.value = true
-      }
-    } catch (error) {
-      console.error('💥 Payment polling error:', error)
-      showManualConfirmation.value = true
-    }
-  }
-
-  // Start the first check after giving user time to scan QR (30 seconds)
-
-  pollingInterval.value = setTimeout(checkPayment, 30000)
-}
-
-const stopPaymentPolling = () => {
-  if (pollingInterval.value) {
-    clearTimeout(pollingInterval.value)
-    pollingInterval.value = null
-  }
-}
-
-// Cancel payment
-const cancelPayment = () => {
-  stopPaymentPolling()
-  khqrData.value = null
-  khqrQrImageUrl.value = ''
-  paymentStatus.value = 'pending'
-  pollingAttempts.value = 0
-}
-
-// Store summary breakdown for invoice
-const summaryBreakdown = ref(null)
-
-// Update purchase amount from summary
-const updateTotalAmount = (newTotal) => {
-  purchaseAmount.value = newTotal
-}
-
-// Update summary breakdown for invoice
-const updateSummaryBreakdown = (breakdown) => {
-  summaryBreakdown.value = breakdown
-}
-</script>
-
 <template>
   <Navigation_header
     :disableAnimation="true"
@@ -484,6 +142,366 @@ const updateSummaryBreakdown = (breakdown) => {
     </div>
   </div>
 </template>
+
+<script setup>
+/**
+ * Checkout Purchase Page - Final Step
+ *
+ * This is the final checkout step where customers:
+ * 1. Review their order details
+ * 2. Complete payment using Bakong KHQR
+ * 3. Get real-time payment confirmation
+ *
+ * Features:
+ * - Bakong KHQR integration with real banking apps
+ * - Automatic payment detection (no manual confirmation needed)
+ * - Real-time payment status updates
+ * - Order processing and invoice generation
+ */
+
+import { ref, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useCartStore } from '@/stores/cart'
+import { storeToRefs } from 'pinia'
+
+// Bakong Payment API Services
+import {
+  generateKHQRIndividualWithImage, // Generate QR codes for payments
+  checkPaymentStatus, // Check if payment completed
+} from '@/services/khqr'
+
+// UI Components
+import Navigation_header from '@/components/navigation_header.vue'
+import Indecator_process from '@/components/checkout/cart/indecator_process.vue'
+import Checkout_summary from '@/components/checkout/cart/checkout_summary.vue'
+import Purschase_section from '@/components/checkout/payment/purschase_section.vue'
+
+// ============================================
+// STORE & ROUTER SETUP
+// ============================================
+const router = useRouter()
+const cartStore = useCartStore()
+const { cartItems } = storeToRefs(cartStore)
+
+// ============================================
+// FORM DATA & PURCHASE INFO
+// ============================================
+const promoCode = ref('BOOKRIDE50') // Promo code for discounts
+const formData = ref({
+  buyerName: '', // Customer name
+  buyerPhone: '', // Customer phone
+  payment: null, // Selected payment method
+})
+
+const purchaseAmount = ref(0) // Total amount to pay
+const isProcessing = ref(false) // Loading state during payment
+const paymentStatus = ref('pending') // pending | processing | success | failed
+
+// ============================================
+// BAKONG KHQR PAYMENT DATA
+// ============================================
+const khqrData = ref(null) // QR code data from API
+const khqrQrImageUrl = ref('') // Generated QR image URL for display
+
+// ============================================
+// AUTOMATIC PAYMENT DETECTION
+// ============================================
+const pollingAttempts = ref(0) // Current check attempt
+const maxPollingAttempts = 20 // Max attempts (10 minutes at 30-second intervals)
+const pollingInterval = ref(null) // Timer for periodic checks
+const showManualConfirmation = ref(false) // Show manual button if auto-detection fails
+
+// QR code image generator helper
+const generateQRImageUrl = (qrString) => {
+  const encodedText = encodeURIComponent(qrString)
+  return `https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodedText}`
+}
+
+// Total amount from cart (reactive)
+const totalAmount = computed(() => {
+  // Calculate total from cart items
+  const cartTotal = cartItems.value.reduce((total, item) => {
+    return total + (item.originalPrice || item.price) * item.quantity
+  }, 0)
+
+  // Check if promo code is valid
+  let discount = 0
+  if (promoCode.value.trim().toUpperCase() === 'BOOKRIDE50') {
+    discount = 5.0
+  } else {
+    discount = 0
+  }
+
+  // Ensure net price is not negative
+  const netPrice = Math.max(cartTotal - discount, 0)
+
+  // Add shipping cost
+  const shipping = 2.0
+  return netPrice + shipping
+})
+
+// Keep purchaseAmount in sync
+watch(
+  totalAmount,
+  (newVal) => {
+    purchaseAmount.value = newVal
+  },
+  { immediate: true },
+)
+
+// Update handlers
+const updateFormData = (data) => {
+  formData.value = data
+}
+const updatePromoCode = (newCode) => {
+  promoCode.value = newCode
+}
+
+const navigationAndScroll = (path) => {
+  router.push(path).then(() => {
+    setTimeout(() => {
+      window.scrollTo(0, 0)
+    }, 100)
+  })
+}
+
+// Return to payment page
+const returnToPayment = () => {
+  navigationAndScroll('/checkout/payment')
+}
+
+// ============================================
+// MAIN PURCHASE HANDLER
+// ============================================
+/**
+ * Handle the final purchase submission
+ * 1. Validates customer information
+ * 2. Generates KHQR payment code
+ * 3. Starts automatic payment detection
+ */
+const handlePurchase = async () => {
+  // Step 1: Validate required fields
+  if (!formData.value.buyerName || !formData.value.buyerPhone) {
+    alert('Please fill in all required fields')
+    return
+  }
+  if (!formData.value.payment) {
+    alert('Please select a payment method')
+    return
+  }
+
+  // Step 2: Process Bakong KHQR Payment
+  if (formData.value.payment.name === 'Bakong KHQR') {
+    isProcessing.value = true
+    paymentStatus.value = 'processing'
+
+    try {
+      // Prepare payment request data
+      const requestData = {
+        bakong_account: 'vuth_menghuor@aclb', // Merchant's Bakong account
+        account_name: 'MOTION CYCLE', // Display name for customer
+        amount: totalAmount.value, // Total amount to pay
+        currency: 'USD', // Payment currency (USD/KHR)
+        track_payment: true, // Enable real-time payment detection
+        include_image: false, // Generate QR image URL separately for better control
+      }
+
+      // Call API to generate KHQR
+      const khqrResponse = await generateKHQRIndividualWithImage(requestData)
+
+      // Check if API response is successful
+      if (khqrResponse && khqrResponse.success) {
+        // Get the QR string from the response
+        const qrString = khqrResponse.data?.qr_string
+
+        if (qrString) {
+          khqrData.value = {
+            ...khqrResponse.data,
+            tracking_enabled: !!khqrResponse.data.md5,
+          }
+          // Generate QR code image from the QR string
+          khqrQrImageUrl.value = generateQRImageUrl(qrString)
+
+          // Start automatic payment detection if MD5 is available
+          if (khqrResponse.data.md5) {
+            startPaymentPolling(khqrResponse.data.md5)
+          } else {
+            showManualConfirmation.value = true
+          }
+        } else {
+          throw new Error('QR string not found in API response')
+        }
+      } else {
+        const errorMsg = khqrResponse?.message || khqrResponse?.error || 'Failed to generate KHQR'
+        throw new Error(errorMsg)
+      }
+    } catch (error) {
+      let errorMessage = 'Unknown error occurred'
+
+      // Handle different types of errors
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      } else if (error.message) {
+        errorMessage = error.message
+      } else {
+        // Keep default message
+      }
+
+      // Special handling for common API errors
+      if (errorMessage.includes('403') || errorMessage.includes('CloudFront')) {
+        errorMessage =
+          'API Configuration Error: Please check if Bakong API is properly configured for production mode.'
+      } else if (errorMessage.includes('timeout')) {
+        errorMessage = 'Connection timeout: Please check your internet connection and try again.'
+      } else if (errorMessage.includes('Network Error')) {
+        errorMessage = 'Network error: Cannot connect to payment service. Please try again.'
+      } else {
+        // Keep the error message as is
+      }
+
+      alert(
+        `❌ Failed to generate payment QR code:\n\n${errorMessage}\n\nPlease try again or contact support if the problem persists.`,
+      )
+      paymentStatus.value = 'failed'
+    } finally {
+      isProcessing.value = false
+    }
+  } else {
+    // Handle other payment methods here if needed
+    alert('Payment method not yet implemented')
+  }
+}
+
+// Confirm payment manually (for demo purposes)
+const confirmPayment = () => {
+  paymentStatus.value = 'success'
+
+  // Store order data for invoice
+  localStorage.setItem(
+    'lastOrderData',
+    JSON.stringify({
+      cartItems: cartItems.value,
+      formData: formData.value,
+      totalAmount: totalAmount.value,
+      promoCode: promoCode.value,
+      paymentMethod: 'Bakong KHQR',
+      timestamp: new Date().toISOString(),
+      paymentType: 'manual_confirmation',
+      summaryBreakdown: summaryBreakdown.value, // Include detailed breakdown
+    }),
+  )
+
+  // Clear cart
+  cartStore.clearCart()
+
+  // Navigate to summary
+  setTimeout(() => {
+    // Keep the success modal visible during navigation
+    router.push('/checkout/purchase/summary')
+  }, 5000)
+}
+
+// Payment detection polling
+const startPaymentPolling = (md5) => {
+  // Check if MD5 hash is available for tracking
+  if (!md5) {
+    console.warn('No MD5 hash available for payment tracking')
+    showManualConfirmation.value = true
+    return
+  }
+
+  pollingAttempts.value = 0 // Start at 0 - will increment only when we actually check
+  showManualConfirmation.value = false
+
+  const checkPayment = async () => {
+    try {
+      // Only increment attempts when we actually start checking for payments
+      pollingAttempts.value++
+
+      const result = await checkPaymentStatus(md5)
+
+      // Check if payment is completed
+      if (result.success && result.payment_status === 'completed') {
+        stopPaymentPolling()
+        paymentStatus.value = 'success'
+
+        // Store complete order data and navigate to summary
+        localStorage.setItem(
+          'lastOrderData',
+          JSON.stringify({
+            cartItems: cartItems.value,
+            formData: formData.value,
+            totalAmount: totalAmount.value,
+            promoCode: promoCode.value,
+            paymentMethod: 'Bakong KHQR',
+            timestamp: new Date().toISOString(),
+            paymentType: 'automatic_detection',
+            summaryBreakdown: summaryBreakdown.value, // Include detailed breakdown
+          }),
+        )
+
+        // Clear cart after successful payment
+        cartStore.clearCart()
+
+        // Navigate to success page after 5 second delay
+        setTimeout(() => {
+          // Keep the success modal visible during navigation
+          router.push('/checkout/purchase/summary')
+        }, 5000)
+        return
+      }
+
+      // Continue polling if not completed and within limits
+      if (pollingAttempts.value < maxPollingAttempts) {
+        console.log(
+          `⏰ Scheduling next check in 30 seconds... (${pollingAttempts.value}/${maxPollingAttempts})`,
+        )
+        pollingInterval.value = setTimeout(checkPayment, 30000) // Check every 30 seconds
+      } else {
+        showManualConfirmation.value = true
+      }
+    } catch (error) {
+      console.error('💥 Payment polling error:', error)
+      showManualConfirmation.value = true
+    }
+  }
+
+  // Start the first check after giving user time to scan QR (30 seconds)
+
+  pollingInterval.value = setTimeout(checkPayment, 30000)
+}
+
+const stopPaymentPolling = () => {
+  if (pollingInterval.value) {
+    clearTimeout(pollingInterval.value)
+    pollingInterval.value = null
+  }
+}
+
+// Cancel payment
+const cancelPayment = () => {
+  stopPaymentPolling()
+  khqrData.value = null
+  khqrQrImageUrl.value = ''
+  paymentStatus.value = 'pending'
+  pollingAttempts.value = 0
+}
+
+// Store summary breakdown for invoice
+const summaryBreakdown = ref(null)
+
+// Update purchase amount from summary
+const updateTotalAmount = (newTotal) => {
+  purchaseAmount.value = newTotal
+}
+
+// Update summary breakdown for invoice
+const updateSummaryBreakdown = (breakdown) => {
+  summaryBreakdown.value = breakdown
+}
+</script>
 
 <style scoped>
 .bakong-payment-modal {

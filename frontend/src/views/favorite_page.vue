@@ -1,42 +1,3 @@
-<script setup>
-import Navigation_header from '@/components/navigation_header.vue'
-import { useFavoritesStore } from '@/stores/favorites'
-import { useRouter } from 'vue-router'
-import { Icon } from '@iconify/vue'
-import { computed, ref } from 'vue'
-
-const favoritesStore = useFavoritesStore()
-const router = useRouter()
-const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
-
-function formatNumber(number) {
-  if (number) {
-    return number.toLocaleString()
-  }
-  return 0
-}
-
-const viewBikeDetails = (bikeId) => {
-  router.push(`/bike/${bikeId}`).then(() => window.scrollTo(0, 0))
-}
-
-const getDiscountLabel = (bike) => {
-  if (!bike.discount) return null
-  return bike.discount.type === 'percent'
-    ? `${bike.discount.value}% OFF`
-    : `-${bike.discount.value.toLocaleString()} OFF`
-}
-
-const getDiscountedPrice = (bike) => {
-  if (!bike.discount) return bike.price
-  if (bike.discount.type === 'percent') {
-    return bike.price - (bike.price * bike.discount.value) / 100
-  } else {
-    return bike.price - bike.discount.value
-  }
-}
-</script>
-
 <template>
   <Navigation_header
     :disableAnimation="true"
@@ -126,6 +87,58 @@ const getDiscountedPrice = (bike) => {
     </div>
   </div>
 </template>
+
+<script setup>
+import Navigation_header from '@/components/navigation_header.vue'
+import { useFavoritesStore } from '@/stores/favorites'
+import { useRouter } from 'vue-router'
+import { Icon } from '@iconify/vue'
+import { computed } from 'vue'
+
+const favoritesStore = useFavoritesStore()
+const router = useRouter()
+const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
+
+function formatNumber(number) {
+  // Format number with commas if it exists
+  if (number) {
+    return number.toLocaleString()
+  }
+  return 0
+}
+
+const viewBikeDetails = (bikeId) => {
+  router.push(`/bike/${bikeId}`).then(() => window.scrollTo(0, 0))
+}
+
+const getDiscountLabel = (bike) => {
+  // Return null if no discount
+  if (!bike.discount) {
+    return null
+  }
+
+  // Return label based on discount type
+  if (bike.discount.type === 'percent') {
+    return `${bike.discount.value}% OFF`
+  } else {
+    return `-${bike.discount.value.toLocaleString()} OFF`
+  }
+}
+
+const getDiscountedPrice = (bike) => {
+  // Return original price if no discount
+  if (!bike.discount) {
+    return bike.price
+  }
+
+  // Calculate discounted price based on type
+  if (bike.discount.type === 'percent') {
+    return bike.price - (bike.price * bike.discount.value) / 100
+  } else {
+    return bike.price - bike.discount.value
+  }
+}
+</script>
 
 <style scoped>
 .no-favorites h3 {

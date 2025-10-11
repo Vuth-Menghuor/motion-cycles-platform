@@ -73,6 +73,7 @@
 <script setup>
 import { computed } from 'vue'
 
+// Define props for the filter component
 const props = defineProps({
   bikes: { type: Array, required: true },
   showFilters: { type: Boolean, default: false },
@@ -82,6 +83,7 @@ const props = defineProps({
   selectedDiscountStatuses: { type: Array, default: () => [] },
 })
 
+// Define emits for updating filters
 const emit = defineEmits([
   'update:selectedPriceRange',
   'update:selectedColors',
@@ -90,6 +92,7 @@ const emit = defineEmits([
   'clear-filters',
 ])
 
+// Price range options
 const priceRanges = [
   { label: '$500 - $1,000', min: 500, max: 1000 },
   { label: '$1,000 - $2,500', min: 1000, max: 2500 },
@@ -98,35 +101,43 @@ const priceRanges = [
   { label: 'Greater than $10,000', min: 10000, max: Infinity },
 ]
 
+// Discount status options
 const discountStatuses = [
   { label: 'On Sale', value: 'discounted' },
   { label: 'Regular Price', value: 'regular' },
 ]
 
+// Computed for unique available colors from bikes
 const availableColors = computed(() => [...new Set(props.bikes.map((b) => b.color))].sort())
 
+// Computed for unique available brands from bikes
 const availableBrands = computed(() => [...new Set(props.bikes.map((b) => b.subtitle))].sort())
 
+// Computed for selected price range with getter/setter
 const selectedPriceRange = computed({
   get: () => props.selectedPriceRange,
   set: (v) => emit('update:selectedPriceRange', v),
 })
 
+// Computed for selected colors with getter/setter
 const selectedColors = computed({
   get: () => props.selectedColors,
   set: (v) => emit('update:selectedColors', v),
 })
 
+// Computed for selected brands with getter/setter
 const selectedBrands = computed({
   get: () => props.selectedBrands,
   set: (v) => emit('update:selectedBrands', v),
 })
 
+// Computed for selected discount statuses with getter/setter
 const selectedDiscountStatuses = computed({
   get: () => props.selectedDiscountStatuses,
   set: (v) => emit('update:selectedDiscountStatuses', v),
 })
 
+// Function to clear all filters
 const clearAllFilters = () => {
   emit('update:selectedPriceRange', '')
   emit('update:selectedColors', [])
@@ -135,22 +146,31 @@ const clearAllFilters = () => {
   emit('clear-filters')
 }
 
+// Function to toggle an item in an array filter
 const toggleFilter = (array, value) => {
   const current = [...array]
   const index = current.indexOf(value)
-  index > -1 ? current.splice(index, 1) : current.push(value)
+  if (index > -1) {
+    current.splice(index, 1) // Remove if exists
+  } else {
+    current.push(value) // Add if not exists
+  }
   return current
 }
 
+// Function to toggle color filter
 const toggleColorFilter = (color) =>
   emit('update:selectedColors', toggleFilter(props.selectedColors, color))
 
+// Function to toggle brand filter
 const toggleBrandFilter = (brand) =>
   emit('update:selectedBrands', toggleFilter(props.selectedBrands, brand))
 
+// Function to toggle discount filter
 const toggleDiscountFilter = (status) =>
   emit('update:selectedDiscountStatuses', toggleFilter(props.selectedDiscountStatuses, status))
 
+// Expose price ranges for parent component
 defineExpose({ priceRanges })
 </script>
 

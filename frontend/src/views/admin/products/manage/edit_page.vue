@@ -128,13 +128,27 @@ const hasQueryParams = computed(() => {
 
 const prefilledFields = computed(() => {
   const fields = {}
-  if (route.query.productName) fields.name = true
-  if (route.query.brand) fields.brand = true
-  if (route.query.category) fields.category = true
-  if (route.query.quantity) fields.quantity = true
-  if (route.query.quality) fields.quality = true
-  if (route.query.price) fields.price = true
-  if (route.query.color) fields.color = true
+  if (route.query.productName) {
+    fields.name = true
+  }
+  if (route.query.brand) {
+    fields.brand = true
+  }
+  if (route.query.category) {
+    fields.category = true
+  }
+  if (route.query.quantity) {
+    fields.quantity = true
+  }
+  if (route.query.quality) {
+    fields.quality = true
+  }
+  if (route.query.price) {
+    fields.price = true
+  }
+  if (route.query.color) {
+    fields.color = true
+  }
   return fields
 })
 
@@ -244,13 +258,17 @@ const MOCK_SPECS = {
 
 // Utility functions
 const convertDateFormat = (dateString) => {
-  if (!dateString || dateString === 'N/A') return ''
-  const parts = dateString.split('/')
-  if (parts.length === 3) {
-    const [month, day, year] = parts
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  if (!dateString || dateString === 'N/A') {
+    return ''
+  } else {
+    const parts = dateString.split('/')
+    if (parts.length === 3) {
+      const [month, day, year] = parts
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    } else {
+      return dateString
+    }
   }
-  return dateString
 }
 
 // Product management methods
@@ -340,6 +358,7 @@ onMounted(() => {
     loadProduct()
   }
 
+  // Prefill form from query parameters
   const {
     productName,
     brand,
@@ -363,18 +382,42 @@ onMounted(() => {
     display,
   } = route.query
 
-  if (productName) product.value.name = productName
-  if (brand) product.value.brand = brand
-  if (category) product.value.category = category
-  if (quantity) product.value.quantity = quantity
-  if (highlight) product.value.highlight = highlight
-  if (description) product.value.description = description
-  if (quality) product.value.quality = quality
-  if (price) product.value.price = price
-  if (color) product.value.color = color
-  if (discountCode) product.value.discountCode = discountCode
-  if (discountType && discountType !== 'N/A') product.value.discountType = discountType
-  if (discountValue && discountValue !== 'N/A') product.value.discountValue = discountValue
+  if (productName) {
+    product.value.name = productName
+  }
+  if (brand) {
+    product.value.brand = brand
+  }
+  if (category) {
+    product.value.category = category
+  }
+  if (quantity) {
+    product.value.quantity = quantity
+  }
+  if (highlight) {
+    product.value.highlight = highlight
+  }
+  if (description) {
+    product.value.description = description
+  }
+  if (quality) {
+    product.value.quality = quality
+  }
+  if (price) {
+    product.value.price = price
+  }
+  if (color) {
+    product.value.color = color
+  }
+  if (discountCode) {
+    product.value.discountCode = discountCode
+  }
+  if (discountType && discountType !== 'N/A') {
+    product.value.discountType = discountType
+  }
+  if (discountValue && discountValue !== 'N/A') {
+    product.value.discountValue = discountValue
+  }
   if (discountStartDate && discountStartDate !== 'N/A') {
     const convertedStartDate = convertDateFormat(discountStartDate)
     product.value.discountStartDate = convertedStartDate
@@ -384,12 +427,24 @@ onMounted(() => {
     product.value.discountExpireDate = convertedEndDate
   }
 
-  if (range) specs.value.range = range
-  if (hubMotor) specs.value.hubMotor = hubMotor
-  if (payload) specs.value.payload = payload
-  if (controller) specs.value.controller = controller
-  if (weight) specs.value.weight = weight
-  if (display) specs.value.display = display
+  if (range) {
+    specs.value.range = range
+  }
+  if (hubMotor) {
+    specs.value.hubMotor = hubMotor
+  }
+  if (payload) {
+    specs.value.payload = payload
+  }
+  if (controller) {
+    specs.value.controller = controller
+  }
+  if (weight) {
+    specs.value.weight = weight
+  }
+  if (display) {
+    specs.value.display = display
+  }
 })
 </script>
 

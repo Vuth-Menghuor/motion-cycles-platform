@@ -1,13 +1,6 @@
-<!-- <script setup></script>
-
-<template>
-  <router-view />
-</template>
-
-<style scoped></style> -->
-
 <template>
   <div id="app">
+    <!-- Main application container with router view for page navigation -->
     <router-view></router-view>
   </div>
 </template>

@@ -31,6 +31,7 @@ import { Icon } from '@iconify/vue'
 import { useCartStore } from '@/stores/cart'
 import { storeToRefs } from 'pinia'
 
+// eslint-disable-next-line no-unused-vars
 const props = defineProps({
   brandName: {
     type: String,
@@ -60,7 +61,6 @@ const goBack = () => {
   border-bottom: 1px solid #d0d5dd;
   display: flex;
   align-items: center;
-  display: flex;
   justify-content: space-around;
   padding: 1rem 2rem;
   gap: 1rem;
@@ -78,12 +78,9 @@ const goBack = () => {
   height: 44px;
   background-color: white;
   border: 1px solid grey;
-  padding: 10px 20px 10px 20px;
+  padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
-  transition:
-    background-color 0.2s ease,
-    transform 0.2s ease;
 }
 
 .back-icon {
@@ -91,7 +88,7 @@ const goBack = () => {
 }
 
 .brand-logo-header {
-  flex: 1; /* Allows it to take up available space */
+  flex: 1;
   text-align: center;
   font-family: '911Porscha', sans-serif;
   font-size: 1.4rem;
@@ -101,10 +98,9 @@ const goBack = () => {
 .cart-and-user-container {
   display: flex;
   align-items: center;
-  gap: 10px; /* Adjust the gap between the cart and user buttons */
+  gap: 10px;
 }
 
-/* Add styles for the cart and user buttons */
 .cart-button,
 .user-account {
   position: relative;
@@ -113,10 +109,8 @@ const goBack = () => {
   align-items: center;
   width: 42px;
   height: 42px;
-  border: 1px solid grey;
-  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   background: white;
-  border-color: rgba(0, 0, 0, 0.2);
   border-radius: 2px;
   cursor: pointer;
 }
@@ -129,14 +123,13 @@ const goBack = () => {
   background-color: #ff4d4f;
   color: white;
   font-size: 0.7rem;
-  font-weight: bold;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 18px;
   height: 18px;
-  border-radius: 30%;
-  font-weight: 600;
+  border-radius: 50%;
 }
 
 .cart-icon,

@@ -199,6 +199,7 @@ const mockCustomers = [
   },
 ]
 
+// Load customer data
 const loadCustomer = () => {
   const customerId = parseInt(props.id)
   const foundCustomer = mockCustomers.find((c) => c.id === customerId)
@@ -218,55 +219,109 @@ const loadCustomer = () => {
   }
 }
 
-const validateForm = () => {
-  Object.keys(errors).forEach((key) => (errors[key] = ''))
-  let isValid = true
-
+// Validate name field
+const validateName = () => {
   if (!form.name?.trim()) {
     errors.name = 'Name is required'
-    isValid = false
-  } else if (form.name.trim().length < 2) {
-    errors.name = 'Name must be at least 2 characters'
-    isValid = false
+    return false
   }
+  if (form.name.trim().length < 2) {
+    errors.name = 'Name must be at least 2 characters'
+    return false
+  }
+  return true
+}
 
+// Validate email field
+const validateEmail = () => {
   if (!form.email?.trim()) {
     errors.email = 'Email is required'
-    isValid = false
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = 'Please enter a valid email address'
-    isValid = false
+    return false
   }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    errors.email = 'Please enter a valid email address'
+    return false
+  }
+  return true
+}
 
+// Validate status field
+const validateStatus = () => {
   if (!form.status) {
     errors.status = 'Status is required'
-    isValid = false
+    return false
   }
+  return true
+}
 
-  if (form.phone?.trim() && !/^[+]?[1-9][\d]{0,15}$/.test(form.phone.replace(/[\s\-()]/g, ''))) {
-    errors.phone = 'Please enter a valid phone number'
-    isValid = false
+// Validate phone field
+const validatePhone = () => {
+  if (form.phone?.trim()) {
+    if (!/^[+]?[1-9][\d]{0,15}$/.test(form.phone.replace(/[\s\-()]/g, ''))) {
+      errors.phone = 'Please enter a valid phone number'
+      return false
+    }
   }
+  return true
+}
 
+// Validate password field
+const validatePassword = () => {
   if (form.password?.trim()) {
     if (form.password.length < 8) {
       errors.password = 'Password must be at least 8 characters long'
-      isValid = false
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(form.password)) {
-      errors.password = 'Password must contain uppercase, lowercase, and number'
-      isValid = false
+      return false
     }
+    if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(form.password)) {
+      errors.password = 'Password must contain uppercase, lowercase, and number'
+      return false
+    }
+  }
+  return true
+}
+
+// Main validation function
+const validateForm = () => {
+  // Clear previous errors
+  Object.keys(errors).forEach((key) => {
+    errors[key] = ''
+  })
+
+  let isValid = true
+
+  if (!validateName()) {
+    isValid = false
+  }
+
+  if (!validateEmail()) {
+    isValid = false
+  }
+
+  if (!validateStatus()) {
+    isValid = false
+  }
+
+  if (!validatePhone()) {
+    isValid = false
+  }
+
+  if (!validatePassword()) {
+    isValid = false
   }
 
   return isValid
 }
 
+// Save customer data
 const saveCustomer = async () => {
-  if (!validateForm()) return
+  if (!validateForm()) {
+    return
+  }
 
   isSubmitting.value = true
 
   try {
+    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
     alert('Customer updated successfully!')
     router.push(`/admin/customers/view/${customer.value.id}`)
@@ -278,6 +333,7 @@ const saveCustomer = async () => {
   }
 }
 
+// Cancel edit
 const cancelEdit = () => {
   if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
     router.push(`/admin/customers/view/${customer.value.id}`)

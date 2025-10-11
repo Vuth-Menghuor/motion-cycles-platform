@@ -29,42 +29,53 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+// Define props for the component
 const props = defineProps({
   image: { type: String, required: true },
   title: { type: String, required: true },
   additionalImages: { type: Array, default: () => [] },
 })
 
+// Get router and route instances
 const router = useRouter()
 const route = useRoute()
 
+// Reactive data for selected image and state
 const selectedImage = ref(props.image)
 const currentImageIndex = ref(0)
 const lightboxOpen = ref(false)
 
+// Computed property for all thumbnails
 const thumbnails = computed(() => {
   if (props.additionalImages.length > 0) {
-    return [{ src: props.image, alt: props.title }].concat(
-      props.additionalImages.map((img, i) => ({
-        src: img.url,
-        alt: img.alt || `${props.title} - View ${i + 1}`,
-      })),
-    )
+    // Include main image plus additional images
+    const mainImage = { src: props.image, alt: props.title }
+    const additional = props.additionalImages.map((img, i) => ({
+      src: img.url,
+      alt: img.alt || `${props.title} - View ${i + 1}`,
+    }))
+    return [mainImage, ...additional]
+  } else {
+    // Only main image
+    return [{ src: props.image, alt: props.title }]
   }
-  return [{ src: props.image, alt: props.title }]
 })
 
+// Computed property for visible thumbnails (first 4)
 const visibleThumbnails = computed(() => thumbnails.value.slice(0, 4))
 
+// Function to select an image
 const selectImage = (imageSrc) => {
   selectedImage.value = imageSrc
   currentImageIndex.value = thumbnails.value.findIndex((t) => t.src === imageSrc)
 }
 
+// Function to open lightbox
 const openLightbox = () => {
   lightboxOpen.value = true
 }
 
+// Function to navigate to full gallery
 const goToGallery = () => {
   router.push({
     name: 'BikeGallery',
@@ -77,6 +88,7 @@ const goToGallery = () => {
   })
 }
 
+// Watch for changes in additional images
 watch(
   () => props.additionalImages,
   () => {

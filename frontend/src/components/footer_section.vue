@@ -114,6 +114,7 @@
 import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
 
+// Define the props for the footer component
 defineProps({
   showNewsletter: { type: Boolean, default: true },
   companyName: { type: String, default: 'MOTION CYCLE' },
@@ -123,19 +124,25 @@ defineProps({
   },
 })
 
+// Define the events the component can emit
 const emit = defineEmits(['newsletter-subscribe', 'link-click', 'social-click'])
 
+// Reactive data for email input
 const email = ref('')
 
+// Function to subscribe to newsletter
 const subscribeNewsletter = () => {
   if (email.value.trim()) {
+    // Check if email is not empty
     emit('newsletter-subscribe', email.value)
-    email.value = ''
+    email.value = '' // Clear input after subscribe
   }
 }
 
+// Function to handle footer link clicks
 const handleLinkClick = (linkType) => emit('link-click', linkType)
 
+// Function to handle social media link clicks
 const handleSocialClick = (platform) => emit('social-click', platform)
 </script>
 

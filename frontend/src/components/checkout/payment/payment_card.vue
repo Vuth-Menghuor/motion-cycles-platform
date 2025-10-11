@@ -27,14 +27,17 @@
 <script setup>
 import { defineProps, defineEmits } from 'vue'
 
+// Define the props for the component
 const props = defineProps({
   payment: { type: Object, required: true, validator: (p) => p.id && p.name },
   isSelected: { type: Boolean, default: false },
   radioGroupName: { type: String, default: 'payment-selection' },
 })
 
+// Define the events the component can emit
 const emit = defineEmits(['select'])
 
+// Function to select the payment method
 const selectPayment = () => emit('select', props.payment)
 </script>
 

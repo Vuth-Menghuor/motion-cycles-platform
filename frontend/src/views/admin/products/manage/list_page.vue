@@ -213,8 +213,11 @@ const visiblePages = computed(() => {
   let startPage = Math.max(1, currentPage.value - Math.floor(maxVisiblePages / 2))
   let endPage = Math.min(totalPages.value, startPage + maxVisiblePages - 1)
 
+  // Adjust start page if not enough pages are visible
   if (endPage - startPage + 1 < maxVisiblePages) {
     startPage = Math.max(1, endPage - maxVisiblePages + 1)
+  } else {
+    // No adjustment needed, pages fit within range
   }
 
   for (let i = startPage; i <= endPage; i++) {
@@ -247,6 +250,8 @@ const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
     selectAll.value = false
+  } else {
+    // Page is out of range, do nothing
   }
 }
 
@@ -265,6 +270,8 @@ const deleteProduct = (productId) => {
         currentPage.value--
       }
     }
+  } else {
+    // User cancelled deletion
   }
 }
 
@@ -276,6 +283,8 @@ const bulkDelete = () => {
     if (paginatedProducts.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
+  } else {
+    // User cancelled bulk deletion
   }
 }
 

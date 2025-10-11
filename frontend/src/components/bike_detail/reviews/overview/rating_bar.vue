@@ -50,6 +50,7 @@ import { computed } from 'vue'
 import Rating_overview from './rating_overview.vue'
 import Rating_stars from './rating_stars.vue'
 
+// Define props for the component
 const props = defineProps({
   reviews: {
     type: Array,
@@ -57,30 +58,38 @@ const props = defineProps({
   },
 })
 
+// Total number of reviews
 const totalReviews = computed(() => props.reviews.length)
 
+// Count of each rating (1-5 stars)
 const ratings = computed(() => {
   const result = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
   props.reviews.forEach((review) => (result[review.rating] = (result[review.rating] || 0) + 1))
   return result
 })
 
+// Total number of ratings (same as totalReviews in this case)
 const totalRatings = computed(() =>
   Object.values(ratings.value).reduce((sum, count) => sum + count, 0),
 )
 
+// Average rating calculated from all reviews
 const averageRating = computed(() => {
-  const totalScore = Object.entries(ratings.value).reduce(
-    (sum, [rating, count]) => sum + Number(rating) * count,
-    0,
-  )
-  return (totalScore / totalRatings.value).toFixed(1)
+  let totalScore = 0
+  for (const [rating, count] of Object.entries(ratings.value)) {
+    totalScore += Number(rating) * count
+  }
+  const average = totalScore / totalRatings.value
+  return average.toFixed(1) // One decimal place
 })
 
-const ratingDistribution = computed(() =>
-  Object.fromEntries(Object.entries(ratings.value).sort(([a], [b]) => b - a)),
-)
+// Rating distribution sorted by rating descending
+const ratingDistribution = computed(() => {
+  const sortedEntries = Object.entries(ratings.value).sort((a, b) => b[0] - a[0]) // Sort by rating descending
+  return Object.fromEntries(sortedEntries)
+})
 
+// Progress percentage for the circular chart (0-100)
 const progressPercentage = computed(() => (averageRating.value / 5) * 100)
 </script>
 

@@ -1,4 +1,136 @@
+<template>
+  <div class="main-container">
+    <div class="filter-toggle-container">
+      <button class="filter-toggle-btn" @click="showFilters = !showFilters">
+        <Icon icon="mdi:filter-variant" class="toggle-icon" />
+        <span>Filters</span>
+        <Icon :icon="showFilters ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="toggle-icon" />
+      </button>
+    </div>
+
+    <div class="content-wrapper">
+      <bike_filter
+        ref="bike_filters"
+        :bikes="bikes"
+        :show-filters="showFilters"
+        v-model:selected-price-range="selectedPriceRange"
+        v-model:selected-colors="selectedColors"
+        v-model:selected-brands="selectedBrands"
+        v-model:selected-discount-statuses="selectedDiscountStatuses"
+        @clear-filters="handleClearFilters"
+      />
+
+      <div class="products-section">
+        <div class="products-header">
+          <h2>
+            {{ props.brand ? props.brand + ' Bikes' : 'All Bikes' }} ({{ filteredBikes.length }}
+            results)
+          </h2>
+        </div>
+
+        <div class="bikes-container">
+          <div v-for="bike in filteredBikes" :key="bike.id" class="product-card" :data-id="bike.id">
+            <div class="card-header">
+              <div
+                class="sale-badge"
+                :style="{ background: bike.badge.gradient }"
+                v-if="bike.badge.text"
+              >
+                <Icon :icon="bike.badge.icon" class="sale-icon" />
+                <span>{{ bike.badge.text }}</span>
+              </div>
+              <button
+                class="favorite-btn"
+                :class="{ favorited: isFavorited(bike.id) }"
+                @click="toggleFavorite(bike)"
+              >
+                <Icon
+                  :icon="isFavorited(bike.id) ? 'solar:heart-bold' : 'solar:heart-linear'"
+                  class="fav-icon"
+                />
+              </button>
+            </div>
+
+            <div class="product-image-container">
+              <div class="promotion-price" v-if="bike.discount">
+                <span>{{ getDiscountLabel(bike) }}</span>
+              </div>
+              <img :src="bike.image" alt="bikes-image-transparent" class="product-image" />
+            </div>
+
+            <div class="price-info">
+              <label class="product-price discounted"
+                >${{ formatNumber(getDiscountedPrice(bike)) }}</label
+              >
+              <span class="original-price" v-if="bike.discount"
+                >${{ formatNumber(bike.price) }}</span
+              >
+            </div>
+
+            <div class="product-info">
+              <label class="product-title">{{ bike.title }}</label>
+              <div class="subtitle-color">
+                <span class="product-subtitle">{{ bike.subtitle }}</span>
+                <span class="separator">|</span>
+                <span class="product-color">Color {{ bike.color }}</span>
+              </div>
+            </div>
+
+            <div class="rating-section">
+              <div class="stars">
+                <span
+                  v-for="star in stars"
+                  :key="star"
+                  class="star"
+                  :class="{ filled: star <= Math.floor(bike.rating) }"
+                >
+                  <Icon icon="line-md:star-filled" />
+                </span>
+              </div>
+              <span class="rating-text"
+                >({{ bike.rating }}) {{ formatNumber(bike.reviewCount) }}</span
+              >
+            </div>
+
+            <div class="product-specs">
+              <div v-for="spec in bike.specs" :key="spec.label" class="spec-item">
+                <div class="spec-content">
+                  <span class="spec-text">{{ spec.text }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <button class="view-detail-btn" @click="viewBikeDetails(bike.id)">
+                <span class="detail">View Details</span>
+              </button>
+              <button class="quick-buy-btn" @click="handleAddToCart(bike.id)">
+                <Icon icon="fa7-solid:cart-arrow-down" />
+                <span>Add To Cart</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="no-results" v-if="filteredBikes.length === 0">
+          <Icon icon="mdi:magnify-close" class="no-results-icon" />
+          <h3>No bikes found</h3>
+          <p>Try adjusting your filters to see more results.</p>
+          <button class="clear-filters-btn" @click="handleClearFilters">Clear All Filters</button>
+        </div>
+      </div>
+    </div>
+
+    <Transition name="fade">
+      <div class="toast-popup" v-if="showToast">
+        <p>{{ toastMessage }}</p>
+      </div>
+    </Transition>
+  </div>
+</template>
+
 <script setup>
+// Import necessary modules and components
 import { Icon } from '@iconify/vue'
 import { ref, onMounted, onUnmounted, computed, reactive } from 'vue'
 import bike_filter from './bike_filter.vue'
@@ -12,18 +144,23 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useFavoritesStore } from '@/stores/favorites'
 
+// Initialize router and stores
 const router = useRouter()
 const cartStore = useCartStore()
 const favoritesStore = useFavoritesStore()
 
+// Define props for the component
 const props = defineProps({
   brand: { type: String, default: '' },
 })
 
+// Computed property to generate an array of stars for rating display
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
 
+// Function to format numbers with commas
 const formatNumber = (number) => number.toLocaleString()
 
+// Array of bike data
 const bikes = ref([
   {
     id: 1,
@@ -141,10 +278,13 @@ const bikes = ref([
   },
 ])
 
+// Reactive variables for toast notifications
 const showToast = ref(false)
 const toastMessage = ref('')
+// Reactive object to track item quantities in cart
 const itemQuantities = reactive({})
 
+// Function to show a toast message for a short duration
 const showToastMessage = (message) => {
   toastMessage.value = message
   showToast.value = true
@@ -154,6 +294,7 @@ const showToastMessage = (message) => {
   }, 2000)
 }
 
+// Function to handle adding a bike to the cart
 const handleAddToCart = (bikeId) => {
   const bike = bikes.value.find((b) => b.id === bikeId)
   if (bike) {
@@ -165,6 +306,7 @@ const handleAddToCart = (bikeId) => {
   }
 }
 
+// Reactive variables for filter selections
 const selectedPriceRange = ref('')
 const selectedColors = ref([])
 const selectedBrands = ref([])
@@ -172,19 +314,24 @@ const selectedDiscountStatuses = ref([])
 const showFilters = ref(false)
 const bike_filters = ref(null)
 
+// Function to check if a bike has a discount
 const hasDiscount = (bike) =>
   bike.discount && (bike.discount.type === 'percent' || bike.discount.type === 'fixed')
 
+// Computed property to filter bikes based on selected filters
 const filteredBikes = computed(() => {
   return bikes.value.filter((bike) => {
+    // Filter by brand if specified in props
     if (props.brand && bike.subtitle.toLowerCase() !== props.brand.toLowerCase()) return false
 
+    // Filter by price range
     const discountedPrice = getDiscountedPrice(bike)
     if (selectedPriceRange.value && bike_filters.value) {
       const range = bike_filters.value.priceRanges.find((r) => r.label === selectedPriceRange.value)
       if (range && (discountedPrice < range.min || discountedPrice > range.max)) return false
     }
 
+    // Filter by discount status
     if (selectedDiscountStatuses.value.length > 0) {
       const bikeHasDiscount = hasDiscount(bike)
       const shouldShowDiscounted = selectedDiscountStatuses.value.includes('discounted')
@@ -193,7 +340,9 @@ const filteredBikes = computed(() => {
       if (!bikeHasDiscount && !shouldShowRegular) return false
     }
 
+    // Filter by selected colors
     if (selectedColors.value.length > 0 && !selectedColors.value.includes(bike.color)) return false
+    // Filter by selected brands
     if (selectedBrands.value.length > 0 && !selectedBrands.value.includes(bike.subtitle))
       return false
 
@@ -201,27 +350,38 @@ const filteredBikes = computed(() => {
   })
 })
 
+// Set to track visible bikes for intersection observer
 const visibleBikes = ref(new Set())
 
+// Function to toggle favorite status of a bike
 const toggleFavorite = (bike) => favoritesStore.toggleFavorite(bike)
+// Function to check if a bike is favorited
 const isFavorited = (bikeId) => favoritesStore.isFavorited(bikeId)
 
+// Function to get the discount label for a bike
 const getDiscountLabel = (bike) => {
   if (!bike.discount) return null
-  return bike.discount.type === 'percent'
-    ? `${bike.discount.value}% OFF`
-    : `-${bike.discount.value.toLocaleString()} OFF`
+  if (bike.discount.type === 'percent') {
+    return `${bike.discount.value}% OFF`
+  } else {
+    return `-${bike.discount.value.toLocaleString()} OFF`
+  }
 }
 
+// Function to calculate the discounted price of a bike
 const getDiscountedPrice = (bike) => {
   if (!bike.discount) return bike.price
-  return bike.discount.type === 'percent'
-    ? bike.price - (bike.price * bike.discount.value) / 100
-    : bike.price - bike.discount.value
+  if (bike.discount.type === 'percent') {
+    return bike.price - (bike.price * bike.discount.value) / 100
+  } else {
+    return bike.price - bike.discount.value
+  }
 }
 
+// Function to navigate to bike details page
 const viewBikeDetails = (bikeId) => router.push(`/bike/${bikeId}`).then(() => window.scrollTo(0, 0))
 
+// Function to clear all filters
 const handleClearFilters = () => {
   selectedPriceRange.value = ''
   selectedColors.value = []
@@ -229,14 +389,20 @@ const handleClearFilters = () => {
   selectedDiscountStatuses.value = []
 }
 
+// Variable to hold the intersection observer
 let observer
 
+// Lifecycle hook to set up intersection observer on mount
 onMounted(() => {
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         const id = Number(entry.target.dataset.id)
-        entry.isIntersecting ? visibleBikes.value.add(id) : visibleBikes.value.delete(id)
+        if (entry.isIntersecting) {
+          visibleBikes.value.add(id)
+        } else {
+          visibleBikes.value.delete(id)
+        }
         visibleBikes.value = new Set(visibleBikes.value)
       })
     },
@@ -245,141 +411,9 @@ onMounted(() => {
   document.querySelectorAll('.product-card').forEach((card) => observer.observe(card))
 })
 
+// Lifecycle hook to disconnect observer on unmount
 onUnmounted(() => observer?.disconnect())
 </script>
-
-<template>
-  <div class="main-container">
-    <div class="filter-toggle-container">
-      <button class="filter-toggle-btn" @click="showFilters = !showFilters">
-        <Icon icon="mdi:filter-variant" class="toggle-icon" />
-        <span>Filters</span>
-        <Icon :icon="showFilters ? 'mdi:chevron-up' : 'mdi:chevron-down'" class="toggle-icon" />
-      </button>
-    </div>
-
-    <div class="content-wrapper">
-      <bike_filter
-        ref="bike_filters"
-        :bikes="bikes"
-        :show-filters="showFilters"
-        v-model:selected-price-range="selectedPriceRange"
-        v-model:selected-colors="selectedColors"
-        v-model:selected-brands="selectedBrands"
-        v-model:selected-discount-statuses="selectedDiscountStatuses"
-        @clear-filters="handleClearFilters"
-      />
-
-      <div class="products-section">
-        <div class="products-header">
-          <h2>
-            {{ props.brand ? props.brand + ' Bikes' : 'All Bikes' }} ({{
-              filteredBikes.length
-            }}
-            results)
-          </h2>
-        </div>
-
-        <div class="bikes-container">
-          <div v-for="bike in filteredBikes" :key="bike.id" class="product-card" :data-id="bike.id">
-            <div class="card-header">
-              <div
-                class="sale-badge"
-                :style="{ background: bike.badge.gradient }"
-                v-if="bike.badge.text"
-              >
-                <Icon :icon="bike.badge.icon" class="sale-icon" />
-                <span>{{ bike.badge.text }}</span>
-              </div>
-              <button
-                class="favorite-btn"
-                :class="{ favorited: isFavorited(bike.id) }"
-                @click="toggleFavorite(bike)"
-              >
-                <Icon
-                  :icon="isFavorited(bike.id) ? 'solar:heart-bold' : 'solar:heart-linear'"
-                  class="fav-icon"
-                />
-              </button>
-            </div>
-
-            <div class="product-image-container">
-              <div class="promotion-price" v-if="bike.discount">
-                <span>{{ getDiscountLabel(bike) }}</span>
-              </div>
-              <img :src="bike.image" alt="bikes-image-transparent" class="product-image" />
-            </div>
-
-            <div class="price-info">
-              <label class="product-price discounted"
-                >${{ formatNumber(getDiscountedPrice(bike)) }}</label
-              >
-              <span class="original-price" v-if="bike.discount"
-                >${{ formatNumber(bike.price) }}</span
-              >
-            </div>
-
-            <div class="product-info">
-              <label class="product-title">{{ bike.title }}</label>
-              <div class="subtitle-color">
-                <span class="product-subtitle">{{ bike.subtitle }}</span>
-                <span class="separator">|</span>
-                <span class="product-color">Color {{ bike.color }}</span>
-              </div>
-            </div>
-
-            <div class="rating-section">
-              <div class="stars">
-                <span
-                  v-for="star in stars"
-                  :key="star"
-                  class="star"
-                  :class="{ filled: star <= Math.floor(bike.rating) }"
-                >
-                  <Icon icon="line-md:star-filled" />
-                </span>
-              </div>
-              <span class="rating-text"
-                >({{ bike.rating }}) {{ formatNumber(bike.reviewCount) }}</span
-              >
-            </div>
-
-            <div class="product-specs">
-              <div v-for="spec in bike.specs" :key="spec.label" class="spec-item">
-                <div class="spec-content">
-                  <span class="spec-text">{{ spec.text }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="card-footer">
-              <button class="view-detail-btn" @click="viewBikeDetails(bike.id)">
-                <span class="detail">View Details</span>
-              </button>
-              <button class="quick-buy-btn" @click="handleAddToCart(bike.id)">
-                <Icon icon="fa7-solid:cart-arrow-down" />
-                <span>Add To Cart</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="no-results" v-if="filteredBikes.length === 0">
-          <Icon icon="mdi:magnify-close" class="no-results-icon" />
-          <h3>No bikes found</h3>
-          <p>Try adjusting your filters to see more results.</p>
-          <button class="clear-filters-btn" @click="handleClearFilters">Clear All Filters</button>
-        </div>
-      </div>
-    </div>
-
-    <Transition name="fade">
-      <div class="toast-popup" v-if="showToast">
-        <p>{{ toastMessage }}</p>
-      </div>
-    </Transition>
-  </div>
-</template>
 
 <style scoped>
 .toast-popup {

@@ -45,7 +45,12 @@ export default {
   },
   computed: {
     currentForm() {
-      return this.type === 'sign_in' ? 'SignInForm' : 'SignUpForm'
+      // Determine which form to show based on the type prop
+      if (this.type === 'sign_in') {
+        return 'SignInForm'
+      } else {
+        return 'SignUpForm'
+      }
     },
   },
 }

@@ -2,10 +2,10 @@ import axios from 'axios'
 import { defineStore } from 'pinia'
 
 export const useAuthStore = defineStore('auth', () => {
-  // Login function
+  // Function to log in a user
   async function login(email, password) {
     try {
-      const result = await axios.post('/api/auth/login', { email, password }) // Changed this line
+      const result = await axios.post('/api/auth/login', { email, password })
       const token = result.data.data.token
       const user = result.data.data.user
 
@@ -21,7 +21,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Register function
+  // Function to register a new user
   async function register(payload) {
     try {
       const result = await axios.post(`/api/auth/register`, payload)
@@ -33,26 +33,29 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // Logout function
+  // Function to log out the current user
   function logout() {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     localStorage.removeItem('userRole')
   }
 
-  // Getters
+  // Getter to get the current user
   function getUser() {
     return JSON.parse(localStorage.getItem('user'))
   }
 
+  // Getter to check if user is logged in
   function isLoggedIn() {
     return !!localStorage.getItem('token')
   }
 
+  // Getter to get the user's role
   function getRole() {
     return localStorage.getItem('userRole') || 'user'
   }
 
+  // Getter to check if user is admin
   function isAdmin() {
     return getRole() === 'admin'
   }

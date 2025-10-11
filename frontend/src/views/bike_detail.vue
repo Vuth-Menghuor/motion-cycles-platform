@@ -312,10 +312,16 @@ const formatNumber = (number) => {
 }
 
 const getDiscountedPrice = (bike) => {
-  if (!bike.discount) return bike.price
+  // Check if bike has no discount
+  if (!bike.discount) {
+    return bike.price
+  }
+
+  // Apply percentage discount
   if (bike.discount.type === 'percent') {
     return bike.price - (bike.price * bike.discount.value) / 100
   } else {
+    // Apply fixed discount
     return bike.price - bike.discount.value
   }
 }

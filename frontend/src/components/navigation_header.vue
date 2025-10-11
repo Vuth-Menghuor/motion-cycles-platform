@@ -1,95 +1,3 @@
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { Icon } from '@iconify/vue'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import Navigation_sidebar from './sidebar/navigation_sidebar.vue'
-import { useCartStore } from '@/stores/cart'
-import { storeToRefs } from 'pinia'
-import router from '@/router'
-
-gsap.registerPlugin(ScrollTrigger)
-
-const props = defineProps({
-  disableAnimation: Boolean,
-  colors: {
-    type: Object,
-    default: () => ({
-      headerBg: '',
-      boxShadowHeader: '',
-      menuIcon: '',
-      logoName: '',
-      searchBorder: '',
-      cartIcon: '',
-      userIcon: '',
-      userBgBtn: '',
-      brandName: '',
-      brandBorder: '',
-      brandBg: '',
-    }),
-  },
-})
-
-const cartStore = useCartStore()
-const { count } = storeToRefs(cartStore)
-
-const isSidebarOpen = ref(false)
-const headerRef = ref(null)
-const menuIconRef = ref(null)
-
-let menuTl = null
-
-const toggleSidebar = () => {
-  isSidebarOpen.value = !isSidebarOpen.value
-  menuTl?.reversed() ? menuTl.play() : menuTl.reverse()
-}
-
-const closeSidebar = () => {
-  isSidebarOpen.value = false
-  menuTl?.reverse()
-}
-
-const navigate = (path) => {
-  router.push(path).then(() => window.scrollTo(0, 0))
-}
-
-const goToCart = () => navigate('/checkout/cart')
-const goToHome = () => navigate('/')
-const goToAuth = () => navigate('/authentication/sign_in')
-
-const handleClickOutside = (event) => {
-  if (!headerRef.value?.contains(event.target)) closeSidebar()
-}
-
-onMounted(() => {
-  if (props.disableAnimation) return
-
-  menuTl = gsap.timeline({ reversed: true })
-  menuTl.to('.sidebar-content', { x: 0, duration: 0.3, ease: 'power2.out' })
-
-  gsap.to(headerRef.value, {
-    scrollTrigger: {
-      trigger: 'body',
-      start: '840 top',
-      toggleClass: { targets: headerRef.value, className: 'is-scrolled' },
-    },
-  })
-
-  gsap.fromTo(
-    '.brand-item',
-    { y: -50, opacity: 0 },
-    { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power2.out' },
-  )
-
-  document.addEventListener('click', handleClickOutside)
-})
-
-onUnmounted(() => {
-  ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
-  document.removeEventListener('click', handleClickOutside)
-})
-</script>
-
 <template>
   <Navigation_sidebar :isOpen="isSidebarOpen" @close="closeSidebar" />
 
@@ -197,6 +105,116 @@ onUnmounted(() => {
     </nav>
   </header>
 </template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+import { Icon } from '@iconify/vue'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import Navigation_sidebar from './sidebar/navigation_sidebar.vue'
+import { useCartStore } from '@/stores/cart'
+import { storeToRefs } from 'pinia'
+import router from '@/router'
+
+gsap.registerPlugin(ScrollTrigger)
+
+// Define props for the component
+const props = defineProps({
+  disableAnimation: Boolean,
+  colors: {
+    type: Object,
+    default: () => ({
+      headerBg: '',
+      boxShadowHeader: '',
+      menuIcon: '',
+      logoName: '',
+      searchBorder: '',
+      cartIcon: '',
+      userIcon: '',
+      userBgBtn: '',
+      brandName: '',
+      brandBorder: '',
+      brandBg: '',
+    }),
+  },
+})
+
+// Get cart store and count
+const cartStore = useCartStore()
+const { count } = storeToRefs(cartStore)
+
+// Reactive data for sidebar state
+const isSidebarOpen = ref(false)
+const headerRef = ref(null)
+const menuIconRef = ref(null)
+
+let menuTl = null
+
+// Function to toggle sidebar
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value
+  if (menuTl?.reversed()) {
+    menuTl.play()
+  } else {
+    menuTl.reverse()
+  }
+}
+
+// Function to close sidebar
+const closeSidebar = () => {
+  isSidebarOpen.value = false
+  menuTl?.reverse()
+}
+
+// Function to navigate to a path
+const navigate = (path) => {
+  router.push(path).then(() => window.scrollTo(0, 0))
+}
+
+// Navigation functions
+const goToCart = () => navigate('/checkout/cart')
+const goToHome = () => navigate('/')
+const goToAuth = () => navigate('/authentication/sign_in')
+
+// Function to handle click outside to close sidebar
+const handleClickOutside = (event) => {
+  if (!headerRef.value?.contains(event.target)) closeSidebar()
+}
+
+// Lifecycle hook for mounting
+onMounted(() => {
+  if (props.disableAnimation) return // Skip animations if disabled
+
+  // Create menu timeline
+  menuTl = gsap.timeline({ reversed: true })
+  menuTl.to('.sidebar-content', { x: 0, duration: 0.3, ease: 'power2.out' })
+
+  // Scroll trigger for header
+  gsap.to(headerRef.value, {
+    scrollTrigger: {
+      trigger: 'body',
+      start: '840 top',
+      toggleClass: { targets: headerRef.value, className: 'is-scrolled' },
+    },
+  })
+
+  // Animation for brand items
+  gsap.fromTo(
+    '.brand-item',
+    { y: -50, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.6, stagger: 0.1, ease: 'power2.out' },
+  )
+
+  // Add click outside listener
+  document.addEventListener('click', handleClickOutside)
+})
+
+// Lifecycle hook for unmounting
+onUnmounted(() => {
+  ScrollTrigger.getAll().forEach((trigger) => trigger.kill()) // Kill all scroll triggers
+  document.removeEventListener('click', handleClickOutside) // Remove event listener
+})
+</script>
 
 <style scoped>
 .header-slideshow {

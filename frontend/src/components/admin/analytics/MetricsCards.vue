@@ -67,6 +67,7 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 
+// Define props for the component
 defineProps({
   totalRevenue: { type: Number, default: 0 },
   netProfit: { type: Number, default: 0 },
@@ -75,10 +76,15 @@ defineProps({
   totalExpenses: { type: Number, default: 0 },
 })
 
+// Format number function
 const formatNumber = (num) => {
-  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
-  if (num >= 1000) return (num / 1000).toFixed(1) + 'K'
-  return num.toLocaleString()
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M'
+  } else if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K'
+  } else {
+    return num.toLocaleString()
+  }
 }
 </script>
 

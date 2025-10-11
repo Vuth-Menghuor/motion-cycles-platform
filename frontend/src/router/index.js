@@ -24,39 +24,47 @@ import Edit_customer from '@/views/admin/customers/edit_customer.vue'
 import Analytics_page from '@/views/admin/analytics_page.vue'
 import Public_layout from '@/layouts/public_layout.vue'
 
+// Define all application routes
 const routes = [
+  // Public routes using Public_layout
   {
     path: '/',
     component: Public_layout,
     children: [
+      // Home page
       {
         path: '/',
         name: 'Home',
         component: Home_view,
       },
+      // Brand specific pages
       {
         path: '/brands/:brandName',
         name: 'BrandPage',
         component: Brand_page,
         props: true,
       },
+      // Bike detail page
       {
         path: '/bike/:id',
         name: 'BikeDetail',
         component: Bike_detail,
         props: true,
       },
+      // Bike gallery
       {
         path: '/bike/:id/gallery',
         name: 'BikeGallery',
         component: Gallery_image,
         props: true,
       },
+      // Favorites page
       {
         path: '/favorites',
         name: 'Favorites',
         component: Favorite_page,
       },
+      // Checkout process routes
       {
         path: '/checkout/cart',
         name: 'ShoppingCart',
@@ -117,20 +125,17 @@ const routes = [
     ],
   },
 
-  // Admin Routes
+  // Admin routes using Admin_layout
   {
     path: '/admin',
     component: Admin_layout,
-    meta: {
-      // Temporarily remove auth requirements for testing
-      // requiresAuth: true,
-      // requiresRole: 'admin',
-    },
     children: [
+      // Redirect to dashboard
       {
         path: '',
         redirect: '/admin/dashboard',
       },
+      // Admin dashboard
       {
         path: 'dashboard',
         name: 'AdminDashboard',
@@ -141,6 +146,7 @@ const routes = [
           requiresRole: 'admin',
         },
       },
+      // Product management routes
       {
         path: 'products',
         children: [
@@ -217,6 +223,7 @@ const routes = [
         },
       },
 
+      // Order management routes
       {
         path: 'orders',
         children: [
@@ -264,6 +271,7 @@ const routes = [
         },
       },
 
+      // Customer management routes
       {
         path: 'customers',
         children: [
@@ -277,9 +285,6 @@ const routes = [
             component: List_customers,
             meta: {
               title: 'List Customers',
-              // Temporarily remove auth requirements for testing
-              // requiresAuth: true,
-              // requiresRole: 'admin',
             },
           },
           {
@@ -289,9 +294,6 @@ const routes = [
             props: true,
             meta: {
               title: 'View Customer',
-              // Temporarily remove auth requirements for testing
-              // requiresAuth: true,
-              // requiresRole: 'admin',
             },
           },
           {
@@ -301,19 +303,14 @@ const routes = [
             props: true,
             meta: {
               title: 'Edit Customer',
-              // Temporarily remove auth requirements for testing
-              // requiresAuth: true,
-              // requiresRole: 'admin',
             },
           },
         ],
         meta: {
           title: 'Customers',
-          // Temporarily remove auth requirements for testing
-          // requiresAuth: true,
-          // requiresRole: 'admin',
         },
       },
+      // Analytics page
       {
         path: 'analytics',
         name: 'Analytics',
@@ -327,7 +324,7 @@ const routes = [
     ],
   },
 
-  // Authentication Routes
+  // Authentication routes
   {
     path: '/authentication/:type',
     name: 'Authentication',
@@ -335,7 +332,7 @@ const routes = [
     props: true,
   },
 
-  // Unauthorized Access
+  // Unauthorized access page
   {
     path: '/unauthorized',
     name: 'Unauthorized',
@@ -356,21 +353,23 @@ const routes = [
   },
 ]
 
+// Create the router instance
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 })
 
+// Navigation guard to check authentication and roles
 router.beforeEach((to, from) => {
   const auth = useAuthStore()
   const token = localStorage.getItem('token')
 
-  // Requires authentication
+  // Check if route requires authentication
   if (to.meta.requiresAuth && !token) {
     return { path: '/authentication/sign_in', query: { redirect: to.fullPath } }
   }
 
-  // Requires specific role
+  // Check if route requires specific role
   if (to.meta.requiresRole && auth.getRole() !== to.meta.requiresRole) {
     return {
       path: '/unauthorized',

@@ -29,7 +29,11 @@ const api = axios.create({
  * @returns {string} Currency symbol
  */
 export function getCurrencySymbol(currency) {
-  return currency === 'KHR' ? '៛' : '$'
+  if (currency === 'KHR') {
+    return '៛'
+  } else {
+    return '$'
+  }
 }
 
 /**
@@ -42,8 +46,9 @@ export function formatCurrency(amount, currency = 'USD') {
   const symbol = getCurrencySymbol(currency)
   if (currency === 'KHR') {
     return `${symbol}${amount.toLocaleString()}` // KHR: ៛1,000
+  } else {
+    return `${symbol}${amount.toFixed(2)}` // USD: $25.50
   }
-  return `${symbol}${amount.toFixed(2)}` // USD: $25.50
 }
 
 // ============================================

@@ -1,94 +1,3 @@
-<script setup>
-import { Icon } from '@iconify/vue'
-import { ref, onMounted, onUnmounted } from 'vue'
-import bike1 from '@/assets/images/popular_card/image_1.png'
-import bike2 from '@/assets/images/popular_card/image_2.png'
-import bike3 from '@/assets/images/popular_card/image_3.png'
-
-const bikes = ref([
-  {
-    id: 1,
-    title: 'Bianchi T-Tronik C Type - Sunrace (2023)',
-    subtitle: 'Mountain Bike',
-    price: '$14,400.00',
-    badge: {
-      text: 'Hot Deal',
-      icon: 'mdi:hot',
-      gradient: 'linear-gradient(135deg, #ff6b6b, #ff5252)',
-    },
-    bgBtn: '#3E4F62',
-    bgGradient: 'linear-gradient(135deg, #ffffff, #3E4F62)',
-    bgPrice: 'linear-gradient(272deg, #3E4F62 100%, rgba(255, 255, 255, 1) 100%)',
-    specs: [
-      { label: 'Travel', text: '160mm / 170mm', icon: 'mdi:bike' },
-      { label: 'Wheels', text: '29" DT Swiss EX1700', icon: 'mdi:wheel' },
-      { label: 'Weight', text: '33.3 lb (15.1 kg)', icon: 'mdi:scale-bathroom' },
-    ],
-    image: bike1,
-  },
-  {
-    id: 2,
-    title: 'Trek Slash 9.8 XT Carbon',
-    subtitle: 'Enduro Bike',
-    price: '$6,299.99',
-    badge: {
-      text: 'Best Seller',
-      icon: 'mdi:star',
-      gradient: 'linear-gradient(135deg, #ffd700, #ffb300)',
-    },
-    bgBtn: '#2E2005',
-    bgGradient: 'linear-gradient(135deg, #ffffff, #2E2005)',
-    bgPrice: 'linear-gradient(272deg, #2E2005 100%, rgba(255, 255, 255, 1) 100%)',
-    specs: [
-      { label: 'Travel', text: '150mm / 160mm', icon: 'mdi:bike' },
-      { label: 'Wheels', text: '29" Bontrager Line Comp', icon: 'mdi:wheel' },
-      { label: 'Weight', text: '31.2 lb (14.1 kg)', icon: 'mdi:scale-bathroom' },
-    ],
-    image: bike2,
-  },
-  {
-    id: 3,
-    title: 'Santa Cruz Hightower CC X01',
-    subtitle: 'Trail Bike',
-    price: '$8,999.00',
-    badge: {
-      text: 'New Arrival',
-      icon: 'mdi:new-box',
-      gradient: 'linear-gradient(135deg, #4ecdc4, #44a08d)',
-    },
-    bgBtn: '#6A0008',
-    bgGradient: 'linear-gradient(135deg, #ffffff, #6A0008)',
-    bgPrice: 'linear-gradient(272deg, #6A0008 100%, rgba(255, 255, 255, 1) 100%)',
-    specs: [
-      { label: 'Travel', text: '140mm / 150mm', icon: 'mdi:bike' },
-      { label: 'Wheels', text: '29" Reserve 30', icon: 'mdi:wheel' },
-      { label: 'Weight', text: '29.8 lb (13.5 kg)', icon: 'mdi:scale-bathroom' },
-    ],
-    image: bike3,
-  },
-])
-
-const visibleBikes = ref(new Set())
-let observer
-
-onMounted(() => {
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const id = Number(entry.target.dataset.id)
-        entry.isIntersecting ? visibleBikes.value.add(id) : visibleBikes.value.delete(id)
-        visibleBikes.value = new Set(visibleBikes.value)
-      })
-    },
-    { threshold: 0.5 },
-  )
-
-  document.querySelectorAll('.popular-product-card').forEach((card) => observer.observe(card))
-})
-
-onUnmounted(() => observer?.disconnect())
-</script>
-
 <template>
   <div class="bikes-container">
     <div v-for="bike in bikes" :key="bike.id" class="popular-product-card" :data-id="bike.id">
@@ -139,6 +48,110 @@ onUnmounted(() => observer?.disconnect())
     </div>
   </div>
 </template>
+
+<script setup>
+import { Icon } from '@iconify/vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import bike1 from '@/assets/images/popular_card/image_1.png'
+import bike2 from '@/assets/images/popular_card/image_2.png'
+import bike3 from '@/assets/images/popular_card/image_3.png'
+
+// Array of bike data
+const bikes = ref([
+  // Bike 1 data...
+  {
+    id: 1,
+    title: 'Bianchi T-Tronik C Type - Sunrace (2023)',
+    subtitle: 'Mountain Bike',
+    price: '$14,400.00',
+    badge: {
+      text: 'Hot Deal',
+      icon: 'mdi:hot',
+      gradient: 'linear-gradient(135deg, #ff6b6b, #ff5252)',
+    },
+    bgBtn: '#3E4F62',
+    bgGradient: 'linear-gradient(135deg, #ffffff, #3E4F62)',
+    bgPrice: 'linear-gradient(272deg, #3E4F62 100%, rgba(255, 255, 255, 1) 100%)',
+    specs: [
+      { label: 'Travel', text: '160mm / 170mm', icon: 'mdi:bike' },
+      { label: 'Wheels', text: '29" DT Swiss EX1700', icon: 'mdi:wheel' },
+      { label: 'Weight', text: '33.3 lb (15.1 kg)', icon: 'mdi:scale-bathroom' },
+    ],
+    image: bike1,
+  },
+  // Bike 2 data...
+  {
+    id: 2,
+    title: 'Trek Slash 9.8 XT Carbon',
+    subtitle: 'Enduro Bike',
+    price: '$6,299.99',
+    badge: {
+      text: 'Best Seller',
+      icon: 'mdi:star',
+      gradient: 'linear-gradient(135deg, #ffd700, #ffb300)',
+    },
+    bgBtn: '#2E2005',
+    bgGradient: 'linear-gradient(135deg, #ffffff, #2E2005)',
+    bgPrice: 'linear-gradient(272deg, #2E2005 100%, rgba(255, 255, 255, 1) 100%)',
+    specs: [
+      { label: 'Travel', text: '150mm / 160mm', icon: 'mdi:bike' },
+      { label: 'Wheels', text: '29" Bontrager Line Comp', icon: 'mdi:wheel' },
+      { label: 'Weight', text: '31.2 lb (14.1 kg)', icon: 'mdi:scale-bathroom' },
+    ],
+    image: bike2,
+  },
+  // Bike 3 data...
+  {
+    id: 3,
+    title: 'Santa Cruz Hightower CC X01',
+    subtitle: 'Trail Bike',
+    price: '$8,999.00',
+    badge: {
+      text: 'New Arrival',
+      icon: 'mdi:new-box',
+      gradient: 'linear-gradient(135deg, #4ecdc4, #44a08d)',
+    },
+    bgBtn: '#6A0008',
+    bgGradient: 'linear-gradient(135deg, #ffffff, #6A0008)',
+    bgPrice: 'linear-gradient(272deg, #6A0008 100%, rgba(255, 255, 255, 1) 100%)',
+    specs: [
+      { label: 'Travel', text: '140mm / 150mm', icon: 'mdi:bike' },
+      { label: 'Wheels', text: '29" Reserve 30', icon: 'mdi:wheel' },
+      { label: 'Weight', text: '29.8 lb (13.5 kg)', icon: 'mdi:scale-bathroom' },
+    ],
+    image: bike3,
+  },
+])
+
+// Set to track visible bikes for animation
+const visibleBikes = ref(new Set())
+let observer
+
+// Lifecycle hook for mounting
+onMounted(() => {
+  // Create intersection observer for animations
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const id = Number(entry.target.dataset.id)
+        if (entry.isIntersecting) {
+          visibleBikes.value.add(id) // Add to visible if intersecting
+        } else {
+          visibleBikes.value.delete(id) // Remove if not intersecting
+        }
+        visibleBikes.value = new Set(visibleBikes.value) // Trigger reactivity
+      })
+    },
+    { threshold: 0.5 }, // Trigger when 50% visible
+  )
+
+  // Observe all product cards
+  document.querySelectorAll('.popular-product-card').forEach((card) => observer.observe(card))
+})
+
+// Lifecycle hook for unmounting
+onUnmounted(() => observer?.disconnect()) // Disconnect observer
+</script>
 
 <style scoped>
 /* Container */

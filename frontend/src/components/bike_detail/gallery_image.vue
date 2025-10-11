@@ -21,17 +21,21 @@ import { Icon } from '@iconify/vue'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+// Get route and router instances
 const route = useRoute()
 const router = useRouter()
 
+// Extract query parameters
 const image = route.query.image
 const title = route.query.title
 const additionalImages = route.query.additionalImages
   ? JSON.parse(route.query.additionalImages)
   : []
 
+// Computed property for grid images (main image + up to 7 additional)
 const gridImages = computed(() => [image, ...additionalImages.slice(0, 7)])
 
+// Function to go back to bike detail page
 const goBack = () => {
   router.push(`/bike/${route.params.id}`).then(() => window.scrollTo(0, 0))
 }

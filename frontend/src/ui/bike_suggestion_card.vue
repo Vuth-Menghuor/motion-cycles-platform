@@ -87,11 +87,7 @@
 import router from '@/router'
 import { Icon } from '@iconify/vue'
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useFavoritesStore } from '@/stores/favorites'
-
-// eslint-disable-next-line no-unused-vars
-const Router = useRouter()
 
 const props = defineProps({
   products: {
@@ -115,9 +111,11 @@ const emit = defineEmits(['add-to-cart'])
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
 
 const suggestionBikes = computed(() => {
-  // Use the products prop instead of the local allBikes ref
+  // Filter out the current bike
   const filtered = props.products.filter((bike) => bike.id !== props.currentBikeId)
+  // Shuffle the list randomly
   const shuffled = filtered.sort(() => 0.5 - Math.random())
+  // Take only the first maxSuggestions
   return shuffled.slice(0, props.maxSuggestions)
 })
 
@@ -126,6 +124,7 @@ function formatNumber(number) {
 }
 
 const favoritesStore = useFavoritesStore()
+
 const toggleFavorite = (bike) => {
   favoritesStore.toggleFavorite(bike)
 }
@@ -135,10 +134,14 @@ const isFavorited = (bikeId) => {
 }
 
 const getDiscountLabel = (bike) => {
-  if (!bike.discount) return null
-  return bike.discount.type === 'percent'
-    ? `${bike.discount.value}% OFF`
-    : `-${bike.discount.value.toLocaleString()} OFF`
+  if (!bike.discount) {
+    return null
+  }
+  if (bike.discount.type === 'percent') {
+    return `${bike.discount.value}% OFF`
+  } else {
+    return `-${bike.discount.value.toLocaleString()} OFF`
+  }
 }
 
 const getDiscountedPrice = (bike) => {

@@ -51,6 +51,7 @@
 
 <script>
 export default {
+  // Data properties for the component
   data() {
     return {
       filterCategory: 'all',
@@ -131,11 +132,13 @@ export default {
     }
   },
   computed: {
+    // Computed property to filter stock data based on selected category
     filteredStockData() {
       if (this.filterCategory === 'all') {
         return this.stockData
+      } else {
+        return this.stockData.filter((item) => item.category === this.filterCategory)
       }
-      return this.stockData.filter((item) => item.category === this.filterCategory)
     },
   },
 }

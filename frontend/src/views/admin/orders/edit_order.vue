@@ -149,6 +149,7 @@ const formData = reactive({
   payment_status: 'pending',
 })
 
+// Mock data for the order
 const mockOrder = {
   id: 1,
   order_number: 'ORD-001',
@@ -160,6 +161,7 @@ const mockOrder = {
   items: [{ id: 1, name: 'Mountain Bike Pro', category: 'mountain' }],
 }
 
+// Status mapping for display
 const statusMap = {
   pending: 'Pending',
   processing: 'Processing',
@@ -170,25 +172,38 @@ const statusMap = {
   refunded: 'Refunded',
 }
 
-const formatStatus = (status) => statusMap[status] || status
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+// Format status for display
+const formatStatus = (status) => {
+  if (statusMap[status]) {
+    return statusMap[status]
+  } else {
+    return status
+  }
 }
 
+// Format date for display
+const formatDate = (dateString) => {
+  if (!dateString) {
+    return 'N/A'
+  } else {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+}
+
+// Load order data
 const loadOrder = () => {
   order.value = mockOrder
   formData.order_status = mockOrder.order_status
   formData.payment_status = mockOrder.payment_status
 }
 
+// Save order updates
 const saveOrder = async () => {
   isSaving.value = true
   try {

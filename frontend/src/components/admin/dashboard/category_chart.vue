@@ -22,6 +22,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, DoughnutController)
 
 export default {
   name: 'CategoryChart',
+  // Data properties for the component
   data() {
     return {
       chart: null,
@@ -31,15 +32,18 @@ export default {
       ],
     }
   },
+  // Lifecycle hook to initialize the chart when component is mounted
   mounted() {
     this.initChart()
   },
+  // Lifecycle hook to destroy the chart before unmounting
   beforeUnmount() {
     if (this.chart) {
       this.chart.destroy()
     }
   },
   methods: {
+    // Method to initialize the donut chart
     initChart() {
       const ctx = this.$refs.donutCanvas.getContext('2d')
 

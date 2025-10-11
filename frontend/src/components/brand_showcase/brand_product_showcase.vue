@@ -50,10 +50,13 @@ import bike6 from '@/assets/images/product_showcase/image_6.png'
 import bike7 from '@/assets/images/product_showcase/image_7.png'
 import bike8 from '@/assets/images/product_showcase/image_8.png'
 
+// Get the current route
 const route = useRoute()
 
+// Reactive data for the brand name from route params
 const brandName = ref(route.params.brandName)
 
+// Configuration object for different brands
 const brandConfig = {
   cannondale: {
     bgColor: 'linear-gradient(0deg, rgba(46, 32, 5, 0.7) 0%, rgba(255, 255, 255, 0.7) 50%)',
@@ -130,16 +133,21 @@ const brandConfig = {
   },
 }
 
+// Computed property to get the current brand configuration
 const currentBrand = computed(() => {
-  return (
-    brandConfig[brandName.value?.toLowerCase()] || {
+  const brand = brandConfig[brandName.value?.toLowerCase()]
+  if (brand) {
+    return brand
+  } else {
+    return {
       bgColor: '#ccc',
       featuredProduct: { name: 'Unknown', category: 'Unknown', image: bike1 },
       productVariants: [],
     }
-  )
+  }
 })
 
+// Watch for changes in route params to update brand name
 watch(
   () => route.params.brandName,
   (newBrandName) => {

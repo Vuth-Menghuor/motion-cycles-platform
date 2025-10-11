@@ -2,7 +2,7 @@
   <div v-if="isVisible" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>{{ editingAddress ? 'Edit Address' : 'Add New Address' }}</h3>
+        <h3>{{ modalTitle }}</h3>
         <button class="close-btn" @click="$emit('close')">&times;</button>
       </div>
 
@@ -59,7 +59,7 @@
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" @click="$emit('close')">Cancel</button>
           <button type="submit" class="btn btn-primary">
-            {{ editingAddress ? 'Update Address' : 'Save Address' }}
+            {{ buttonText }}
           </button>
         </div>
       </form>
@@ -68,15 +68,18 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, reactive, watch } from 'vue'
+import { defineProps, defineEmits, reactive, watch, computed } from 'vue'
 
+// Define the props for the component
 const props = defineProps({
   isVisible: { type: Boolean, default: false },
   editingAddress: { type: Object, default: null },
 })
 
+// Define the events the component can emit
 const emit = defineEmits(['close', 'save', 'update'])
 
+// Reactive form data
 const form = reactive({
   id: null,
   name: '',
@@ -89,6 +92,7 @@ const form = reactive({
   isDefault: false,
 })
 
+// Function to reset the form to default values
 const resetForm = () => {
   Object.assign(form, {
     id: Date.now(),
@@ -103,17 +107,45 @@ const resetForm = () => {
   })
 }
 
+// Watch for changes in editingAddress prop
 watch(
   () => props.editingAddress,
   (newVal) => {
-    newVal ? Object.assign(form, { ...newVal }) : resetForm()
+    if (newVal) {
+      Object.assign(form, { ...newVal })
+    } else {
+      resetForm()
+    }
   },
   { immediate: true },
 )
 
+// Computed property for modal title
+const modalTitle = computed(() => {
+  if (props.editingAddress) {
+    return 'Edit Address'
+  } else {
+    return 'Add New Address'
+  }
+})
+
+// Computed property for submit button text
+const buttonText = computed(() => {
+  if (props.editingAddress) {
+    return 'Update Address'
+  } else {
+    return 'Save Address'
+  }
+})
+
+// Function to handle form submission
 const handleSubmit = () => {
   form.fullAddress = `${form.streetAddress}, ${form.district}, ${form.city}, ${form.province}, ${form.country}`
-  emit(props.editingAddress ? 'update' : 'save', { ...form })
+  if (props.editingAddress) {
+    emit('update', { ...form })
+  } else {
+    emit('save', { ...form })
+  }
   emit('close')
   resetForm()
 }

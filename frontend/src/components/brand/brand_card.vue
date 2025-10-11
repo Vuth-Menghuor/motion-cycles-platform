@@ -1,3 +1,9 @@
+<template>
+  <div class="brand-card" @click="goToBrand(brand.id, brand.name)">
+    <img :src="brand.logo" :alt="brand.name" class="brand-card__logo" />
+  </div>
+</template>
+
 <script setup>
 import { useRouter } from 'vue-router'
 
@@ -11,12 +17,6 @@ const goToBrand = (id, brandName) => {
   })
 }
 </script>
-
-<template>
-  <div class="brand-card" @click="goToBrand(brand.id, brand.name)">
-    <img :src="brand.logo" :alt="brand.name" class="brand-card__logo" />
-  </div>
-</template>
 
 <style scoped>
 .brand-card {

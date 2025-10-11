@@ -59,12 +59,14 @@ const ITEMS_PER_PAGE = 10
 const currentPage = ref(1)
 const router = useRouter()
 
+// Filter reactive data
 const ratingFilter = ref('')
 const categoryFilter = ref('')
 const brandFilter = ref('')
 const dateFilter = ref('')
 const customerSearch = ref('')
 
+// Sample data for generating feedback
 const sampleData = {
   products: [
     { name: 'Trail Pro Carbon', category: 'Mountain Bike', brand: 'Trek' },
@@ -132,12 +134,14 @@ const sampleProducts = {
   },
 }
 
+// Utility functions
 const generateId = () =>
   `F${Math.floor(Math.random() * 10000)
     .toString()
     .padStart(4, '0')}B`
 const randomItem = (array) => array[Math.floor(Math.random() * array.length)]
 
+// Generate sample feedback
 const generateSampleFeedback = () => {
   return Array.from({ length: 25 }, () => {
     const product = randomItem(sampleData.products)
@@ -161,18 +165,37 @@ const generateSampleFeedback = () => {
 
 const feedback = ref(generateSampleFeedback())
 
+// Computed properties
 const totalItems = computed(() => filteredFeedback.value.length)
 
 const filteredFeedback = computed(() => {
   return feedback.value.filter((item) => {
-    return (
-      (!ratingFilter.value || item.rating.toString() === ratingFilter.value) &&
-      (!categoryFilter.value || item.category === categoryFilter.value) &&
-      (!brandFilter.value || item.brand === brandFilter.value) &&
-      (!dateFilter.value || item.date === dateFilter.value) &&
-      (!customerSearch.value ||
-        item.customerName.toLowerCase().includes(customerSearch.value.toLowerCase()))
-    )
+    let matches = true
+
+    if (ratingFilter.value && item.rating.toString() !== ratingFilter.value) {
+      matches = false
+    }
+
+    if (categoryFilter.value && item.category !== categoryFilter.value) {
+      matches = false
+    }
+
+    if (brandFilter.value && item.brand !== brandFilter.value) {
+      matches = false
+    }
+
+    if (dateFilter.value && item.date !== dateFilter.value) {
+      matches = false
+    }
+
+    if (
+      customerSearch.value &&
+      !item.customerName.toLowerCase().includes(customerSearch.value.toLowerCase())
+    ) {
+      matches = false
+    }
+
+    return matches
   })
 })
 
@@ -184,28 +207,41 @@ const paginatedFeedback = computed(() => {
 const selectedFeedback = computed(() => feedback.value.filter((item) => item.selected))
 
 const selectedProduct = computed(() => {
-  if (filteredFeedback.value.length === 0) return null
+  if (filteredFeedback.value.length === 0) {
+    return null
+  } else {
+    const productCounts = {}
+    filteredFeedback.value.forEach((item) => {
+      productCounts[item.productName] = (productCounts[item.productName] || 0) + 1
+    })
 
-  const productCounts = {}
-  filteredFeedback.value.forEach((item) => {
-    productCounts[item.productName] = (productCounts[item.productName] || 0) + 1
-  })
+    const mostCommonProduct = Object.keys(productCounts).reduce((a, b) => {
+      if (productCounts[a] > productCounts[b]) {
+        return a
+      } else {
+        return b
+      }
+    })
 
-  const mostCommonProduct = Object.keys(productCounts).reduce((a, b) =>
-    productCounts[a] > productCounts[b] ? a : b,
-  )
-
-  return sampleProducts[mostCommonProduct] || sampleProducts['Trail Pro Carbon']
+    return sampleProducts[mostCommonProduct] || sampleProducts['Trail Pro Carbon']
+  }
 })
 
+// Feedback methods
 const toggleSelectFeedback = (feedbackId) => {
   const item = feedback.value.find((f) => f.id === feedbackId)
-  if (item) item.selected = !item.selected
+  if (item) {
+    item.selected = !item.selected
+  } else {
+    // Item not found, do nothing
+  }
 }
 
 const goToPage = (page) => {
   if (page >= 1 && page <= Math.ceil(totalItems.value / ITEMS_PER_PAGE)) {
     currentPage.value = page
+  } else {
+    // Page is out of range, do nothing
   }
 }
 
@@ -226,6 +262,8 @@ const deleteFeedback = (feedbackId) => {
         currentPage.value--
       }
     }
+  } else {
+    // User cancelled deletion
   }
 }
 
@@ -240,6 +278,8 @@ const bulkDelete = () => {
     if (paginatedFeedback.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
+  } else {
+    // User cancelled bulk deletion
   }
 }
 
@@ -252,6 +292,7 @@ const clearFilters = () => {
   currentPage.value = 1
 }
 
+// Watchers
 watch([ratingFilter, categoryFilter, brandFilter, dateFilter, customerSearch], () => {
   currentPage.value = 1
 })

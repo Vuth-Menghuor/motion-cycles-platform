@@ -83,12 +83,16 @@ import { useRoute } from 'vue-router'
 import router from '@/router'
 import { Icon } from '@iconify/vue'
 
+// Define the props for the component
 const props = defineProps({
   cartItems: { type: Array, required: true },
   promoCode: { type: String, required: true },
 })
 
+// Get the current route
 const route = useRoute()
+
+// Define the events the component can emit
 const emit = defineEmits([
   'update:promo-code',
   'proceedToCheckout',
@@ -96,11 +100,13 @@ const emit = defineEmits([
   'update:summaryBreakdown',
 ])
 
+// Constants for promo and shipping
 const CORRECT_PROMO = 'BOOKRIDE50'
 const PROMO_DISCOUNT = 5.0
 const SHIPPING_AMOUNT = 2.0
 const hiddenRoutes = ['/checkout/address', '/checkout/payment', '/checkout/purchase']
 
+// Computed property for delivery date
 const deliveryDate = computed(() => {
   const date = new Date()
   date.setDate(date.getDate() + 3)
@@ -112,14 +118,22 @@ const deliveryDate = computed(() => {
   })
 })
 
+// Computed property to check if promo code is valid
 const isPromoValid = computed(() => props.promoCode.trim().toUpperCase() === CORRECT_PROMO)
 
-const promoIcon = computed(() =>
-  isPromoValid.value ? 'fluent:checkbox-checked-20-filled' : 'fluent:checkbox-checked-20-regular',
-)
+// Computed property for promo icon based on validity
+const promoIcon = computed(() => {
+  if (isPromoValid.value) {
+    return 'fluent:checkbox-checked-20-filled'
+  } else {
+    return 'fluent:checkbox-checked-20-regular'
+  }
+})
 
+// Computed property for discount amount
 const discountAmount = computed(() => (isPromoValid.value ? PROMO_DISCOUNT : 0))
 
+// Computed property for total MRP
 const totalMRP = computed(() =>
   (props.cartItems || []).reduce(
     (total, item) => total + (item.originalPrice || item.price) * item.quantity,
@@ -127,14 +141,19 @@ const totalMRP = computed(() =>
   ),
 )
 
+// Computed property for net price after discount
 const netPrice = computed(() => Math.max(totalMRP.value - discountAmount.value, 0))
 
+// Computed property for shipping amount
 const shippingAmount = computed(() => SHIPPING_AMOUNT)
 
+// Computed property for final total
 const finalTotal = computed(() => netPrice.value + SHIPPING_AMOUNT)
 
+// Computed property to show checkout button based on route
 const showCheckoutBtn = computed(() => !hiddenRoutes.includes(route.path))
 
+// Computed property for summary breakdown
 const summaryBreakdown = computed(() => ({
   totalMRP: totalMRP.value,
   discountAmount: discountAmount.value,
@@ -145,20 +164,24 @@ const summaryBreakdown = computed(() => ({
   promoDiscount: isPromoValid.value ? PROMO_DISCOUNT : 0,
 }))
 
+// Function to navigate and scroll
 const navigationAndScroll = (path) => {
   router.push(path).then(() => setTimeout(() => window.scrollTo(0, 0), 100))
 }
 
+// Function to handle checkout
 const handleCheckout = () => {
   emit('proceedToCheckout')
   navigationAndScroll('/checkout/address')
 }
 
+// Watch for changes in finalTotal
 watch(finalTotal, () => {
   emit('update:finalTotal', finalTotal.value)
   emit('update:summaryBreakdown', summaryBreakdown.value)
 })
 
+// On mounted, emit initial values
 onMounted(() => {
   emit('update:finalTotal', finalTotal.value)
   emit('update:summaryBreakdown', summaryBreakdown.value)

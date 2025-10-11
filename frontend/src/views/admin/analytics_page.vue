@@ -17,6 +17,7 @@ import { ref } from 'vue'
 import MetricsCards from '@/components/admin/analytics/MetricsCards.vue'
 import ComprehensiveAnalyticsTable from '@/components/admin/analytics/ComprehensiveAnalyticsTable.vue'
 
+// Analytics data for the dashboard
 const analyticsData = ref({
   totalRevenue: 125430,
   netProfit: 32150,

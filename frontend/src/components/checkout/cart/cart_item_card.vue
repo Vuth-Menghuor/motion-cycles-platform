@@ -34,32 +34,48 @@
 <script setup>
 import { computed } from 'vue'
 
+// Define the props for the component
 const props = defineProps({
   item: { type: Object, required: true },
 })
 
+// Define the events the component can emit
 defineEmits(['increaseQuantity', 'decreaseQuantity', 'removeItem'])
 
+// Computed property to check if the item has a discount
 const hasDiscount = computed(
   () =>
     props.item.discount &&
     (props.item.discount.type === 'percent' || props.item.discount.type === 'fixed'),
 )
 
+// Computed property to calculate the final price after discount
 const finalPrice = computed(() => {
-  if (!hasDiscount.value) return props.item.price
+  if (!hasDiscount.value) {
+    return props.item.price
+  }
   const discount = props.item.discount
-  return discount.type === 'percent'
-    ? props.item.price - (props.item.price * discount.value) / 100
-    : props.item.price - discount.value
+  if (discount.type === 'percent') {
+    return props.item.price - (props.item.price * discount.value) / 100
+  } else {
+    return props.item.price - discount.value
+  }
 })
 
+// Computed property to display the discount text
 const displayDiscount = computed(() => {
-  if (!hasDiscount.value) return null
+  if (!hasDiscount.value) {
+    return null
+  }
   const discount = props.item.discount
-  return discount.type === 'percent' ? `${discount.value}% OFF` : `$${discount.value} OFF`
+  if (discount.type === 'percent') {
+    return `${discount.value}% OFF`
+  } else {
+    return `$${discount.value} OFF`
+  }
 })
 
+// Function to format price with commas
 const formatPrice = (price) => price.toLocaleString()
 </script>
 

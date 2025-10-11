@@ -86,13 +86,22 @@ import { useFavoritesStore } from '@/stores/favorites'
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
 
+// Define the props for the component
 defineProps({ isOpen: { type: Boolean, default: false } })
+
+// Get the favorites store
 const favoritesStore = useFavoritesStore()
+
+// Define the events the component can emit
 const emit = defineEmits(['close'])
+
+// Get the router instance
 const router = useRouter()
 
+// Function to close the sidebar
 const closeSidebar = () => emit('close')
 
+// Function to navigate to a path and close sidebar
 const navigate = (path) => {
   router.push(path).then(() => {
     setTimeout(() => window.scrollTo(0, 0), 100)
@@ -100,7 +109,10 @@ const navigate = (path) => {
   })
 }
 
+// Function to go to home page
 const goToHome = () => navigate('/')
+
+// Function to go to favorites page
 const goToFav = () => navigate('/favorites')
 </script>
 

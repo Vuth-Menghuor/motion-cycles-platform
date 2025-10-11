@@ -145,6 +145,7 @@ const props = defineProps({
 
 const customer = ref(null)
 
+// Mock data for customers
 const mockCustomers = [
   {
     id: 1,
@@ -196,23 +197,34 @@ const mockCustomers = [
   },
 ]
 
+// Load customer data
 const loadCustomer = () => {
   const customerId = parseInt(props.id)
   customer.value = mockCustomers.find((c) => c.id === customerId) || null
 }
 
-const formatStatus = (status) =>
-  status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'
+// Format status for display
+const formatStatus = (status) => {
+  if (status) {
+    return status.charAt(0).toUpperCase() + status.slice(1)
+  } else {
+    return 'Unknown'
+  }
+}
 
+// Format date for display
 const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  if (!dateString) {
+    return 'N/A'
+  } else {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
 }
 
 onMounted(() => loadCustomer())

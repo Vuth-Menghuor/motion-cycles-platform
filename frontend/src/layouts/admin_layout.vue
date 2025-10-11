@@ -396,27 +396,35 @@ const ROUTE_TO_TAB_MAP = {
 // REACTIVE STATE
 // ===========================================
 
-// Router and route instances
+// Router and route instances for navigation
 const router = useRouter()
 const route = useRoute()
 
-// UI state management
+// UI state management variables
+// Search query for the search bar
 const searchQuery = ref('')
+// Whether the sidebar is open or closed
 const sidebarOpen = ref(true)
+// Whether the products dropdown in navigation is open
 const productsDropdownOpen = ref(false)
+// Current active navigation item
 const activeNav = ref('dashboard')
 
 // Modal visibility states
+// Controls visibility of password change modal
 const showPasswordModal = ref(false)
+// Controls visibility of profile update modal
 const showProfileModal = ref(false)
 
 // Form data with reactive objects
+// Data for password change form
 const passwordForm = ref({
   oldPassword: '',
   newPassword: '',
   confirmPassword: '',
 })
 
+// Data for profile update form
 const profileForm = ref({
   name: '',
   username: '',

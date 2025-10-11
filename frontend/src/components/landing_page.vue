@@ -57,8 +57,10 @@ import banner3 from '@/assets/images/landing/banner_3.png'
 import banner4 from '@/assets/images/landing/banner_4.png'
 import banner5 from '@/assets/images/landing/banner_5.png'
 
+// Array of background images for slideshow
 const backgroundImages = [banner1, banner2, banner3, banner4, banner5]
 
+// Content for each slide
 const slideContent = [
   {
     title: '2022 Specialized Turbo Levo Expert Carbon',
@@ -92,23 +94,33 @@ const slideContent = [
   },
 ]
 
+// Current slide index
 const currentSlide = ref(0)
 let slideInterval = null
 
+// Function to go to next slide
 const nextSlide = () => (currentSlide.value = (currentSlide.value + 1) % backgroundImages.length)
 
-const prevSlide = () =>
-  (currentSlide.value =
-    currentSlide.value === 0 ? backgroundImages.length - 1 : currentSlide.value - 1)
+// Function to go to previous slide
+const prevSlide = () => {
+  if (currentSlide.value === 0) {
+    currentSlide.value = backgroundImages.length - 1
+  } else {
+    currentSlide.value = currentSlide.value - 1
+  }
+}
 
+// Function to go to specific slide
 const goToSlide = (index) => {
   currentSlide.value = index
   stopSlideshow()
   startSlideshow()
 }
 
+// Function to start automatic slideshow
 const startSlideshow = () => (slideInterval = window.setInterval(nextSlide, 4000))
 
+// Function to stop automatic slideshow
 const stopSlideshow = () => {
   if (slideInterval) {
     clearInterval(slideInterval)
@@ -116,6 +128,7 @@ const stopSlideshow = () => {
   }
 }
 
+// Lifecycle hooks
 onMounted(() => startSlideshow())
 onUnmounted(() => stopSlideshow())
 </script>

@@ -40,6 +40,7 @@
 import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
 
+// Define the props for the component
 const props = defineProps({
   title: { type: String, required: true },
   value: { type: Number, required: true },
@@ -61,11 +62,17 @@ const props = defineProps({
   viewIcon: { type: String, default: 'mdi:eye' },
 })
 
+// Computed property to format the value with commas
 const formattedValue = computed(() => props.value.toLocaleString())
 
+// Computed property to create a short title for display
 const shortTitle = computed(() => {
   let title = props.title.replace(/^Total\s+/i, '')
-  return title.length > 10 ? title.substring(0, 10) + '...' : title
+  if (title.length > 10) {
+    return title.substring(0, 10) + '...'
+  } else {
+    return title
+  }
 })
 </script>
 

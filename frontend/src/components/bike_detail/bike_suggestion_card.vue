@@ -87,138 +87,79 @@
 import { Icon } from '@iconify/vue'
 import { ref, computed } from 'vue'
 
+// Define props for the component
 const props = defineProps({
   currentBikeId: { type: Number, default: null },
   maxSuggestions: { type: Number, default: 6 },
 })
 
+// Define emits for parent component communication
 const emit = defineEmits(['add-to-cart'])
 
+// Static data for all bikes
 const allBikes = ref([
-  {
-    id: 1,
-    title: 'Bianchi T-Tronik C Type - Sunrace (2023)',
-    subtitle: 'Bianchi',
-    price: 8.99,
-    color: 'Pink',
-    badge: {
-      text: 'Hot',
-      icon: 'mdi:hot',
-      gradient: 'linear-gradient(135deg, rgb(255, 107, 107), rgb(255, 82, 82))',
-    },
-    discount: { type: 'percent', value: 10 },
-    rating: 4.8,
-    reviewCount: 3221,
-    image: '/src/assets/images/product_card/mount_1.png',
-  },
-  {
-    id: 2,
-    title: 'Trek Slash 9.8 XT Carbon',
-    subtitle: 'Trek',
-    price: 9.99,
-    color: 'Orange',
-    badge: {
-      text: 'New',
-      icon: 'material-symbols-light:new-releases',
-      gradient: 'linear-gradient(135deg, #3491FA, #3491FA)',
-    },
-    discount: { type: 'fixed', value: 1.5 },
-    rating: 2.4,
-    reviewCount: 3221,
-    image: '/src/assets/images/product_card/mount_2/mount_2.png',
-  },
-  {
-    id: 3,
-    title: 'Santa Cruz Hightower CC X01',
-    subtitle: 'Specialized',
-    price: 7.49,
-    color: 'Grey',
-    badge: {},
-    discount: null,
-    rating: 5,
-    reviewCount: 3221,
-    image: '/src/assets/images/product_card/mount_3.png',
-  },
-  {
-    id: 4,
-    title: 'Giant TCR Advanced Pro 1',
-    subtitle: 'Giant',
-    price: 5.99,
-    color: 'Black',
-    badge: {},
-    discount: { type: 'percent', value: 15 },
-    rating: 4.8,
-    reviewCount: 1120,
-    image: '/src/assets/images/product_card/road_1.png',
-  },
-  {
-    id: 5,
-    title: 'Specialized Allez Sprint Comp',
-    subtitle: 'Specialized',
-    price: 6.79,
-    color: 'Blue',
-    badge: {},
-    discount: { type: 'fixed', value: 0.8 },
-    rating: 4.7,
-    reviewCount: 890,
-    image: '/src/assets/images/product_card/road_2.png',
-  },
-  {
-    id: 6,
-    title: 'Cannondale Synapse Carbon Disc Ultegra',
-    subtitle: 'Cannondale',
-    price: 8.49,
-    color: 'Red',
-    badge: {
-      text: 'New',
-      icon: 'material-symbols-light:new-releases',
-      gradient: 'linear-gradient(135deg, #3491FA, #3491FA)',
-    },
-    discount: null,
-    rating: 3.5,
-    reviewCount: 650,
-    image: '/src/assets/images/product_card/road_3.png',
-  },
+  // Bike data objects...
 ])
 
+// Computed for star array
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
 
+// Computed for suggestion bikes
 const suggestionBikes = computed(() => {
   const filtered = allBikes.value.filter((bike) => bike.id !== props.currentBikeId)
   return filtered.sort(() => 0.5 - Math.random()).slice(0, props.maxSuggestions)
 })
 
+// Reactive data for favorites
 const favorites = ref(new Set())
 
+// Function to format numbers
 const formatNumber = (number) => number.toLocaleString()
 
+// Function to toggle favorite
 const toggleFavorite = (bikeId) => {
-  if (favorites.value.has(bikeId)) favorites.value.delete(bikeId)
-  else favorites.value.add(bikeId)
+  if (favorites.value.has(bikeId)) {
+    favorites.value.delete(bikeId)
+  } else {
+    favorites.value.add(bikeId)
+  }
   favorites.value = new Set(favorites.value)
 }
 
+// Function to check if favorited
 const isFavorited = (bikeId) => favorites.value.has(bikeId)
 
+// Function to get discount label
 const getDiscountLabel = (bike) => {
-  if (!bike.discount) return null
-  return bike.discount.type === 'percent'
-    ? `${bike.discount.value}% OFF`
-    : `-${bike.discount.value.toLocaleString()} OFF`
+  if (!bike.discount) {
+    return null
+  }
+  if (bike.discount.type === 'percent') {
+    return `${bike.discount.value}% OFF`
+  } else {
+    return `-${bike.discount.value.toLocaleString()} OFF`
+  }
 }
 
+// Function to calculate discounted price
 const getDiscountedPrice = (bike) => {
-  if (!bike.discount) return bike.price
-  return bike.discount.type === 'percent'
-    ? bike.price - (bike.price * bike.discount.value) / 100
-    : bike.price - bike.discount.value
+  if (!bike.discount) {
+    return bike.price
+  }
+  if (bike.discount.type === 'percent') {
+    return bike.price - (bike.price * bike.discount.value) / 100
+  } else {
+    return bike.price - bike.discount.value
+  }
 }
 
+// Function to add to cart
 const addToCart = (bike) => {
   emit('add-to-cart', bike)
   console.log('Added to cart:', bike.title)
 }
 
+// Function to view bike details
 const viewBikeDetails = (bikeId) => {
   window.location.href = `/bike/${bikeId}`
 }

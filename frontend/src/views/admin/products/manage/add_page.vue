@@ -54,6 +54,7 @@ import ProductSpecs from '@/components/admin/products/ProductSpecs.vue'
 
 const route = useRoute()
 
+// Product data
 const product = ref({
   id: '',
   name: '',
@@ -72,6 +73,7 @@ const product = ref({
   color: '',
 })
 
+// Product specifications
 const specs = ref({
   range: '',
   hubMotor: '',
@@ -81,39 +83,82 @@ const specs = ref({
   display: '',
 })
 
+// Check if there are query parameters
 const hasQueryParams = computed(() => {
   return (
     route.query.productName || route.query.brand || route.query.category || route.query.restockMode
   )
 })
 
+// Determine which fields are prefilled
 const prefilledFields = computed(() => {
   const fields = {}
-  if (route.query.productName) fields.name = true
-  if (route.query.brand) fields.brand = true
-  if (route.query.category) fields.category = true
+  if (route.query.productName) {
+    fields.name = true
+  }
+  if (route.query.brand) {
+    fields.brand = true
+  }
+  if (route.query.category) {
+    fields.category = true
+  }
   // For restocking, don't prefill quantity so user can modify it
-  if (route.query.quantity && !route.query.restockMode) fields.quantity = true
-  if (route.query.highlight) fields.highlight = true
-  if (route.query.description) fields.description = true
-  if (route.query.quality) fields.quality = true
-  if (route.query.price) fields.price = true
-  if (route.query.color) fields.color = true
-  if (route.query.discountCode) fields.discountCode = true
-  if (route.query.discountType) fields.discountType = true
-  if (route.query.discountValue) fields.discountValue = true
-  if (route.query.discountStartDate) fields.discountStartDate = true
-  if (route.query.discountEndDate) fields.discountExpireDate = true
+  if (route.query.quantity && !route.query.restockMode) {
+    fields.quantity = true
+  }
+  if (route.query.highlight) {
+    fields.highlight = true
+  }
+  if (route.query.description) {
+    fields.description = true
+  }
+  if (route.query.quality) {
+    fields.quality = true
+  }
+  if (route.query.price) {
+    fields.price = true
+  }
+  if (route.query.color) {
+    fields.color = true
+  }
+  if (route.query.discountCode) {
+    fields.discountCode = true
+  }
+  if (route.query.discountType) {
+    fields.discountType = true
+  }
+  if (route.query.discountValue) {
+    fields.discountValue = true
+  }
+  if (route.query.discountStartDate) {
+    fields.discountStartDate = true
+  }
+  if (route.query.discountEndDate) {
+    fields.discountExpireDate = true
+  }
   // Specs fields
-  if (route.query.range) fields.range = true
-  if (route.query.hubMotor) fields.hubMotor = true
-  if (route.query.payload) fields.payload = true
-  if (route.query.controller) fields.controller = true
-  if (route.query.weight) fields.weight = true
-  if (route.query.display) fields.display = true
+  if (route.query.range) {
+    fields.range = true
+  }
+  if (route.query.hubMotor) {
+    fields.hubMotor = true
+  }
+  if (route.query.payload) {
+    fields.payload = true
+  }
+  if (route.query.controller) {
+    fields.controller = true
+  }
+  if (route.query.weight) {
+    fields.weight = true
+  }
+  if (route.query.display) {
+    fields.display = true
+  }
   return fields
 })
 
+// Generate a random product ID
 const generateProductId = () => {
   const randomNum = Math.floor(Math.random() * 10000)
     .toString()
@@ -121,30 +166,36 @@ const generateProductId = () => {
   return `P${randomNum}I`
 }
 
+// Convert date format from MM/DD/YYYY to YYYY-MM-DD
 const convertDateFormat = (dateString) => {
-  // Convert from MM/DD/YYYY to YYYY-MM-DD format
-  if (!dateString || dateString === 'N/A') return ''
-
-  const parts = dateString.split('/')
-  if (parts.length === 3) {
-    const [month, day, year] = parts
-    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+  if (!dateString || dateString === 'N/A') {
+    return ''
+  } else {
+    const parts = dateString.split('/')
+    if (parts.length === 3) {
+      const [month, day, year] = parts
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+    } else {
+      return dateString
+    }
   }
-  return dateString
 }
 
+// Add product (placeholder for actual save logic)
 const addProduct = () => {
   console.log('Product added:', product.value)
   console.log('Specifications:', specs.value)
   // TODO: Implement actual save logic
 }
 
+// Discard form changes
 const discardForm = () => {
   if (confirm('Are you sure you want to discard all changes?')) {
     resetForm()
   }
 }
 
+// Reset form to initial state
 const resetForm = () => {
   product.value = {
     id: generateProductId(),
@@ -173,10 +224,11 @@ const resetForm = () => {
   }
 }
 
+// Initialize on mount
 onMounted(() => {
   product.value.id = generateProductId()
 
-  // Check for query parameters from discount management page or stock page
+  // Prefill form from query parameters
   const {
     productName,
     brand,

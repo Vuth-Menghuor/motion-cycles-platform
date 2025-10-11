@@ -101,8 +101,8 @@
 <script setup>
 import { defineProps } from 'vue'
 
-// eslint-disable-next-line no-unused-vars
-const props = defineProps({
+// Define props for the invoice component
+defineProps({
   invoiceNumber: { type: String, required: true },
   transactionDate: { type: String, required: true },
   paymentMethod: { type: String, required: true },
@@ -116,20 +116,30 @@ const props = defineProps({
   total: { type: Number, required: true },
 })
 
-const hasDiscount = (item) =>
-  item.discount && (item.discount.type === 'percent' || item.discount.type === 'fixed')
-
-const getDiscountAmount = (item) => {
-  if (!hasDiscount(item)) return 0
-  return item.discount.type === 'percent'
-    ? (item.price * item.discount.value) / 100
-    : item.discount.value
+// Function to check if item has discount
+const hasDiscount = (item) => {
+  return item.discount && (item.discount.type === 'percent' || item.discount.type === 'fixed')
 }
 
+// Function to get discount amount for an item
+const getDiscountAmount = (item) => {
+  if (!hasDiscount(item)) {
+    return 0
+  }
+  if (item.discount.type === 'percent') {
+    return (item.price * item.discount.value) / 100
+  } else {
+    return item.discount.value
+  }
+}
+
+// Function to get discounted price for an item
 const getDiscountedPrice = (item) => item.price - getDiscountAmount(item)
 
+// Function to get total for an item (discounted price * quantity)
 const getItemTotal = (item) => getDiscountedPrice(item) * item.quantity
 
+// Function to format price with commas
 const formatPrice = (price) => price.toLocaleString()
 </script>
 

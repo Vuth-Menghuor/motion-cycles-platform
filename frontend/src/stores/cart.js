@@ -1,63 +1,77 @@
-// src/stores/cart.js
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 export const useCartStore = defineStore('cart', () => {
-  // State: holds the array of products in the cart
+  // State: Array to hold cart items, each with product details and quantity
   const cartItems = ref([])
 
-  // Getters: computed properties based on state
+  // Getters: Computed properties based on state
   const count = computed(() => {
-    // This now correctly reflects the total number of items in the cart
+    // Calculates total number of items in cart by summing quantities
     return cartItems.value.reduce((total, item) => total + item.quantity, 0)
   })
 
-  // Actions: methods to modify the state
+  // Actions: Methods to modify the cart state
+
+  // addItem: Adds a product to the cart or increases quantity if it already exists
   function addItem(product) {
     const existingItem = cartItems.value.find((item) => item.id === product.id)
     if (existingItem) {
+      // If item exists, increase its quantity
       existingItem.quantity++
     } else {
+      // If new item, add it with calculated price and default quantity
       cartItems.value.push({
         ...product,
-        // This is the missing line that populates the item name
-        name: product.title,
+        name: product.title, // Use product title as name
         quantity: 1,
-        price: calculateDiscountedPrice(product),
+        price: calculateDiscountedPrice(product), // Apply discount if any
         originalPrice: product.price,
       })
     }
   }
 
+  // removeItem: Removes an item from the cart by its ID
   function removeItem(itemId) {
     cartItems.value = cartItems.value.filter((item) => item.id !== itemId)
   }
 
+  // increaseQuantity: Increases the quantity of a specific item by 1
   function increaseQuantity(itemId) {
     const item = cartItems.value.find((i) => i.id === itemId)
-    if (item) item.quantity++
-  }
-
-  function decreaseQuantity(itemId) {
-    const item = cartItems.value.find((i) => i.id === itemId)
-    if (item && item.quantity > 1) item.quantity--
-  }
-
-  // Private helper function to calculate the discounted price
-  function calculateDiscountedPrice(product) {
-    if (!product.discount) return product.price
-    if (product.discount.type === 'percent') {
-      return product.price - (product.price * product.discount.value) / 100
-    } else {
-      return product.price - product.discount.value
+    if (item) {
+      item.quantity++
     }
   }
 
-  // Clear cart function
+  // decreaseQuantity: Decreases the quantity of a specific item by 1, but not below 1
+  function decreaseQuantity(itemId) {
+    const item = cartItems.value.find((i) => i.id === itemId)
+    if (item && item.quantity > 1) {
+      item.quantity--
+    }
+  }
+
+  // clearCart: Empties the entire cart
   function clearCart() {
     cartItems.value = []
   }
 
-  // Expose the state and actions you want to use in your components
+  // Private helper function: Calculates the discounted price for a product
+  function calculateDiscountedPrice(product) {
+    if (!product.discount) {
+      // No discount, return original price
+      return product.price
+    }
+    if (product.discount.type === 'percent') {
+      // Percentage discount
+      return product.price - (product.price * product.discount.value) / 100
+    } else {
+      // Fixed amount discount
+      return product.price - product.discount.value
+    }
+  }
+
+  // Expose state, getters, and actions for use in components
   return { cartItems, count, addItem, removeItem, increaseQuantity, decreaseQuantity, clearCart }
 })

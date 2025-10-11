@@ -146,15 +146,20 @@ const props = defineProps({
 
 const order = ref(null)
 
+// Calculate total amount
 const totalAmount = computed(() => {
-  if (!order.value) return 0
-  return (
-    (order.value.subtotal || 0) +
-    (order.value.shipping_amount || 0) -
-    (order.value.discount_amount || 0)
-  )
+  if (!order.value) {
+    return 0
+  } else {
+    return (
+      (order.value.subtotal || 0) +
+      (order.value.shipping_amount || 0) -
+      (order.value.discount_amount || 0)
+    )
+  }
 })
 
+// Mock data for orders
 const mockOrders = [
   {
     id: 1,
@@ -185,29 +190,48 @@ const mockOrders = [
   },
 ]
 
+// Load order data
 const loadOrder = () => {
   const orderId = parseInt(props.id)
   order.value = mockOrders.find((o) => o.id === orderId) || null
 }
 
-const formatStatus = (status) =>
-  status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+// Format status for display
+const formatStatus = (status) => {
+  if (status) {
+    return status.charAt(0).toUpperCase() + status.slice(1)
+  } else {
+    return 'Unknown'
+  }
 }
 
+// Format date for display
+const formatDate = (dateString) => {
+  if (!dateString) {
+    return 'N/A'
+  } else {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+}
+
+// Get category name for display
 const getCategoryName = (category) => {
-  if (!category) return 'Unknown'
-  const categories = { mountain: 'Mountain', road: 'Road' }
-  return categories[category] || category.charAt(0).toUpperCase() + category.slice(1)
+  if (!category) {
+    return 'Unknown'
+  } else {
+    const categories = { mountain: 'Mountain', road: 'Road' }
+    if (categories[category]) {
+      return categories[category]
+    } else {
+      return category.charAt(0).toUpperCase() + category.slice(1)
+    }
+  }
 }
 
 onMounted(() => loadOrder())
