@@ -50,4 +50,10 @@ class Product extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    // A product can be in many carts
+    public function carts()
+    {
+        return $this->hasMany(Cart::class);
+    }
 }

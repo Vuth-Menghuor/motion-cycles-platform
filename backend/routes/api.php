@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\CartController;
 
 // Authentication routes (public)
 Route::prefix('auth')->group(function () {
@@ -89,6 +90,15 @@ Route::get('/public/products/{id}/reviews', [ReviewController::class, 'index']);
 // User routes (authenticated)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
+
+    // Cart routes
+    Route::get('cart', [CartController::class, 'index']);
+    Route::post('cart', [CartController::class, 'store']);
+    Route::get('cart/{cart}', [CartController::class, 'show']);
+    Route::patch('cart/{cart}', [CartController::class, 'update']);
+    Route::delete('cart/{cart}', [CartController::class, 'destroy']);
+    Route::delete('cart', [CartController::class, 'clear']);
+    Route::get('cart-count', [CartController::class, 'count']);
 });
 
 

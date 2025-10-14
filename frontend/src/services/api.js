@@ -88,4 +88,14 @@ export const reviewsApi = {
     api.delete(`/admin/products/${productId}/reviews/${reviewId}`),
 }
 
+// Cart API
+export const cartApi = {
+  getCart: () => api.get('/cart'),
+  addToCart: (productId, quantity) => api.post('/cart', { product_id: productId, quantity }),
+  updateCartItem: (cartId, quantity) => api.patch(`/cart/${cartId}`, { quantity }),
+  removeFromCart: (cartId) => api.delete(`/cart/${cartId}`),
+  clearCart: () => api.delete('/cart'),
+  getCartCount: () => api.get('/cart-count')
+}
+
 export default api

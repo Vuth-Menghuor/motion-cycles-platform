@@ -1,80 +1,90 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { cartApi } from '@/services/api'
 
-export const useCartStore = defineStore('cart', () => {
-  // State: Array to hold cart items, each with product details and quantity
-  const cartItems = ref([])
+export const useCartStore = defineStore('cart', {
+  state: () => ({
+    items: [],
+    loading: false,
+    count: 0
+  }),
 
-  // Getters: Computed properties based on state
-  const count = computed(() => {
-    // Calculates total number of items in cart by summing quantities
-    return cartItems.value.reduce((total, item) => total + item.quantity, 0)
-  })
+  getters: {
+    totalItems: (state) => state.items.reduce((total, item) => total + item.quantity, 0),
+    totalPrice: (state) => state.items.reduce((total, item) => total + (item.product.pricing * item.quantity), 0)
+  },
 
-  // Actions: Methods to modify the cart state
+  actions: {
+    async fetchCart() {
+      this.loading = true
+      try {
+        const response = await cartApi.getCart()
+        this.items = response.data
+        this.updateCount()
+      } catch (error) {
+        console.error('Error fetching cart:', error)
+      } finally {
+        this.loading = false
+      }
+    },
 
-  // addItem: Adds a product to the cart or increases quantity if it already exists
-  function addItem(product) {
-    const existingItem = cartItems.value.find((item) => item.id === product.id)
-    if (existingItem) {
-      // If item exists, increase its quantity
-      existingItem.quantity++
-    } else {
-      // If new item, add it with calculated price and default quantity
-      const originalPrice = parseFloat(product.price) || 0
-      cartItems.value.push({
-        ...product,
-        name: product.title, // Use product title as name
-        quantity: 1,
-        price: calculateDiscountedPrice({ ...product, price: originalPrice }), // Apply discount if any
-        originalPrice: originalPrice,
-      })
+    async addToCart(productId, quantity = 1) {
+      try {
+        const response = await cartApi.addToCart(productId, quantity)
+        // Update local state
+        const existingItem = this.items.find(item => item.product_id === productId)
+        if (existingItem) {
+          existingItem.quantity = response.data.quantity
+        } else {
+          this.items.push(response.data)
+        }
+        this.updateCount()
+        return response.data
+      } catch (error) {
+        console.error('Error adding to cart:', error)
+        throw error
+      }
+    },
+
+    async updateCartItem(cartId, quantity) {
+      try {
+        const response = await cartApi.updateCartItem(cartId, quantity)
+        // Update local state
+        const item = this.items.find(item => item.id === cartId)
+        if (item) {
+          item.quantity = quantity
+        }
+        return response.data
+      } catch (error) {
+        console.error('Error updating cart item:', error)
+        throw error
+      }
+    },
+
+    async removeFromCart(cartId) {
+      try {
+        await cartApi.removeFromCart(cartId)
+        // Update local state
+        this.items = this.items.filter(item => item.id !== cartId)
+        this.updateCount()
+      } catch (error) {
+        console.error('Error removing from cart:', error)
+        throw error
+      }
+    },
+
+    async clearCart() {
+      try {
+        await cartApi.clearCart()
+        this.items = []
+        this.count = 0
+      } catch (error) {
+        console.error('Error clearing cart:', error)
+        throw error
+      }
+    },
+
+    updateCount() {
+      this.count = this.totalItems
     }
   }
-
-  // removeItem: Removes an item from the cart by its ID
-  function removeItem(itemId) {
-    cartItems.value = cartItems.value.filter((item) => item.id !== itemId)
-  }
-
-  // increaseQuantity: Increases the quantity of a specific item by 1
-  function increaseQuantity(itemId) {
-    const item = cartItems.value.find((i) => i.id === itemId)
-    if (item) {
-      item.quantity++
-    }
-  }
-
-  // decreaseQuantity: Decreases the quantity of a specific item by 1, but not below 1
-  function decreaseQuantity(itemId) {
-    const item = cartItems.value.find((i) => i.id === itemId)
-    if (item && item.quantity > 1) {
-      item.quantity--
-    }
-  }
-
-  // clearCart: Empties the entire cart
-  function clearCart() {
-    cartItems.value = []
-  }
-
-  // Private helper function: Calculates the discounted price for a product
-  function calculateDiscountedPrice(product) {
-    const price = parseFloat(product.price) || 0
-    if (!product.discount || !Array.isArray(product.discount) || product.discount.length === 0) {
-      // No discount, return original price
-      return price
-    }
-    const discount = product.discount[0] // Take the first discount if it's an array
-    if (discount.type === 'percent') {
-      // Percentage discount
-      return price - (price * discount.value) / 100
-    } else {
-      // Fixed amount discount
-      return price - discount.value
-    }
-  }
-
-  // Expose state, getters, and actions for use in components
-  return { cartItems, count, addItem, removeItem, increaseQuantity, decreaseQuantity, clearCart }
 })
