@@ -49,8 +49,12 @@
         <span>MRP</span>
         <span>${{ (totalMRP || 0).toFixed(2) }}</span>
       </div>
+      <div v-if="itemDiscountAmount > 0" class="summary-row discount">
+        <span>Item Discount</span>
+        <span class="discount-price">-${{ (itemDiscountAmount || 0).toFixed(2) }}</span>
+      </div>
       <div v-if="isPromoValid" class="summary-row discount">
-        <span>Discount</span>
+        <span>Promo Discount</span>
         <span class="discount-price">-${{ (discountAmount || 0).toFixed(2) }}</span>
       </div>
       <div class="summary-row net-price">
@@ -133,7 +137,29 @@ const promoIcon = computed(() => {
 // Computed property for discount amount
 const discountAmount = computed(() => (isPromoValid.value ? PROMO_DISCOUNT : 0))
 
-// Computed property for total MRP
+// Computed property for item discount amount
+const itemDiscountAmount = computed(() =>
+  (props.cartItems || []).reduce((total, item) => {
+    if (
+      !item.originalPrice ||
+      !item.discount ||
+      !Array.isArray(item.discount) ||
+      item.discount.length === 0
+    ) {
+      return total
+    }
+    const discount = item.discount[0]
+    if (discount.type === 'percent') {
+      const discountValue = (item.originalPrice * discount.value) / 100
+      return total + discountValue * item.quantity
+    } else if (discount.type === 'fixed') {
+      return total + discount.value * item.quantity
+    }
+    return total
+  }, 0),
+)
+
+// Computed property for total MRP (original prices before any discounts)
 const totalMRP = computed(() =>
   (props.cartItems || []).reduce(
     (total, item) => total + (item.originalPrice || item.price) * item.quantity,
@@ -141,8 +167,14 @@ const totalMRP = computed(() =>
   ),
 )
 
-// Computed property for net price after discount
-const netPrice = computed(() => Math.max(totalMRP.value - discountAmount.value, 0))
+// Computed property for net price (discounted prices minus promo discount)
+const netPrice = computed(() => {
+  const discountedTotal = (props.cartItems || []).reduce(
+    (total, item) => total + item.price * item.quantity,
+    0,
+  )
+  return Math.max(discountedTotal - discountAmount.value, 0)
+})
 
 // Computed property for shipping amount
 const shippingAmount = computed(() => SHIPPING_AMOUNT)
@@ -156,6 +188,7 @@ const showCheckoutBtn = computed(() => !hiddenRoutes.includes(route.path))
 // Computed property for summary breakdown
 const summaryBreakdown = computed(() => ({
   totalMRP: totalMRP.value,
+  itemDiscountAmount: itemDiscountAmount.value,
   discountAmount: discountAmount.value,
   netPrice: netPrice.value,
   shippingAmount: SHIPPING_AMOUNT,

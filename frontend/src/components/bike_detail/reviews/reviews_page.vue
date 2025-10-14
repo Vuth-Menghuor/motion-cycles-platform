@@ -1,10 +1,10 @@
 <template>
   <div class="reviews-page">
     <h2 class="review-title">Rating & Reviews</h2>
-    <Rating_bar :reviews="reviews" />
+    <Rating_bar :reviews="productReviews" />
 
     <h2 class="review-title">Customer Feedback</h2>
-    <Reviews_list :reviews="reviews" class="review-list" />
+    <Reviews_list :reviews="productReviews" class="review-list" />
 
     <h2 class="review-title">Submit Your Review</h2>
     <Review_form @submit-review="handleNewReview" />
@@ -12,25 +12,67 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, onMounted, watch } from 'vue'
+import { useReviewsStore } from '@/stores/reviews'
 import Rating_bar from './overview/rating_bar.vue'
 import Reviews_list from './list/reviews_list.vue'
 import Review_form from './form/review_form.vue'
 
-const reviews = ref([
-  { user: 'v1', rating: 2, comment: 'This is a great product!', date: '2023-10-01' },
-  { user: 'v2', rating: 2, comment: 'Not bad, could be better.', date: '2023-10-02' },
-  { user: 'v3', rating: 3, comment: 'Average experience.', date: '2023-10-03' },
-  { user: 'v4', rating: 5, comment: 'Exceeded my expectations!', date: '2023-10-04' },
-  { user: 'v5', rating: 3, comment: "It's okay for the price.", date: '2023-10-05' },
-  { user: 'v6', rating: 2, comment: 'Could be improved in some areas.', date: '2023-10-06' },
-  { user: 'v7', rating: 4, comment: 'Good value for money.', date: '2023-10-07' },
-  { user: 'v8', rating: 5, comment: 'Absolutely love it!', date: '2023-10-08' },
-])
+// Define props to receive product ID
+const props = defineProps({
+  productId: {
+    type: [String, Number],
+    required: true,
+  },
+})
 
-const handleNewReview = (reviewData) => {
-  reviews.value.unshift(reviewData)
+// Define emits for parent component communication
+const emit = defineEmits(['rating-updated'])
+
+// Initialize Pinia store
+const reviewsStore = useReviewsStore()
+
+// Get reviews for current product
+const productReviews = computed(() => reviewsStore.getProductReviews(props.productId))
+
+// Watch for changes in reviews and emit rating updates
+watch(
+  () => productReviews.value,
+  (newReviews) => {
+    if (newReviews.length > 0) {
+      const totalRating = newReviews.reduce((sum, review) => sum + review.rating, 0)
+      const averageRating = totalRating / newReviews.length
+      emit('rating-updated', {
+        rating: Math.round(averageRating * 10) / 10,
+        reviewCount: newReviews.length,
+      })
+    } else {
+      emit('rating-updated', { rating: 0, reviewCount: 0 })
+    }
+  },
+  { immediate: true, deep: true },
+)
+
+// Handle new review submission
+const handleNewReview = async (reviewData) => {
+  try {
+    await reviewsStore.submitReview(props.productId, reviewData)
+    // The watch above will automatically emit the rating update
+  } catch (error) {
+    console.error('Failed to submit review:', error)
+    // You could emit an error event here if needed
+    alert('Failed to submit review. Please make sure you are logged in.')
+  }
 }
+
+// Fetch reviews when component mounts
+onMounted(async () => {
+  try {
+    await reviewsStore.fetchProductReviews(props.productId)
+  } catch (error) {
+    console.error('Failed to fetch reviews:', error)
+  }
+})
 </script>
 
 <style scoped>

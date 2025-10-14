@@ -22,18 +22,19 @@
       </select>
 
       <select v-model="categoryFilter" @change="applyFilters" class="filter-select">
-        <option value="">All Categories</option>
-        <option value="mountain">Mountain Bike</option>
-        <option value="road">Road Bike</option>
+        <option value="Mountain Bike">Mountain Bike</option>
+        <option value="Road Bike">Road Bike</option>
       </select>
 
       <select v-model="brandFilter" @change="applyFilters" class="filter-select">
-        <option value="">All Brands</option>
-        <option value="Trek">Trek</option>
-        <option value="Giant">Giant</option>
-        <option value="Specialized">Specialized</option>
         <option value="Cannondale">Cannondale</option>
-        <option value="Santa Cruz">Santa Cruz</option>
+        <option value="Trek">Trek</option>
+        <option value="Bianchi">Bianchi</option>
+        <option value="Giant">Giant</option>
+        <option value="Cervélo">Cervélo</option>
+        <option value="Specialized">Specialized</option>
+        <option value="Shimano">Shimano</option>
+        <option value="Colnago">Colnago</option>
       </select>
 
       <input
@@ -83,12 +84,12 @@ const ratingFilter = computed({
 })
 
 const categoryFilter = computed({
-  get: () => props.categoryFilter,
+  get: () => props.categoryFilter || 'Mountain Bike',
   set: (value) => emit('update:categoryFilter', value),
 })
 
 const brandFilter = computed({
-  get: () => props.brandFilter,
+  get: () => props.brandFilter || 'Trek',
   set: (value) => emit('update:brandFilter', value),
 })
 

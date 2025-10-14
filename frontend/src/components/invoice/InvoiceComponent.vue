@@ -45,11 +45,11 @@
             <td class="item-description">
               <div class="item-info">
                 <strong>{{ item.name || item.title }}</strong>
-                <div class="item-details">{{ item.subtitle }} | Color: {{ item.color }}</div>
+                <div class="item-details">{{ item.brand }} | Color: {{ item.color }}</div>
               </div>
             </td>
             <td class="item-qty">{{ item.quantity }}</td>
-            <td class="item-price">${{ formatPrice(item.price) }}</td>
+            <td class="item-price">${{ formatPrice(item.originalPrice || item.price) }}</td>
             <td class="item-discount">
               <span v-if="hasDiscount(item)"> -${{ formatPrice(getDiscountAmount(item)) }} </span>
               <span v-else>-</span>
@@ -116,7 +116,12 @@ defineProps({
 
 // Function to check if item has discount
 const hasDiscount = (item) => {
-  return item.discount && (item.discount.type === 'percent' || item.discount.type === 'fixed')
+  return (
+    item.discount &&
+    Array.isArray(item.discount) &&
+    item.discount.length > 0 &&
+    (item.discount[0].type === 'percent' || item.discount[0].type === 'fixed')
+  )
 }
 
 // Function to get discount amount for an item
@@ -124,21 +129,26 @@ const getDiscountAmount = (item) => {
   if (!hasDiscount(item)) {
     return 0
   }
-  if (item.discount.type === 'percent') {
-    return (item.price * item.discount.value) / 100
+  const originalPrice = item.originalPrice || item.price
+  const discount = item.discount[0]
+  if (discount.type === 'percent') {
+    return (originalPrice * discount.value) / 100
   } else {
-    return item.discount.value
+    return discount.value
   }
 }
 
 // Function to get discounted price for an item
-const getDiscountedPrice = (item) => item.price - getDiscountAmount(item)
+const getDiscountedPrice = (item) => (item.originalPrice || item.price) - getDiscountAmount(item)
 
 // Function to get total for an item (discounted price * quantity)
 const getItemTotal = (item) => getDiscountedPrice(item) * item.quantity
 
 // Function to format price with commas
-const formatPrice = (price) => price.toLocaleString()
+const formatPrice = (price) => {
+  const numPrice = parseFloat(price)
+  return isNaN(numPrice) ? '0.00' : numPrice.toLocaleString()
+}
 </script>
 
 <style scoped>

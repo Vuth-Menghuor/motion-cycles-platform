@@ -7,8 +7,7 @@
       <select v-model="localProduct.quality" :disabled="disabled || prefilledFields.quality">
         <option value="">Select Quality</option>
         <option value="New">New</option>
-        <option value="Refurbished">Refurbished</option>
-        <option value="Used">Used</option>
+        <option value="Second Hand">Second Hand</option>
       </select>
     </div>
   </div>
@@ -109,5 +108,37 @@ select:disabled {
   color: #38a169;
   border-color: #9ae6b4;
   opacity: 1;
+}
+
+input[type='number'] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  background-color: #ffffff;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+input[type='number']:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+input[type='number']:disabled {
+  background-color: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.prefilled-field {
+  background-color: #f0fff4 !important;
+  border-color: #48bb78 !important;
+  color: #22543d !important;
 }
 </style>

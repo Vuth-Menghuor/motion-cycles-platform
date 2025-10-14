@@ -21,15 +21,14 @@ services:
       - backend
 
   db:
-    image: mysql:8.0
-    container_name: mysql_db
+    image: postgres:15
+    container_name: db
     ports:
-      - "3307:3306"
+      - "5433:5432"
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: laravel
+      POSTGRES_DB: bike_ecommerce
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: laravel
     networks:
       - backend
 

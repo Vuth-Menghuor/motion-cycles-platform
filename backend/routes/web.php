@@ -1,25 +1,13 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+// Basic API info endpoint
 Route::get('/', function () {
-    return view('welcome');
+    return response()->json([
+        'message' => 'Motion Cycle E-commerce API',
+        'version' => '1.0.0',
+        'status' => 'running',
+        'docs' => '/api/documentation' // You can add API documentation here
+    ]);
 });
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-Route::get('/products', function () {
-    return view('product');
-});
-
-
-require __DIR__ . '/auth.php';

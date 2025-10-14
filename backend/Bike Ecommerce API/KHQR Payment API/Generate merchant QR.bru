@@ -1,0 +1,30 @@
+meta {
+  name: Generate merchant QR
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8100/api/khqr/merchant
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "bakong_account": "vuth_menghuor@aclb",
+    "merchant_name": "Motion Cycle",
+    "amount": 100.00,
+    "currency": "USD",
+    "bill_number": "BILL-001",
+    "store_label": "Main Store"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

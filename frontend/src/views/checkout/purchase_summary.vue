@@ -68,16 +68,16 @@
         <div class="order-item-details">
           <p class="order-item-name">{{ item.name || item.title }}</p>
           <div class="brand-color-row">
-            <p class="order-item-brand">{{ item.subtitle }}</p>
+            <p class="order-item-brand">{{ item.brand }}</p>
             <span class="separator">|</span>
             <p class="order-item-color">Color: {{ item.color }}</p>
           </div>
           <p class="order-item-quantity">Quantity: {{ item.quantity }}</p>
           <div class="order-item-price-container">
             <span v-if="hasDiscount(item)" class="original-price"
-              >${{ formatPrice(item.price) }}</span
+              >${{ formatPrice(item.originalPrice || item.price) }}</span
             >
-            <span class="current-price">${{ formatPrice(getDiscountedPrice(item)) }}</span>
+            <span class="current-price">${{ formatPrice(item.price) }}</span>
           </div>
         </div>
       </div>
@@ -156,7 +156,6 @@ onMounted(() => {
   if (storedOrderData) {
     try {
       const parsedData = JSON.parse(storedOrderData)
-      console.log('✅ Order data loaded:', parsedData)
 
       orderData.value = parsedData
       cartItems.value = parsedData.cartItems || []
@@ -191,7 +190,12 @@ const formatPrice = (price) => {
 
 // Helper functions for discount calculation (same as cart_item_card)
 const hasDiscount = (item) => {
-  return item.discount && (item.discount.type === 'percent' || item.discount.type === 'fixed')
+  return (
+    item.discount &&
+    Array.isArray(item.discount) &&
+    item.discount.length > 0 &&
+    (item.discount[0].type === 'percent' || item.discount[0].type === 'fixed')
+  )
 }
 
 const getDiscountedPrice = (item) => {
@@ -199,10 +203,11 @@ const getDiscountedPrice = (item) => {
     return item.price
   }
 
-  if (item.discount.type === 'percent') {
-    return item.price - (item.price * item.discount.value) / 100
-  } else if (item.discount.type === 'fixed') {
-    return item.price - item.discount.value
+  const discount = item.discount[0] // Take the first discount
+  if (discount.type === 'percent') {
+    return item.price - (item.price * discount.value) / 100
+  } else if (discount.type === 'fixed') {
+    return item.price - discount.value
   }
 
   return item.price
@@ -217,7 +222,7 @@ const totalMRP = computed(() => {
 
   // Fallback calculation
   return cartItems.value.reduce((total, item) => {
-    return total + item.price * item.quantity
+    return total + (item.originalPrice || item.price) * item.quantity
   }, 0)
 })
 
@@ -225,8 +230,8 @@ const itemDiscountAmount = computed(() => {
   return cartItems.value.reduce((total, item) => {
     if (!hasDiscount(item)) return total
 
-    const originalPrice = item.price
-    const discountedPrice = getDiscountedPrice(item)
+    const originalPrice = item.originalPrice || item.price
+    const discountedPrice = item.price
     const itemDiscount = (originalPrice - discountedPrice) * item.quantity
 
     return total + itemDiscount
@@ -388,8 +393,8 @@ const downloadInvoice = () => {
     doc.text(truncatedName, 25, yPosition)
 
     // Brand and color
-    if (item.subtitle || item.color) {
-      const brandColor = `${item.subtitle || ''}${item.color ? ` | ${item.color}` : ''}`
+    if (item.brand || item.color) {
+      const brandColor = `${item.brand || ''}${item.color ? ` | ${item.color}` : ''}`
       doc.setFontSize(8)
       doc.setTextColor(...lightGray)
       doc.text(brandColor, 25, yPosition + 4)
@@ -475,7 +480,7 @@ const continueShopping = () => {
   localStorage.removeItem('lastOrderData')
   localStorage.removeItem('orderDetails') // Clean up any old data
   // Navigate to home page
-  router.push('/')
+  router.push('/home')
 }
 </script>
 

@@ -1,0 +1,26 @@
+meta {
+  name: Update a review
+  type: http
+  seq: 3
+}
+
+patch {
+  url: http://localhost:8100/api/admin/products/5/reviews/1
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 6|oceuUo8ocygdCu2UrRoseJWBsDjM24f3cvhGMMxO60ed7665
+}
+
+body:json {
+  {
+    "rating": 5,
+    "comment": "hahahahahahaha."
+  }
+}
+
+settings {
+  encodeUrl: true
+}

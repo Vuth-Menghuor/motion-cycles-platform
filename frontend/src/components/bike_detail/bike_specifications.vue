@@ -51,19 +51,51 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+
+const props = defineProps({
+  specs: {
+    type: [Object, Array],
+    default: () => [],
+  },
+})
 
 const activeTab = ref('specifications')
 
-const specifications = ref([
-  { label: 'Range', value: ' Up to 60 Miles' },
-  { label: 'Hub Motor', value: '750W Brush less gear motor' },
-  { label: 'Total Payload Capacity', value: '400 lb' },
-  { label: 'Controller', value: '30v/10A' },
-  { label: 'Weight', value: '33/35 lb' },
-  { label: 'Display', value: '-' },
-  { label: 'Battery', value: '-' },
-])
+const specifications = computed(() => {
+  if (!props.specs) return []
+
+  let specsObj = props.specs
+
+  // Handle string format (JSON string from API)
+  if (typeof props.specs === 'string') {
+    try {
+      specsObj = JSON.parse(props.specs)
+    } catch {
+      return []
+    }
+  }
+
+  // Handle array format (legacy)
+  if (Array.isArray(specsObj)) {
+    return specsObj.map((spec, index) => ({
+      label: `Specification ${index + 1}`,
+      value: spec.text || spec,
+    }))
+  }
+
+  // Handle object format (current API response)
+  if (typeof specsObj === 'object') {
+    return Object.entries(specsObj)
+      .map(([key, value]) => ({
+        label: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
+        value: value || '-',
+      }))
+      .filter((spec) => spec.value !== '-')
+  }
+
+  return []
+})
 </script>
 
 <style scoped>

@@ -34,7 +34,7 @@
         <option value="CERVÉLO">CERVÉLO</option>
         <option value="Specialized">Specialized</option>
         <option value="Shimano">Shimano</option>
-        <option value="Calnago">Calnago</option>
+        <option value="Colnago">Colnago</option>
       </select>
     </div>
 

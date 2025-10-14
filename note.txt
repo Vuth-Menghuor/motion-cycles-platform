@@ -54,6 +54,47 @@ php artisan migrate
 php artisan migrate:fresh
 ```
 
+### Database Seeding
+
+#### Run All Seeders
+```bash
+# Run all seeders defined in DatabaseSeeder.php
+php artisan db:seed
+
+# Or run migrations and seeders together
+php artisan migrate:fresh --seed
+```
+
+#### Run Individual Seeders
+```bash
+# Run Admin Seeder
+php artisan db:seed --class=AdminSeeder
+
+# Run Category Seeder
+php artisan db:seed --class=CategorySeeder
+
+# Run Product Seeder
+php artisan db:seed --class=ProductSeeder
+
+# Run User Seeder (if exists)
+php artisan db:seed --class=UserSeeder
+```
+
+#### Create New Seeder
+```bash
+# Create a new seeder class
+php artisan make:seeder ExampleSeeder
+
+# Register the seeder in DatabaseSeeder.php
+# Add to the run() method:
+# $this->call([
+#     AdminSeeder::class,
+#     CategorySeeder::class,
+#     ProductSeeder::class,
+#     ExampleSeeder::class,
+# ]);
+```
+
 ## 3. API Setup
 
 ### Enable API Routes
@@ -169,6 +210,8 @@ User::create([
 ```bash
 php artisan db:seed --class=AdminSeeder
 ```
+
+**Note:** For running all seeders or other individual seeders, see the Database Seeding section above.
 
 ## 4. KHQR Payment Integration
 

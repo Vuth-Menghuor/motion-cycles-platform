@@ -3,16 +3,6 @@
     <h2 class="section-title">Description</h2>
 
     <div class="form-group">
-      <label>Highlight</label>
-      <textarea
-        v-model="localProduct.highlight"
-        placeholder="Add highlight text..."
-        :disabled="disabled"
-        :class="{ 'prefilled-field': prefilledFields?.highlight }"
-      ></textarea>
-    </div>
-
-    <div class="form-group">
       <label>About This Product</label>
       <textarea
         v-model="localProduct.description"

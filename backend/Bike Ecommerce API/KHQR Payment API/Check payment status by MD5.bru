@@ -1,0 +1,25 @@
+meta {
+  name: Check payment status by MD5
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8100/api/khqr/check-payment-status
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "md5": "82f5135628b3632e98a4ff371aca4372"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -4,10 +4,11 @@
       <div class="basic-info">
         <div>
           <h1 class="bike-title">{{ bike.title }}</h1>
-          <div class="bike-meta">
-            <span class="brand">{{ bike.subtitle }}</span>
-            <span class="separator">|</span>
-            <span class="color">Color: {{ bike.color }}</span>
+
+          <div class="brand-color-section">
+            <span class="brand-name">{{ bike.brand }}</span>
+            <span class="separator"> | </span>
+            <span class="color-info">Color: {{ bike.color }}</span>
           </div>
 
           <div class="rating-section">
@@ -16,9 +17,9 @@
                 v-for="star in 5"
                 :key="star"
                 class="star"
-                :class="{ filled: star <= Math.floor(bike.rating) }"
+                :class="{ filled: star <= Math.floor(bike.rating || 0) }"
               >
-                <Icon icon="line-md:star-filled" />
+                ★
               </span>
             </div>
             <span class="rating-text">
@@ -30,9 +31,11 @@
         <div class="price-section">
           <div class="price-details">
             <div class="current-price">${{ formatNumber(getDiscountedPrice(bike)) }}</div>
-            <div v-if="bike.discount" class="original-price">${{ formatNumber(bike.price) }}</div>
+            <div v-if="hasDiscount(bike)" class="original-price">
+              ${{ formatNumber(bike.price) }}
+            </div>
           </div>
-          <div v-if="bike.discount" class="savings">
+          <div v-if="hasDiscount(bike)" class="savings">
             You save: ${{ formatNumber(getSavings(bike)) }}
           </div>
         </div>
@@ -52,7 +55,7 @@
 
     <div class="brand-info">
       <h3>About {{ bike.title }}</h3>
-      <div class="brand-description">{{ getBrandDescription(bike.subtitle) }}</div>
+      <div class="brand-description">{{ getBrandDescription(bike.brand) }}</div>
     </div>
   </div>
 </template>
@@ -69,6 +72,13 @@ defineProps({
 })
 
 const emit = defineEmits(['addToCart'])
+
+// Function to check if a bike has a discount
+const hasDiscount = (bike) =>
+  bike.discount &&
+  Array.isArray(bike.discount) &&
+  bike.discount.length > 0 &&
+  bike.discount[0].value
 </script>
 
 <style scoped>
@@ -99,28 +109,6 @@ const emit = defineEmits(['addToCart'])
   line-height: 1.2;
 }
 
-.bike-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
-  font-size: 16px;
-  color: #64748b;
-}
-
-.brand {
-  font-weight: 600;
-  color: #3b82f6;
-}
-
-.separator {
-  color: #cbd5e1;
-}
-
-.color {
-  color: #64748b;
-}
-
 .rating-section {
   display: flex;
   align-items: center;
@@ -145,6 +133,29 @@ const emit = defineEmits(['addToCart'])
 .rating-text {
   font-size: 14px;
   color: #64748b;
+}
+
+.brand-color-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  color: #64748b;
+  font-weight: 400;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+.brand-name {
+  font-weight: 500;
+}
+
+.separator {
+  color: #64748b;
+}
+
+.color-info {
+  font-weight: 500;
 }
 
 .price-section {

@@ -54,7 +54,6 @@ const routes = [
         path: '/bike/:id',
         name: 'BikeDetail',
         component: Bike_detail,
-        props: true,
       },
       // Bike gallery
       {
@@ -365,7 +364,7 @@ const router = createRouter({
 })
 
 // Navigation guard to check authentication and roles
-router.beforeEach((to, from) => {
+router.beforeEach((to) => {
   const auth = useAuthStore()
   const token = localStorage.getItem('token')
 

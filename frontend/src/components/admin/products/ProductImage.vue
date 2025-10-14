@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 
 // Define props for the component
@@ -77,10 +77,22 @@ const props = defineProps({
   },
 })
 
+// Define emits
+const emit = defineEmits(['update:images'])
+
 // References for DOM elements and data
 const fileInput = ref(null) // Reference to the hidden file input
 const images = ref([]) // Array to store image data URLs
 const isDragOver = ref(false) // Flag for drag over state
+
+// Watch for changes in images and emit to parent
+watch(
+  images,
+  (newImages) => {
+    emit('update:images', newImages)
+  },
+  { deep: true },
+)
 
 // Function to trigger file input click
 const triggerFileUpload = () => {

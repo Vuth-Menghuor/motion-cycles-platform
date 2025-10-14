@@ -11,8 +11,8 @@
           <div class="card-header">
             <div
               class="sale-badge"
-              :style="{ background: bike.badge.gradient }"
-              v-if="bike.badge.text"
+              :style="{ background: bike.badge?.gradient }"
+              v-if="bike.badge && bike.badge.text"
             >
               <Icon :icon="bike.badge.icon" class="sale-icon" />
               <span>{{ bike.badge.text }}</span>
@@ -46,9 +46,9 @@
           <div class="product-info">
             <label class="product-title">{{ bike.title }}</label>
             <div class="subtitle-color">
-              <span class="product-subtitle">{{ bike.subtitle }}</span>
-              <span class="separator">|</span>
-              <span class="product-color">Color {{ bike.color }}</span>
+              <span class="product-brand">{{ bike.brand }}</span>
+              <span class="separator"> | </span>
+              <span class="product-color">Color: {{ bike.color }}</span>
             </div>
           </div>
 
@@ -58,9 +58,9 @@
                 v-for="star in stars"
                 :key="star"
                 class="star"
-                :class="{ filled: star <= Math.floor(bike.rating) }"
+                :class="{ filled: star <= Math.floor(bike.rating || 0) }"
               >
-                <Icon icon="line-md:star-filled" />
+                ★
               </span>
             </div>
             <span class="rating-text">
@@ -86,9 +86,11 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 import { ref, computed } from 'vue'
+import { useReviewsStore } from '@/stores/reviews'
 
 // Define props for the component
 const props = defineProps({
+  products: { type: Array, default: () => [] },
   currentBikeId: { type: Number, default: null },
   maxSuggestions: { type: Number, default: 6 },
 })
@@ -96,18 +98,30 @@ const props = defineProps({
 // Define emits for parent component communication
 const emit = defineEmits(['add-to-cart'])
 
-// Static data for all bikes
-const allBikes = ref([
-  // Bike data objects...
-])
+// Initialize reviews store
+const reviewsStore = useReviewsStore()
 
 // Computed for star array
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
 
-// Computed for suggestion bikes
+// Computed for suggestion bikes with live ratings
 const suggestionBikes = computed(() => {
-  const filtered = allBikes.value.filter((bike) => bike.id !== props.currentBikeId)
-  return filtered.sort(() => 0.5 - Math.random()).slice(0, props.maxSuggestions)
+  const bikesToUse = props.products.length > 0 ? props.products : []
+  const filtered = bikesToUse.filter((bike) => bike.id !== props.currentBikeId)
+
+  // Merge with live ratings from store
+  const bikesWithLiveRatings = filtered.map((bike) => {
+    const liveRating = reviewsStore.getProductAverageRating(bike.id)
+    const liveReviewCount = reviewsStore.getProductReviewCount(bike.id)
+
+    return {
+      ...bike,
+      rating: liveRating > 0 ? liveRating : bike.rating || 0,
+      reviewCount: liveReviewCount > 0 ? liveReviewCount : bike.reviewCount || 0,
+    }
+  })
+
+  return bikesWithLiveRatings.sort(() => 0.5 - Math.random()).slice(0, props.maxSuggestions)
 })
 
 // Reactive data for favorites
@@ -131,32 +145,33 @@ const isFavorited = (bikeId) => favorites.value.has(bikeId)
 
 // Function to get discount label
 const getDiscountLabel = (bike) => {
-  if (!bike.discount) {
+  if (!bike.discount || !Array.isArray(bike.discount) || bike.discount.length === 0) {
     return null
   }
-  if (bike.discount.type === 'percent') {
-    return `${bike.discount.value}% OFF`
+  const discount = bike.discount[0]
+  if (discount.type === 'percent') {
+    return `${discount.value}% OFF`
   } else {
-    return `-${bike.discount.value.toLocaleString()} OFF`
+    return `-${discount.value.toLocaleString()} OFF`
   }
 }
 
 // Function to calculate discounted price
 const getDiscountedPrice = (bike) => {
-  if (!bike.discount) {
+  if (!bike.discount || !Array.isArray(bike.discount) || bike.discount.length === 0) {
     return bike.price
   }
-  if (bike.discount.type === 'percent') {
-    return bike.price - (bike.price * bike.discount.value) / 100
+  const discount = bike.discount[0]
+  if (discount.type === 'percent') {
+    return bike.price - (bike.price * discount.value) / 100
   } else {
-    return bike.price - bike.discount.value
+    return bike.price - discount.value
   }
 }
 
 // Function to add to cart
 const addToCart = (bike) => {
   emit('add-to-cart', bike)
-  console.log('Added to cart:', bike.title)
 }
 
 // Function to view bike details
@@ -392,6 +407,11 @@ const viewBikeDetails = (bikeId) => {
 
 .product-color {
   font-weight: 500;
+}
+
+.product-brand {
+  font-weight: 500;
+  margin-right: 8px;
 }
 
 .rating-section {

@@ -257,7 +257,6 @@ const goToPage = (page) => {
 
 // Product actions
 const editProduct = (productId) => {
-  console.log('Edit product:', productId)
   router.push(`/admin/products/edit/${productId}`)
 }
 

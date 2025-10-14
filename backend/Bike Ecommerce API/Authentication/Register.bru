@@ -1,0 +1,30 @@
+meta {
+  name: Register
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8100/api/auth/register
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "username": "newuser",
+    "name": "New User",
+    "email": "newuser@example.com",
+    "password": "securepassword123",
+    "password_confirmation": "securepassword123",
+    "terms": true
+  }
+}
+
+settings {
+  encodeUrl: true
+}

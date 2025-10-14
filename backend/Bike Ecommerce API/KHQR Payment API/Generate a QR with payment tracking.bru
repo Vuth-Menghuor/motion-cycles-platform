@@ -1,0 +1,29 @@
+meta {
+  name: Generate a QR with payment tracking
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8100/api/khqr/individual-with-image
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "bakong_account": "vuth_menghuor@aclb",
+    "account_name": "Motion Cycle",
+    "amount": 1.50,
+    "currency": "USD",
+    "track_payment": true
+  }
+}
+
+settings {
+  encodeUrl: true
+}

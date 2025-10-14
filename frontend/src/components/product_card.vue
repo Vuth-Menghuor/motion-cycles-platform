@@ -28,95 +28,108 @@
           </h2>
         </div>
 
-        <div class="bikes-container">
-          <div v-for="bike in filteredBikes" :key="bike.id" class="product-card" :data-id="bike.id">
-            <div class="card-header">
-              <div
-                class="sale-badge"
-                :style="{ background: bike.badge.gradient }"
-                v-if="bike.badge.text"
-              >
-                <Icon :icon="bike.badge.icon" class="sale-icon" />
-                <span>{{ bike.badge.text }}</span>
-              </div>
-              <button
-                class="favorite-btn"
-                :class="{ favorited: isFavorited(bike.id) }"
-                @click="toggleFavorite(bike)"
-              >
-                <Icon
-                  :icon="isFavorited(bike.id) ? 'solar:heart-bold' : 'solar:heart-linear'"
-                  class="fav-icon"
-                />
-              </button>
-            </div>
-
-            <div class="product-image-container">
-              <div class="promotion-price" v-if="bike.discount">
-                <span>{{ getDiscountLabel(bike) }}</span>
-              </div>
-              <img :src="bike.image" alt="bikes-image-transparent" class="product-image" />
-            </div>
-
-            <div class="price-info">
-              <label class="product-price discounted"
-                >${{ formatNumber(getDiscountedPrice(bike)) }}</label
-              >
-              <span class="original-price" v-if="bike.discount"
-                >${{ formatNumber(bike.price) }}</span
-              >
-            </div>
-
-            <div class="product-info">
-              <label class="product-title">{{ bike.title }}</label>
-              <div class="subtitle-color">
-                <span class="product-subtitle">{{ bike.subtitle }}</span>
-                <span class="separator">|</span>
-                <span class="product-color">Color {{ bike.color }}</span>
-              </div>
-            </div>
-
-            <div class="rating-section">
-              <div class="stars">
-                <span
-                  v-for="star in stars"
-                  :key="star"
-                  class="star"
-                  :class="{ filled: star <= Math.floor(bike.rating) }"
+        <div v-if="loading" class="loading-state">
+          <p>Loading bikes...</p>
+        </div>
+        <div v-else-if="error" class="error-state">
+          <p>{{ error }}</p>
+        </div>
+        <div v-else>
+          <div class="bikes-container">
+            <div
+              v-for="bike in filteredBikes"
+              :key="bike.id"
+              class="product-card"
+              :data-id="bike.id"
+            >
+              <div class="card-header">
+                <div
+                  class="sale-badge"
+                  :style="{ background: bike.badge?.gradient }"
+                  v-if="bike.badge && bike.badge.text"
                 >
-                  <Icon icon="line-md:star-filled" />
-                </span>
+                  <Icon :icon="bike.badge.icon" class="sale-icon" />
+                  <span>{{ bike.badge.text }}</span>
+                </div>
+                <button
+                  class="favorite-btn"
+                  :class="{ favorited: isFavorited(bike.id) }"
+                  @click="toggleFavorite(bike)"
+                >
+                  <Icon
+                    :icon="isFavorited(bike.id) ? 'solar:heart-bold' : 'solar:heart-linear'"
+                    class="fav-icon"
+                  />
+                </button>
               </div>
-              <span class="rating-text"
-                >({{ bike.rating }}) {{ formatNumber(bike.reviewCount) }}</span
-              >
-            </div>
 
-            <div class="product-specs">
-              <div v-for="spec in bike.specs" :key="spec.label" class="spec-item">
-                <div class="spec-content">
-                  <span class="spec-text">{{ spec.text }}</span>
+              <div class="product-image-container">
+                <div class="promotion-price" v-if="hasDiscount(bike)">
+                  <span>{{ getDiscountLabel(bike) }}</span>
+                </div>
+                <img :src="bike.image" alt="bike-image" class="product-image" />
+              </div>
+
+              <div class="price-info">
+                <div class="price-container">
+                  <label class="product-price">${{ formatNumber(getDiscountedPrice(bike)) }}</label>
+                  <div v-if="hasDiscount(bike)" class="discount-info">
+                    <span class="original-price">${{ formatNumber(bike.price) }}</span>
+                    <span class="savings">You save: ${{ formatNumber(getSavings(bike)) }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="card-footer">
-              <button class="view-detail-btn" @click="viewBikeDetails(bike.id)">
-                <span class="detail">View Details</span>
-              </button>
-              <button class="quick-buy-btn" @click="handleAddToCart(bike.id)">
-                <Icon icon="fa7-solid:cart-arrow-down" />
-                <span>Add To Cart</span>
-              </button>
+              <div class="product-info">
+                <label class="product-title">{{ bike.title }}</label>
+                <div v-if="bike.highlight" class="product-highlight">
+                  <span>{{ bike.highlight }}</span>
+                </div>
+                <div class="subtitle-color">
+                  <span class="product-brand-info">{{ bike.brand }}</span>
+                  <span class="separator"> | </span>
+                  <span class="product-color">Color: {{ bike.color }}</span>
+                </div>
+              </div>
+
+              <div class="brand-description">
+                {{ getBrandDescription(bike.brand, bike.description) }}
+              </div>
+
+              <div class="rating-section">
+                <div class="stars">
+                  <span
+                    v-for="star in stars"
+                    :key="star"
+                    class="star"
+                    :class="{ filled: star <= Math.floor(bike.rating || 0) }"
+                  >
+                    ★
+                  </span>
+                </div>
+                <span class="rating-text"
+                  >({{ bike.rating }}) {{ formatNumber(bike.reviewCount) }}</span
+                >
+              </div>
+
+              <div class="card-footer">
+                <button class="view-detail-btn" @click="viewBikeDetails(bike.id)">
+                  <span class="detail">View Details</span>
+                </button>
+                <button class="quick-buy-btn" @click="handleAddToCart(bike.id)">
+                  <Icon icon="fa7-solid:cart-arrow-down" />
+                  <span>Add To Cart</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="no-results" v-if="filteredBikes.length === 0">
-          <Icon icon="mdi:magnify-close" class="no-results-icon" />
-          <h3>No bikes found</h3>
-          <p>Try adjusting your filters to see more results.</p>
-          <button class="clear-filters-btn" @click="handleClearFilters">Clear All Filters</button>
+          <div class="no-results" v-if="filteredBikes.length === 0">
+            <Icon icon="mdi:magnify-close" class="no-results-icon" />
+            <h3>No bikes found</h3>
+            <p>Try adjusting your filters to see more results.</p>
+            <button class="clear-filters-btn" @click="handleClearFilters">Clear All Filters</button>
+          </div>
         </div>
       </div>
     </div>
@@ -130,161 +143,73 @@
 </template>
 
 <script setup>
-// Import necessary modules and components
 import { Icon } from '@iconify/vue'
-import { ref, onMounted, onUnmounted, computed, reactive } from 'vue'
+import { ref, computed } from 'vue'
 import bike_filter from './bike_filter.vue'
-import bike1 from '@/assets/images/product_card/mount_1.png'
-import bike2 from '@/assets/images/product_card/mount_2/mount_2.png'
-import bike3 from '@/assets/images/product_card/mount_3.png'
-import bike4 from '@/assets/images/product_card/road_1.png'
-import bike5 from '@/assets/images/product_card/road_2.png'
-import bike6 from '@/assets/images/product_card/road_3.png'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useFavoritesStore } from '@/stores/favorites'
+import { productsApi } from '@/services/api'
 
-// Initialize router and stores
 const router = useRouter()
 const cartStore = useCartStore()
 const favoritesStore = useFavoritesStore()
 
-// Define props for the component
 const props = defineProps({
   brand: { type: String, default: '' },
 })
 
-// Computed property to generate an array of stars for rating display
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
 
-// Function to format numbers with commas
 const formatNumber = (number) => number.toLocaleString()
 
-// Array of bike data
-const bikes = ref([
-  {
-    id: 1,
-    title: 'Bianchi T-Tronik C Type - Sunrace (2023)',
-    subtitle: 'Bianchi',
-    price: 8.99,
-    color: 'Pink',
-    badge: {
-      text: 'Hot',
-      icon: 'mdi:hot',
-      gradient: 'linear-gradient(135deg, rgb(255, 107, 107), rgb(255, 82, 82))',
-    },
-    discount: { type: 'percent', value: 10 },
-    rating: 4.8,
-    reviewCount: 3221,
-    specs: [
-      {
-        text: 'The 2023 Bianchi T-Tronik C-Type Sunrace is a refined Class 1 electric city bike designed for urban commuting and leisure rides. It features a Shimano E6100 250W mid-drive motor delivering 60Nm of torque, paired with a 417Wh Phylion battery offering up to 95 km of range.',
-      },
-    ],
-    image: bike1,
-  },
-  {
-    id: 2,
-    title: 'Trek Slash 9.8 XT Carbon',
-    subtitle: 'Trek',
-    price: 9.99,
-    color: 'Orange',
-    badge: {
-      text: 'New',
-      icon: 'material-symbols-light:new-releases',
-      gradient: 'linear-gradient(135deg, #3491FA, #3491FA)',
-    },
-    discount: { type: 'fixed', value: 1.5 },
-    rating: 2.4,
-    reviewCount: 3221,
-    specs: [
-      {
-        text: 'The Trek Slash 9.8 XT is a high-performance enduro mountain bike designed for aggressive trail riding and technical descents. It features a lightweight OCLV Mountain Carbon frame with 170mm of front and rear travel, utilizing a high-pivot suspension system with an idler pulley to enhance rear-wheel traction and control over rough terrain.',
-      },
-    ],
-    image: bike2,
-  },
-  {
-    id: 3,
-    title: 'Santa Cruz Hightower CC X01',
-    subtitle: 'Specialized',
-    price: 7.49,
-    color: 'Grey',
-    badge: {},
-    discount: null,
-    rating: 5,
-    reviewCount: 3221,
-    specs: [
-      {
-        text: "The Santa Cruz Hightower CC X01 is a versatile trail bike designed to excel on both climbs and descents. Featuring 150mm front and 140mm rear travel, it incorporates Santa Cruz's lower-link VPP suspension design, providing a nearly linear leverage curve for efficient pedaling and excellent bump absorption.",
-      },
-    ],
-    image: bike3,
-  },
-  {
-    id: 4,
-    title: 'Giant TCR Advanced Pro 1',
-    subtitle: 'Giant',
-    price: 5.99,
-    color: 'Black',
-    badge: {},
-    discount: { type: 'percent', value: 15 },
-    rating: 4.8,
-    reviewCount: 1120,
-    specs: [
-      {
-        text: 'Carbon fiber frame, lightweight and aerodynamic. Perfect for racing and long-distance rides on smooth roads.',
-      },
-    ],
-    image: bike4,
-  },
-  {
-    id: 5,
-    title: 'Specialized Allez Sprint Comp',
-    subtitle: 'Specialized',
-    price: 6.79,
-    color: 'Blue',
-    badge: {},
-    discount: { type: 'fixed', value: 0.8 },
-    rating: 4.7,
-    reviewCount: 890,
-    specs: [
-      {
-        text: 'High-modulus carbon fork, lightweight alloy frame. Optimized for sprinting and fast-paced group rides.',
-      },
-    ],
-    image: bike5,
-  },
-  {
-    id: 6,
-    title: 'Cannondale Synapse Carbon Disc Ultegra',
-    subtitle: 'Cannondale',
-    price: 8.49,
-    color: 'Red',
-    badge: {
-      text: 'New',
-      icon: 'material-symbols-light:new-releases',
-      gradient: 'linear-gradient(135deg, #3491FA, #3491FA)',
-    },
-    discount: null,
-    rating: 3.5,
-    reviewCount: 650,
-    specs: [
-      {
-        text: 'Comfort-oriented carbon frame with disc brakes. Designed for long endurance rides with smooth handling and stability.',
-      },
-    ],
-    image: bike6,
-  },
-])
+// Computed property to get bikes with updated ratings from reviews store
+const bikesWithLiveRatings = computed(() => {
+  return bikes.value
+})
 
-// Reactive variables for toast notifications
+// Reactive state
+const bikes = ref([])
+const loading = ref(true)
+const error = ref(null)
 const showToast = ref(false)
 const toastMessage = ref('')
-// Reactive object to track item quantities in cart
-const itemQuantities = reactive({})
+const itemQuantities = ref({})
 
-// Function to show a toast message for a short duration
+// Filter state
+const selectedPriceRange = ref('')
+const selectedColors = ref([])
+const selectedBrands = ref([])
+const selectedDiscountStatuses = ref([])
+const showFilters = ref(false)
+const bike_filters = ref(null)
+
+// Fetch products
+const fetchProducts = async () => {
+  try {
+    loading.value = true
+    const response = await productsApi.getProducts()
+    bikes.value = response.data
+    // Handle long data URLs
+    bikes.value.forEach((bike) => {
+      if (
+        bike.image &&
+        typeof bike.image === 'string' &&
+        bike.image.startsWith('data:') &&
+        bike.image.length > 100000
+      ) {
+        bike.image = ''
+      }
+    })
+  } catch (err) {
+    error.value = 'Failed to load products'
+    console.error('Error fetching products:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+// Toast notification
 const showToastMessage = (message) => {
   toastMessage.value = message
   showToast.value = true
@@ -294,41 +219,37 @@ const showToastMessage = (message) => {
   }, 2000)
 }
 
-// Function to handle adding a bike to the cart
+// Cart functionality
 const handleAddToCart = (bikeId) => {
-  const bike = bikes.value.find((b) => b.id === bikeId)
+  const bike = bikesWithLiveRatings.value.find((b) => b.id === bikeId)
   if (bike) {
-    itemQuantities[bikeId] = (itemQuantities[bikeId] || 0) + 1
-    const quantityString = 'x' + itemQuantities[bikeId].toString().padStart(2, '0')
+    itemQuantities.value[bikeId] = (itemQuantities.value[bikeId] || 0) + 1
+    const quantityString = 'x' + itemQuantities.value[bikeId].toString().padStart(2, '0')
     const message = `${bike.title} added to cart! ${quantityString} 🛒`
     showToastMessage(message)
     cartStore.addItem(bike)
   }
 }
 
-// Reactive variables for filter selections
-const selectedPriceRange = ref('')
-const selectedColors = ref([])
-const selectedBrands = ref([])
-const selectedDiscountStatuses = ref([])
-const showFilters = ref(false)
-const bike_filters = ref(null)
-
-// Function to check if a bike has a discount
-const hasDiscount = (bike) =>
-  bike.discount && (bike.discount.type === 'percent' || bike.discount.type === 'fixed')
-
-// Computed property to filter bikes based on selected filters
+// Filtering
 const filteredBikes = computed(() => {
-  return bikes.value.filter((bike) => {
+  return bikesWithLiveRatings.value.filter((bike) => {
     // Filter by brand if specified in props
-    if (props.brand && bike.subtitle.toLowerCase() !== props.brand.toLowerCase()) return false
+    if (props.brand) {
+      if (bike.brand?.toLowerCase() !== props.brand.toLowerCase()) {
+        return false
+      }
+    }
 
     // Filter by price range
-    const discountedPrice = getDiscountedPrice(bike)
     if (selectedPriceRange.value && bike_filters.value) {
+      const discountedPrice = getDiscountedPrice(bike)
       const range = bike_filters.value.priceRanges.find((r) => r.label === selectedPriceRange.value)
-      if (range && (discountedPrice < range.min || discountedPrice > range.max)) return false
+      if (range) {
+        if (discountedPrice < range.min || discountedPrice > range.max) {
+          return false
+        }
+      }
     }
 
     // Filter by discount status
@@ -336,52 +257,118 @@ const filteredBikes = computed(() => {
       const bikeHasDiscount = hasDiscount(bike)
       const shouldShowDiscounted = selectedDiscountStatuses.value.includes('discounted')
       const shouldShowRegular = selectedDiscountStatuses.value.includes('regular')
-      if (bikeHasDiscount && !shouldShowDiscounted) return false
-      if (!bikeHasDiscount && !shouldShowRegular) return false
+
+      if (bikeHasDiscount) {
+        if (!shouldShowDiscounted) {
+          return false
+        }
+      } else {
+        if (!shouldShowRegular) {
+          return false
+        }
+      }
     }
 
     // Filter by selected colors
-    if (selectedColors.value.length > 0 && !selectedColors.value.includes(bike.color)) return false
+    if (selectedColors.value.length > 0) {
+      if (!selectedColors.value.includes(bike.color)) {
+        return false
+      }
+    }
+
     // Filter by selected brands
-    if (selectedBrands.value.length > 0 && !selectedBrands.value.includes(bike.subtitle))
-      return false
+    if (selectedBrands.value.length > 0) {
+      if (!selectedBrands.value.includes(bike.brand)) {
+        return false
+      }
+    }
 
     return true
   })
 })
 
-// Set to track visible bikes for intersection observer
-const visibleBikes = ref(new Set())
-
-// Function to toggle favorite status of a bike
+// Favorites
 const toggleFavorite = (bike) => favoritesStore.toggleFavorite(bike)
-// Function to check if a bike is favorited
 const isFavorited = (bikeId) => favoritesStore.isFavorited(bikeId)
 
-// Function to get the discount label for a bike
+// Discount utilities
+const hasDiscount = (bike) => {
+  if (!bike.discount) {
+    return false
+  }
+  if (!Array.isArray(bike.discount)) {
+    return false
+  }
+  if (bike.discount.length === 0) {
+    return false
+  }
+  if (!bike.discount[0].value) {
+    return false
+  }
+  return true
+}
+
 const getDiscountLabel = (bike) => {
-  if (!bike.discount) return null
-  if (bike.discount.type === 'percent') {
-    return `${bike.discount.value}% OFF`
+  if (!hasDiscount(bike)) {
+    return ''
+  }
+  const discount = bike.discount[0]
+  if (discount.type === 'percent') {
+    return `${discount.value}% OFF`
   } else {
-    return `-${bike.discount.value.toLocaleString()} OFF`
+    return `$${discount.value.toLocaleString()} OFF`
   }
 }
 
-// Function to calculate the discounted price of a bike
 const getDiscountedPrice = (bike) => {
-  if (!bike.discount) return bike.price
-  if (bike.discount.type === 'percent') {
-    return bike.price - (bike.price * bike.discount.value) / 100
+  if (!hasDiscount(bike)) {
+    return bike.price
+  }
+  const discount = bike.discount[0]
+  if (discount.type === 'percent') {
+    return bike.price - (bike.price * discount.value) / 100
   } else {
-    return bike.price - bike.discount.value
+    return bike.price - discount.value
   }
 }
 
-// Function to navigate to bike details page
+const getSavings = (bike) => {
+  if (!hasDiscount(bike)) {
+    return 0
+  }
+  const discount = bike.discount[0]
+  if (discount.type === 'percent') {
+    return (bike.price * discount.value) / 100
+  } else {
+    return discount.value
+  }
+}
+
+// Brand description
+const getBrandDescription = (brand, productDescription) => {
+  if (productDescription) return productDescription
+
+  const descriptions = {
+    Bianchi:
+      'Founded in 1885, Bianchi is one of the oldest bicycle manufacturers in the world. Known for their distinctive celeste green color and Italian craftsmanship, Bianchi has been at the forefront of cycling innovation for over a century.',
+    Trek: 'Trek Bicycle Corporation is an American bicycle and cycling product manufacturer and distributor. Trek is known for high-quality road, mountain, and electric bikes, with a commitment to advancing bicycle technology and sustainability.',
+    Specialized:
+      'Specialized is an American company that designs, manufactures, and markets bicycles, bicycle components, and related products. Founded in 1974, Specialized is known for innovation and performance-oriented cycling equipment.',
+    Giant:
+      "Giant Manufacturing Co. is a Taiwanese bicycle manufacturer. Founded in 1972, Giant is the world's largest bicycle manufacturer and is known for producing high-quality bikes at competitive prices.",
+    Cannondale:
+      'Cannondale Bicycle Corporation is an American division of Dutch conglomerate Pon Holdings. Founded in 1971, Cannondale is known for innovative designs and high-performance bicycles.',
+    Cervélo:
+      'Cervélo is a Canadian bicycle manufacturer that designs and manufactures high-performance road, triathlon, and track bicycles.',
+    Shimano:
+      'Shimano Inc. is a Japanese multinational manufacturer of cycling components, fishing tackle, and rowing equipment.',
+  }
+  return descriptions[brand] || 'A leading bicycle manufacturer known for quality and innovation.'
+}
+
+// Navigation
 const viewBikeDetails = (bikeId) => router.push(`/bike/${bikeId}`).then(() => window.scrollTo(0, 0))
 
-// Function to clear all filters
 const handleClearFilters = () => {
   selectedPriceRange.value = ''
   selectedColors.value = []
@@ -389,30 +376,8 @@ const handleClearFilters = () => {
   selectedDiscountStatuses.value = []
 }
 
-// Variable to hold the intersection observer
-let observer
-
-// Lifecycle hook to set up intersection observer on mount
-onMounted(() => {
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        const id = Number(entry.target.dataset.id)
-        if (entry.isIntersecting) {
-          visibleBikes.value.add(id)
-        } else {
-          visibleBikes.value.delete(id)
-        }
-        visibleBikes.value = new Set(visibleBikes.value)
-      })
-    },
-    { threshold: 0.5 },
-  )
-  document.querySelectorAll('.product-card').forEach((card) => observer.observe(card))
-})
-
-// Lifecycle hook to disconnect observer on unmount
-onUnmounted(() => observer?.disconnect())
+// Initialize
+fetchProducts()
 </script>
 
 <style scoped>
@@ -507,6 +472,20 @@ onUnmounted(() => observer?.disconnect())
 .products-header {
   margin-bottom: 24px;
 }
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 50px;
+  font-size: 18px;
+}
+
+.loading-state {
+  color: #666;
+}
+
+.error-state {
+  color: #e74c3c;
+}
 .no-results {
   text-align: center;
   padding: 64px 32px;
@@ -551,16 +530,16 @@ onUnmounted(() => observer?.disconnect())
   font-weight: 500;
 }
 
-.product-price.discounted {
+.product-price {
   font-size: 20px;
   font-weight: 600;
-  color: red;
+  color: #333;
 }
+
 .original-price {
   font-size: 14px;
   color: #999;
   text-decoration: line-through;
-  margin-left: 8px;
 }
 .rating-section {
   display: flex;
@@ -695,10 +674,57 @@ onUnmounted(() => observer?.disconnect())
   padding: 10px 24px 0 24px;
 }
 
+.product-highlight {
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.product-highlight span {
+  font-style: italic;
+}
+
+.brand-description {
+  padding: 8px 24px 0 24px;
+  line-height: 1.6;
+  color: #475569;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  line-clamp: 3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .price-info {
   flex: 1;
   font-family: 'Poppins', sans-serif;
   padding: 12px 24px 0 24px;
+}
+
+.price-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.discount-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.savings {
+  font-size: 14px;
+  color: #16a34a;
+  font-weight: 500;
 }
 
 .favorite-btn {
@@ -727,7 +753,7 @@ onUnmounted(() => observer?.disconnect())
 .product-price {
   font-size: 20px;
   font-weight: 600;
-  color: #333;
+  color: #e74c3c;
 }
 
 .product-title {
@@ -735,13 +761,6 @@ onUnmounted(() => observer?.disconnect())
   font-weight: 600;
   color: #333;
   margin: 0 0 4px 0;
-}
-
-.product-subtitle {
-  font-size: 14px;
-  color: grey;
-  font-weight: 400;
-  margin: 0;
 }
 
 .fav-icon {

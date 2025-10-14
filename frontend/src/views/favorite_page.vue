@@ -34,9 +34,9 @@
             <div class="bike-content-name">
               <h3>{{ bike.title }}</h3>
               <div class="subtitle-color">
-                <span class="product-subtitle">{{ bike.subtitle }}</span>
+                <span class="product-subtitle">{{ bike.brand }}</span>
                 <span class="separator">|</span>
-                <span class="product-color">Color {{ bike.color }}</span>
+                <span class="product-color">Color: {{ bike.color }}</span>
               </div>
               <div class="rating-section">
                 <div class="stars">
@@ -113,29 +113,31 @@ const viewBikeDetails = (bikeId) => {
 
 const getDiscountLabel = (bike) => {
   // Return null if no discount
-  if (!bike.discount) {
+  if (!bike.discount || !Array.isArray(bike.discount) || bike.discount.length === 0) {
     return null
   }
 
+  const discount = bike.discount[0]
   // Return label based on discount type
-  if (bike.discount.type === 'percent') {
-    return `${bike.discount.value}% OFF`
+  if (discount.type === 'percent') {
+    return `${discount.value}% OFF`
   } else {
-    return `-${bike.discount.value.toLocaleString()} OFF`
+    return `-${discount.value.toLocaleString()} OFF`
   }
 }
 
 const getDiscountedPrice = (bike) => {
   // Return original price if no discount
-  if (!bike.discount) {
+  if (!bike.discount || !Array.isArray(bike.discount) || bike.discount.length === 0) {
     return bike.price
   }
 
+  const discount = bike.discount[0]
   // Calculate discounted price based on type
-  if (bike.discount.type === 'percent') {
-    return bike.price - (bike.price * bike.discount.value) / 100
+  if (discount.type === 'percent') {
+    return bike.price - (bike.price * discount.value) / 100
   } else {
-    return bike.price - bike.discount.value
+    return bike.price - discount.value
   }
 }
 </script>

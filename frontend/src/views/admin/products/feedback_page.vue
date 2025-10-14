@@ -14,7 +14,13 @@
     />
 
     <div class="main-content" :class="{ 'two-column': selectedProduct }">
-      <div class="feedback-content-group">
+      <div v-if="error" class="error-message">
+        {{ error }}
+      </div>
+
+      <div v-if="loading" class="loading-message">Loading reviews...</div>
+
+      <div v-else class="feedback-content-group">
         <div v-if="selectedProduct" class="product-section">
           <FeedbackProductCard :product="selectedProduct" />
         </div>
@@ -23,7 +29,7 @@
           <FeedbackList
             :feedbacks="paginatedFeedback"
             @view="viewFeedback"
-            @respond="respondFeedback"
+            @update-review="updateFeedback"
             @delete="deleteFeedback"
             @toggle-select="toggleSelectFeedback"
           />
@@ -47,8 +53,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { reviewsApi } from '@/services/api'
 import FeedbackFilters from '@/components/admin/feedback/FeedbackFilters.vue'
 import FeedbackList from '@/components/admin/feedback/FeedbackList.vue'
 import BulkActions from '@/components/admin/feedback/BulkActions.vue'
@@ -61,187 +68,113 @@ const router = useRouter()
 
 // Filter reactive data
 const ratingFilter = ref('')
-const categoryFilter = ref('')
-const brandFilter = ref('')
+const categoryFilter = ref('Mountain Bike')
+const brandFilter = ref('Trek')
 const dateFilter = ref('')
 const customerSearch = ref('')
 
-// Sample data for generating feedback
-const sampleData = {
-  products: [
-    { name: 'Trail Pro Carbon', category: 'Mountain Bike', brand: 'Trek' },
-    { name: 'Road Race Elite', category: 'Road Bike', brand: 'Giant' },
-    { name: 'Mountain Bike Aluminum', category: 'Mountain Bike', brand: 'Specialized' },
-    { name: 'Gravel Sport', category: 'Road Bike', brand: 'Cannondale' },
-    { name: 'Time Trial Aero', category: 'Road Bike', brand: 'Bianchi' },
-  ],
-  customers: ['John Smith', 'Sarah Johnson', 'Mike Davis', 'Emma Wilson', 'Chris Brown'],
-  comments: [
-    'Great bike! Excellent quality and performance.',
-    'Good value for money. Would recommend to friends.',
-    'Delivery was fast and packaging was secure.',
-    'Bike arrived damaged. Customer service was helpful.',
-    'Perfect fit and comfortable ride. Very satisfied.',
-  ],
-  statuses: ['Pending', 'Reviewed', 'Responded'],
-}
+// API data
+const reviews = ref([])
+const loading = ref(false)
+const error = ref(null)
+const totalItems = ref(0)
+const lastPage = ref(1)
 
-const sampleProducts = {
-  'Trail Pro Carbon': {
-    name: 'Trail Pro Carbon',
-    description: 'High-performance carbon trail bike designed for aggressive riding.',
-    price: 2499.99,
-    rating: 4.8,
-    image: 'https://picsum.photos/400/200?random=1',
-    category: 'Mountain Bike',
-    brand: 'Trek',
-  },
-  'Road Race Elite': {
-    name: 'Road Race Elite',
-    description: 'Professional road racing bike with aerodynamic design.',
-    price: 3299.99,
-    rating: 4.9,
-    image: 'https://picsum.photos/400/200?random=2',
-    category: 'Road Bike',
-    brand: 'Giant',
-  },
-  'Mountain Bike Aluminum': {
-    name: 'Mountain Bike Aluminum',
-    description: 'Durable aluminum mountain bike perfect for all-terrain adventures.',
-    price: 899.99,
-    rating: 4.2,
-    image: 'https://picsum.photos/400/200?random=3',
-    category: 'Mountain Bike',
-    brand: 'Specialized',
-  },
-  'Gravel Sport': {
-    name: 'Gravel Sport',
-    description: 'Versatile gravel bike for mixed terrain adventures.',
-    price: 1899.99,
-    rating: 4.6,
-    image: 'https://picsum.photos/400/200?random=4',
-    category: 'Road Bike',
-    brand: 'Cannondale',
-  },
-  'Time Trial Aero': {
-    name: 'Time Trial Aero',
-    description: 'Aerodynamic time trial bike for speed and performance.',
-    price: 4199.99,
-    rating: 4.9,
-    image: 'https://picsum.photos/400/200?random=5',
-    category: 'Road Bike',
-    brand: 'Bianchi',
-  },
-}
+// Fetch reviews from API
+const fetchReviews = async (page = 1) => {
+  loading.value = true
+  error.value = null
 
-// Utility functions
-const generateId = () =>
-  `F${Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, '0')}B`
-const randomItem = (array) => array[Math.floor(Math.random() * array.length)]
-
-// Generate sample feedback
-const generateSampleFeedback = () => {
-  return Array.from({ length: 25 }, () => {
-    const product = randomItem(sampleData.products)
-    const date = new Date()
-    date.setDate(date.getDate() - Math.floor(Math.random() * 30))
-
-    return {
-      id: generateId(),
-      productName: product.name,
-      category: product.category,
-      brand: product.brand,
-      customerName: randomItem(sampleData.customers),
-      rating: Math.floor(Math.random() * 5) + 1,
-      comment: randomItem(sampleData.comments),
-      date: date.toISOString().split('T')[0],
-      status: randomItem(sampleData.statuses),
-      selected: false,
+  try {
+    const params = {
+      page,
+      ...(ratingFilter.value && { rating: ratingFilter.value }),
+      ...(categoryFilter.value && { category: categoryFilter.value }),
+      ...(brandFilter.value && { brand: brandFilter.value }),
+      ...(dateFilter.value && { date: dateFilter.value }),
+      ...(customerSearch.value && { customer: customerSearch.value }),
     }
-  })
-}
 
-const feedback = ref(generateSampleFeedback())
+    const response = await reviewsApi.getAdminReviews(params)
+    reviews.value = response.data.data
+    totalItems.value = response.data.total
+    lastPage.value = response.data.last_page
+    currentPage.value = response.data.current_page
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Failed to load reviews'
+    console.error('Error fetching reviews:', err)
+  } finally {
+    loading.value = false
+  }
+}
 
 // Computed properties
-const totalItems = computed(() => filteredFeedback.value.length)
-
-const filteredFeedback = computed(() => {
-  return feedback.value.filter((item) => {
-    let matches = true
-
-    if (ratingFilter.value && item.rating.toString() !== ratingFilter.value) {
-      matches = false
-    }
-
-    if (categoryFilter.value && item.category !== categoryFilter.value) {
-      matches = false
-    }
-
-    if (brandFilter.value && item.brand !== brandFilter.value) {
-      matches = false
-    }
-
-    if (dateFilter.value && item.date !== dateFilter.value) {
-      matches = false
-    }
-
-    if (
-      customerSearch.value &&
-      !item.customerName.toLowerCase().includes(customerSearch.value.toLowerCase())
-    ) {
-      matches = false
-    }
-
-    return matches
-  })
-})
-
 const paginatedFeedback = computed(() => {
-  const start = (currentPage.value - 1) * ITEMS_PER_PAGE
-  return filteredFeedback.value.slice(start, start + ITEMS_PER_PAGE)
+  // Since API handles pagination, return the current page data
+  return reviews.value.map((review) => ({
+    id: review.id,
+    productName: review.product?.name || 'Unknown Product',
+    productImage: review.product?.image || '/images/default-product.jpg',
+    productDescription: review.product?.description || 'No description available',
+    productPrice: review.product?.pricing || 0,
+    productRating: review.product?.rating || 0,
+    category: review.product?.category?.name || 'Unknown Category',
+    brand: review.product?.brand || 'Unknown Brand',
+    customerName: review.user?.name || 'Anonymous',
+    customerAvatar: review.user?.avatar || '/images/default-avatar.png',
+    rating: review.rating,
+    comment: review.comment,
+    date: new Date(review.created_at).toISOString().split('T')[0],
+    selected: false,
+  }))
 })
 
-const selectedFeedback = computed(() => feedback.value.filter((item) => item.selected))
+const selectedFeedback = computed(() => paginatedFeedback.value.filter((item) => item.selected))
 
 const selectedProduct = computed(() => {
-  if (filteredFeedback.value.length === 0) {
+  if (reviews.value.length === 0) {
     return null
-  } else {
-    const productCounts = {}
-    filteredFeedback.value.forEach((item) => {
-      productCounts[item.productName] = (productCounts[item.productName] || 0) + 1
-    })
-
-    const mostCommonProduct = Object.keys(productCounts).reduce((a, b) => {
-      if (productCounts[a] > productCounts[b]) {
-        return a
-      } else {
-        return b
-      }
-    })
-
-    return sampleProducts[mostCommonProduct] || sampleProducts['Trail Pro Carbon']
   }
+
+  // Find the most common product in current reviews
+  const productCounts = {}
+  reviews.value.forEach((review) => {
+    const productName = review.product?.name || 'Unknown Product'
+    productCounts[productName] = (productCounts[productName] || 0) + 1
+  })
+
+  const mostCommonProductName = Object.keys(productCounts).reduce((a, b) =>
+    productCounts[a] > productCounts[b] ? a : b,
+  )
+
+  const mostCommonReview = reviews.value.find((r) => r.product?.name === mostCommonProductName)
+
+  if (mostCommonReview) {
+    return {
+      name: mostCommonReview.product.name,
+      description: mostCommonReview.product.description || 'No description available',
+      price: mostCommonReview.product.pricing || 0,
+      rating: mostCommonReview.product.rating || 0,
+      image: mostCommonReview.product.image || '/images/road_1.png',
+      category: mostCommonReview.product.category?.name || 'Unknown',
+      brand: mostCommonReview.product.brand || 'Unknown',
+    }
+  }
+
+  return null
 })
 
 // Feedback methods
 const toggleSelectFeedback = (feedbackId) => {
-  const item = feedback.value.find((f) => f.id === feedbackId)
+  const item = paginatedFeedback.value.find((f) => f.id === feedbackId)
   if (item) {
     item.selected = !item.selected
-  } else {
-    // Item not found, do nothing
   }
 }
 
 const goToPage = (page) => {
-  if (page >= 1 && page <= Math.ceil(totalItems.value / ITEMS_PER_PAGE)) {
-    currentPage.value = page
-  } else {
-    // Page is out of range, do nothing
+  if (page >= 1 && page <= lastPage.value) {
+    fetchReviews(page)
   }
 }
 
@@ -249,52 +182,84 @@ const viewFeedback = (feedbackId) => {
   router.push(`/admin/feedback/view/${feedbackId}`)
 }
 
-const respondFeedback = (feedbackId) => {
-  router.push(`/admin/feedback/respond/${feedbackId}`)
+const updateFeedback = async (reviewData) => {
+  try {
+    // Find the product ID for this review
+    const review = reviews.value.find((r) => r.id === reviewData.id)
+    if (!review || !review.product) {
+      throw new Error('Review or product not found')
+    }
+
+    await reviewsApi.updateReview(review.product.id, reviewData.id, {
+      rating: reviewData.rating,
+      comment: reviewData.comment,
+    })
+
+    // Refresh current page to show updated data
+    fetchReviews(currentPage.value)
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Failed to update review'
+    console.error('Error updating review:', err)
+    // Re-throw to let the component handle the error
+    throw err
+  }
 }
 
-const deleteFeedback = (feedbackId) => {
-  if (confirm(`Delete feedback ${feedbackId}?`)) {
-    const index = feedback.value.findIndex((item) => item.id === feedbackId)
-    if (index > -1) {
-      feedback.value.splice(index, 1)
-      if (paginatedFeedback.value.length === 0 && currentPage.value > 1) {
-        currentPage.value--
-      }
+const deleteFeedback = async (feedbackId) => {
+  if (confirm(`Delete review ${feedbackId}?`)) {
+    try {
+      await reviewsApi.deleteAdminReview(feedbackId)
+      // Refresh current page
+      fetchReviews(currentPage.value)
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Failed to delete review'
+      console.error('Error deleting review:', err)
     }
-  } else {
-    // User cancelled deletion
   }
 }
 
 const bulkMarkReviewed = () => {
-  selectedFeedback.value.forEach((item) => (item.status = 'Reviewed'))
+  // For now, just update local state - in a real app, you'd call an API
+  selectedFeedback.value.forEach((item) => {
+    item.status = 'Reviewed'
+  })
 }
 
-const bulkDelete = () => {
+const bulkDelete = async () => {
   const count = selectedFeedback.value.length
-  if (confirm(`Delete ${count} selected feedback items?`)) {
-    feedback.value = feedback.value.filter((item) => !item.selected)
-    if (paginatedFeedback.value.length === 0 && currentPage.value > 1) {
-      currentPage.value--
+  if (confirm(`Delete ${count} selected reviews?`)) {
+    try {
+      // Delete each selected review
+      const deletePromises = selectedFeedback.value.map((review) =>
+        reviewsApi.deleteAdminReview(review.id),
+      )
+      await Promise.all(deletePromises)
+      // Refresh current page
+      fetchReviews(currentPage.value)
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Failed to delete reviews'
+      console.error('Error deleting reviews:', err)
     }
-  } else {
-    // User cancelled bulk deletion
   }
 }
 
 const clearFilters = () => {
   ratingFilter.value = ''
-  categoryFilter.value = ''
-  brandFilter.value = ''
+  categoryFilter.value = 'Mountain Bike'
+  brandFilter.value = 'Trek'
   dateFilter.value = ''
   customerSearch.value = ''
-  currentPage.value = 1
+  fetchReviews(1)
 }
 
 // Watchers
 watch([ratingFilter, categoryFilter, brandFilter, dateFilter, customerSearch], () => {
-  currentPage.value = 1
+  fetchReviews(1)
+})
+
+// Lifecycle
+onMounted(() => {
+  fetchReviews()
 })
 </script>
 
@@ -355,6 +320,23 @@ watch([ratingFilter, categoryFilter, brandFilter, dateFilter, customerSearch], (
   color: #ff9934;
   font-weight: 400;
   cursor: default;
+}
+
+.error-message {
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 12px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
 }
 
 @media (max-width: 1024px) {

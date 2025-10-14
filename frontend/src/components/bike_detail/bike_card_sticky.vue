@@ -8,11 +8,6 @@
       <div>
         <div>
           <h1 class="bike-summary-title">{{ bike.title }}</h1>
-          <div class="bike-summary-meta">
-            <span class="bike-summary-brand">{{ bike.subtitle }}</span>
-            <span class="bike-summary-separator">|</span>
-            <span>Color: {{ bike.color }}</span>
-          </div>
 
           <div class="bike-summary-rating">
             <div class="bike-summary-stars">
@@ -20,14 +15,20 @@
                 v-for="star in 5"
                 :key="star"
                 class="bike-summary-star"
-                :class="{ filled: star <= Math.floor(bike.rating) }"
+                :class="{ filled: star <= Math.floor(bike.rating || 0) }"
               >
-                <Icon icon="line-md:star-filled" />
+                ★
               </span>
             </div>
             <span class="bike-summary-rating-text">
               {{ bike.rating }} out of 5 ({{ formatNumber(bike.reviewCount) }} reviews)
             </span>
+          </div>
+
+          <div class="bike-summary-brand-color">
+            <span class="bike-summary-brand">{{ bike.brand }}</span>
+            <span class="bike-summary-separator"> | </span>
+            <span class="bike-summary-color">Color: {{ bike.color }}</span>
           </div>
         </div>
 
@@ -36,11 +37,27 @@
             <div class="bike-summary-current-price">
               ${{ formatNumber(getDiscountedPrice(bike)) }}
             </div>
-            <div v-if="bike.discount" class="bike-summary-original-price">
+            <div
+              v-if="
+                bike.discount &&
+                Array.isArray(bike.discount) &&
+                bike.discount.length > 0 &&
+                bike.discount[0].value
+              "
+              class="bike-summary-original-price"
+            >
               ${{ formatNumber(bike.price) }}
             </div>
           </div>
-          <div v-if="bike.discount" class="bike-summary-savings">
+          <div
+            v-if="
+              bike.discount &&
+              Array.isArray(bike.discount) &&
+              bike.discount.length > 0 &&
+              bike.discount[0].value
+            "
+            class="bike-summary-savings"
+          >
             You save: ${{ formatNumber(getSavings(bike)) }}
           </div>
         </div>
@@ -79,18 +96,29 @@ const formatNumber = (number) => number.toLocaleString()
 
 // Function to calculate the discounted price
 const getDiscountedPrice = (bike) => {
-  if (!bike.discount) {
+  if (
+    !bike.discount ||
+    !Array.isArray(bike.discount) ||
+    bike.discount.length === 0 ||
+    !bike.discount[0].value
+  ) {
     return bike.price // No discount, return original price
   }
-  if (bike.discount.type === 'percent') {
-    return bike.price - (bike.price * bike.discount.value) / 100 // Percentage discount
+  const discount = bike.discount[0]
+  if (discount.type === 'percent') {
+    return bike.price - (bike.price * discount.value) / 100 // Percentage discount
   } else {
-    return bike.price - bike.discount.value // Fixed amount discount
+    return bike.price - discount.value // Fixed amount discount
   }
 }
 
 // Function to calculate savings amount
-const getSavings = (bike) => bike.price - getDiscountedPrice(bike)
+const getSavings = (bike) => {
+  if (!bike.price) return 0
+  const originalPrice = bike.price
+  const discountedPrice = getDiscountedPrice(bike)
+  return Math.max(0, originalPrice - discountedPrice)
+}
 </script>
 
 <style scoped>
@@ -121,16 +149,6 @@ const getSavings = (bike) => bike.price - getDiscountedPrice(bike)
   margin: 4px 0;
 }
 
-.bike-summary-meta {
-  font-size: 14px;
-  color: #666;
-}
-
-.bike-summary-separator {
-  margin: 0 6px;
-  color: #aaa;
-}
-
 .bike-summary-rating {
   display: flex;
   align-items: center;
@@ -154,6 +172,28 @@ const getSavings = (bike) => bike.price - getDiscountedPrice(bike)
 .bike-summary-rating-text {
   font-size: 13px;
   color: #444;
+}
+
+.bike-summary-brand-color {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 400;
+  margin: 8px 0;
+}
+
+.bike-summary-brand {
+  font-weight: 500;
+}
+
+.bike-summary-separator {
+  color: #64748b;
+}
+
+.bike-summary-color {
+  font-weight: 500;
 }
 
 .bike-summary-price-details {

@@ -54,7 +54,7 @@ class OrderController extends Controller
                 'shipping_amount' => $validated['shipping_amount'] ?? 0,
                 'total_amount' => $validated['total_amount'],
                 'currency' => $validated['currency'] ?? 'USD',
-                'promo_code' => $validated['promo_code'],
+                'promo_code' => $validated['promo_code'] ?? null,
                 'payment_method' => $validated['payment_method'],
                 'payment_status' => 'pending',
                 'order_status' => 'pending',
@@ -84,7 +84,7 @@ class OrderController extends Controller
                     $order->update([
                         'qr_code_string' => $khqrResult['qr_string'],
                         'qr_md5_hash' => $khqrResult['md5'] ?? null,
-                        'payment_status' => 'processing',
+                        'payment_status' => 'pending',
                     ]);
 
                     $response['qr_data'] = [
@@ -133,14 +133,10 @@ class OrderController extends Controller
     /**
      * Check payment status and update order
      */
-    public function checkPaymentStatus(Request $request)
+    public function checkPaymentStatus(Request $request, $id)
     {
         try {
-            $validated = $request->validate([
-                'order_id' => 'required|integer|exists:orders,id',
-            ]);
-
-            $order = Order::findOrFail($validated['order_id']);
+            $order = Order::findOrFail($id);
 
             // If payment is already completed, return success
             if ($order->isPaymentCompleted()) {
@@ -205,15 +201,14 @@ class OrderController extends Controller
     /**
      * Manually confirm payment (for manual confirmation flow)
      */
-    public function confirmPayment(Request $request)
+    public function confirmPayment(Request $request, $id)
     {
         try {
             $validated = $request->validate([
-                'order_id' => 'required|integer|exists:orders,id',
                 'notes' => 'nullable|string|max:500',
             ]);
 
-            $order = Order::findOrFail($validated['order_id']);
+            $order = Order::findOrFail($id);
 
             if ($order->isPaymentCompleted()) {
                 return response()->json([

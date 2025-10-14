@@ -45,7 +45,7 @@ class KHQRController extends Controller
                 $validated['account_name'],
                 'PHNOM PENH',
                 $currencyCode,
-                $validated['amount']
+                (float) $validated['amount']
             );
 
             $khqrString = BakongKHQR::generateIndividual($individualInfo);
@@ -88,30 +88,29 @@ class KHQRController extends Controller
             $currency = strtoupper($validated['currency'] ?? 'USD');
             $currencyCode = ($currency === 'USD') ? KHQRData::CURRENCY_USD : KHQRData::CURRENCY_KHR;
 
-            $merchantInfo = new MerchantInfo(
+            // Use the BakongApiService for merchant QR generation
+            $result = BakongApiService::generateIndividual(
                 $validated['bakong_account'],
                 $validated['merchant_name'],
-                'PHNOM PENH',
-                $currencyCode,
                 $validated['amount'],
-                $validated['bill_number'] ?? null,
-                null, // Terminal ID
-                $validated['store_label'] ?? null
+                $validated['currency'] ?? 'USD',
+                false // Don't track payment for merchant QR
             );
 
-            $khqrString = BakongKHQR::generateMerchant($merchantInfo);
+            if (!$result['success']) {
+                return response()->json($result, 400);
+            }
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'qr_string' => $khqrString,
-                    'bakong_account' => $validated['bakong_account'],
-                    'merchant_name' => $validated['merchant_name'],
-                    'amount' => $validated['amount'],
-                    'currency' => $currency,
-                    'currency_symbol' => $currency === 'KHR' ? '៛' : '$',
-                    'bill_number' => $validated['bill_number'] ?? null,
-                    'store_label' => $validated['store_label'] ?? null
+                    'qr_string' => $result['qr_string'],
+                    'bakong_account' => $result['bakong_account'],
+                    'merchant_name' => $result['account_name'], // Service returns 'account_name'
+                    'amount' => $result['amount'],
+                    'currency' => $result['currency'],
+                    'currency_symbol' => $result['currency_symbol'],
+                    'bill_number' => $validated['bill_number'] ?? null
                 ]
             ]);
 

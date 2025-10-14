@@ -6,6 +6,7 @@
       :feedback="feedback"
       @view="$emit('view', $event)"
       @respond="$emit('respond', $event)"
+      @update-review="$emit('update-review', $event)"
       @delete="$emit('delete', $event)"
       @toggle-select="$emit('toggle-select', $event)"
     />
@@ -24,7 +25,7 @@ defineProps({
 })
 
 // Emits
-defineEmits(['view', 'respond', 'delete', 'toggle-select'])
+defineEmits(['view', 'respond', 'update-review', 'delete', 'toggle-select'])
 </script>
 
 <style scoped>

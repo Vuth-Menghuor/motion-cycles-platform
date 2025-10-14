@@ -1,0 +1,44 @@
+meta {
+  name: Create order
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:8100/api/orders
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 1|dKNLblCOUqhJZ0acspVcgSMlBSNXj6u37X8OvEHd8e33b5c0
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "customer_name": "John Doe",
+    "customer_phone": "+1234567890",
+    "customer_email": "john@example.com",
+    "items": [
+      {
+        "id": 1,
+        "name": "Mountain Bike",
+        "price": 1500.00,
+        "quantity": 1
+      }
+    ],
+    "subtotal": 10.00,
+    "discount_amount": 0.00,
+    "shipping_amount": 10.00,
+    "total_amount": 1.00,
+    "currency": "USD",
+    "payment_method": "Bakong KHQR",
+    "bakong_account": "vuth_menghuor@aclb",
+    "account_name": "Vuth Menghuor"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

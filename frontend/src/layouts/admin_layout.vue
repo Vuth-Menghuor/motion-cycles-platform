@@ -679,10 +679,6 @@ const changePassword = () => {
   }
 
   // In a real application, this would make an API call
-  console.log('Password change request:', {
-    oldPassword: passwordForm.value.oldPassword,
-    newPassword: passwordForm.value.newPassword,
-  })
 
   alert('Password changed successfully!')
   closePasswordModal()
@@ -693,7 +689,6 @@ const changePassword = () => {
  */
 const updateProfile = () => {
   // In a real application, this would make an API call
-  console.log('Profile update request:', profileForm.value)
 
   // Update local user data
   user.value.name = profileForm.value.name

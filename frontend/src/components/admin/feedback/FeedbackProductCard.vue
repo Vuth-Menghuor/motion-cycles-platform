@@ -4,22 +4,29 @@
       <img :src="product.image" :alt="product.name" class="product-image" />
     </div>
     <div class="product-info">
-      <h3 class="product-name">{{ product.name }}</h3>
+      <div class="product-header">
+        <h3 class="product-name">{{ product.name }}</h3>
+        <div class="product-meta">
+          <span class="product-brand">{{ product.brand }}</span>
+        </div>
+      </div>
       <p class="product-description">{{ product.description }}</p>
       <div class="product-details">
-        <span class="product-price">${{ product.price }}</span>
-        <div class="product-rating">
-          <div class="stars">
-            <span
-              v-for="star in 5"
-              :key="star"
-              class="star"
-              :class="{ filled: star <= Math.floor(product.rating) }"
-            >
-              ★
-            </span>
+        <div class="product-price-rating">
+          <span class="product-price">${{ product.price }}</span>
+          <div class="product-rating">
+            <div class="stars">
+              <span
+                v-for="star in 5"
+                :key="star"
+                class="star"
+                :class="{ filled: star <= Math.floor(product.rating) }"
+              >
+                ★
+              </span>
+            </div>
+            <span class="rating-text">({{ product.rating }})</span>
           </div>
-          <span class="rating-text">({{ product.rating }})</span>
         </div>
       </div>
     </div>
@@ -57,26 +64,65 @@ defineProps({
 
 .product-info {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.product-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .product-name {
   font-size: 20px;
   font-weight: 600;
   color: #1f2937;
-  margin: 0 0 8px 0;
+  margin: 0;
+}
+
+.product-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.product-brand,
+.product-category {
+  background-color: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+  border: 1px solid #d1d5db;
 }
 
 .product-description {
   font-size: 14px;
   color: #6b7280;
   line-height: 1.5;
-  margin: 0 0 16px 0;
+  margin: 0;
+  max-width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .product-details {
+  margin-top: auto;
+}
+
+.product-price-rating {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .product-price {

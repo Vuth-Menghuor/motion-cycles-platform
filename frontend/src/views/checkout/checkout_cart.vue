@@ -43,119 +43,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { storeToRefs } from 'pinia'
 import Navigation_header from '@/components/navigation_header.vue'
 import Indecator_process from '@/components/checkout/cart/indecator_process.vue'
 import Cart_item_card from '@/components/checkout/cart/cart_item_card.vue'
-import Bike_suggestion_card from '@/ui/bike_suggestion_card.vue'
+import Bike_suggestion_card from '@/components/bike_detail/bike_suggestion_card.vue'
 import Checkout_summary from '@/components/checkout/cart/checkout_summary.vue'
+import { productsApi } from '@/services/api'
 
 const router = useRouter()
 const promoCode = ref('')
 const cartStore = useCartStore()
 const { cartItems } = storeToRefs(cartStore)
-
-const allBikes = ref([
-  {
-    id: 1,
-    title: 'Bianchi T-Tronik C Type - Sunrace (2023)',
-    subtitle: 'Bianchi',
-    price: 8.99,
-    color: 'Pink',
-    badge: {
-      text: 'Hot',
-      icon: 'mdi:hot',
-      gradient: 'linear-gradient(135deg, rgb(255, 107, 107), rgb(255, 82, 82))',
-    },
-    discount: {
-      type: 'percent',
-      value: 10,
-    },
-    rating: 4.8,
-    reviewCount: 3221,
-    image: '/src/assets/images/product_card/mount_1.png',
-  },
-  {
-    id: 2,
-    title: 'Trek Slash 9.8 XT Carbon',
-    subtitle: 'Trek',
-    price: 9.99,
-    color: 'Orange',
-    badge: {
-      text: 'New',
-      icon: 'material-symbols-light:new-releases',
-      gradient: 'linear-gradient(135deg, #3491FA, #3491FA)',
-    },
-    discount: {
-      type: 'fixed',
-      value: 1.5,
-    },
-    rating: 2.4,
-    reviewCount: 3221,
-    image: '/src/assets/images/product_card/mount_2/mount_2.png',
-  },
-  {
-    id: 3,
-    title: 'Santa Cruz Hightower CC X01',
-    subtitle: 'Specialized',
-    price: 7.49,
-    color: 'Grey',
-    badge: {},
-    discount: null,
-    rating: 5,
-    reviewCount: 3221,
-    image: '/src/assets/images/product_card/mount_3.png',
-  },
-  {
-    id: 4,
-    title: 'Giant TCR Advanced Pro 1',
-    subtitle: 'Giant',
-    price: 5.99,
-    color: 'Black',
-    badge: {},
-    discount: {
-      type: 'percent',
-      value: 15,
-    },
-    rating: 4.8,
-    reviewCount: 1120,
-    image: '/src/assets/images/product_card/road_1.png',
-  },
-  {
-    id: 5,
-    title: 'Specialized Allez Sprint Comp',
-    subtitle: 'Specialized',
-    price: 6.79,
-    color: 'Blue',
-    badge: {},
-    discount: {
-      type: 'fixed',
-      value: 0.8,
-    },
-    rating: 4.7,
-    reviewCount: 890,
-    image: '/src/assets/images/product_card/road_2.png',
-  },
-  {
-    id: 6,
-    title: 'Cannondale Synapse Carbon Disc Ultegra',
-    subtitle: 'Cannondale',
-    price: 8.49,
-    color: 'Red',
-    badge: {
-      text: 'New',
-      icon: 'material-symbols-light:new-releases',
-      gradient: 'linear-gradient(135deg, #3491FA, #3491FA)',
-    },
-    discount: null,
-    rating: 3.5,
-    reviewCount: 650,
-    image: '/src/assets/images/product_card/road_3.png',
-  },
-])
+const allBikes = ref([])
 
 const increaseQuantity = (item) => {
   cartStore.increaseQuantity(item.id)
@@ -180,6 +83,20 @@ const updatePromoCode = (newCode) => {
 const proceedToCheckout = () => {
   router.push('/checkout/address')
 }
+
+// Fetch products for suggestions
+const fetchProducts = async () => {
+  try {
+    const response = await productsApi.getProducts()
+    allBikes.value = response.data
+  } catch (err) {
+    console.error('Error fetching products:', err)
+  }
+}
+
+onMounted(() => {
+  fetchProducts()
+})
 </script>
 
 <style scoped>

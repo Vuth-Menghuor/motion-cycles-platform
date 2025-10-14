@@ -1,0 +1,35 @@
+meta {
+  name: Adding product
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8100/api/admin/products
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 4|5MJlwYSMWUlFpNOrYIB4Zrjh5KUZrdndc6fVDygia78c8e29
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "New Mountain Bike",
+    "brand": "Trek",
+    "pricing": 1500.00,
+    "description": "A high-performance bike.",
+    "image": "https://example.com/bike.jpg",
+    "additional_images": ["https://example.com/bike2.jpg"],
+    "specs": {"frame": "Aluminum", "weight": "15kg"},
+    "category_id": 1,
+    "discount": [{"type": "percent", "value": 10}],
+    "color": "Black"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -219,9 +219,9 @@ const generateQRImageUrl = (qrString) => {
 
 // Total amount from cart (reactive)
 const totalAmount = computed(() => {
-  // Calculate total from cart items
+  // Calculate total from cart items (using already discounted prices)
   const cartTotal = cartItems.value.reduce((total, item) => {
-    return total + (item.originalPrice || item.price) * item.quantity
+    return total + item.price * item.quantity
   }, 0)
 
   // Check if promo code is valid
@@ -455,9 +455,6 @@ const startPaymentPolling = (md5) => {
 
       // Continue polling if not completed and within limits
       if (pollingAttempts.value < maxPollingAttempts) {
-        console.log(
-          `⏰ Scheduling next check in 30 seconds... (${pollingAttempts.value}/${maxPollingAttempts})`,
-        )
         pollingInterval.value = setTimeout(checkPayment, 30000) // Check every 30 seconds
       } else {
         showManualConfirmation.value = true

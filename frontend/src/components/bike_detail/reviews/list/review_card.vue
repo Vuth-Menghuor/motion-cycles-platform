@@ -1,20 +1,24 @@
 <template>
   <div class="review-card">
     <div class="review-card-header">
-      <h3 class="review-card-user">
-        {{ review.user }}
-      </h3>
-      <span class="review-card-date">{{ review.date || 'Just now' }} </span>
+      <div class="review-card-user-info">
+        <div class="review-card-avatar">
+          {{ getInitials(review.user.name) }}
+        </div>
+        <h3 class="review-card-user">
+          {{ review.user.name }}
+        </h3>
+      </div>
+      <span class="review-card-date">{{ formatDate(review.created_at) }} </span>
     </div>
-
     <div class="review-card-stars">
       <span
         v-for="i in 5"
         :key="i"
         class="review-card-star"
-        :class="{ active: i <= review.rating }"
+        :class="{ active: i <= (review.rating || 0) }"
       >
-        <Icon icon="ic:round-star" />
+        ★
       </span>
     </div>
 
@@ -25,14 +29,30 @@
 </template>
 
 <script setup>
-import { Icon } from '@iconify/vue'
-
 defineProps({
   review: {
     type: Object,
     required: true,
   },
 })
+
+// Function to get initials from name
+const getInitials = (name) => {
+  if (!name) return '?'
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
+// Function to format date
+const formatDate = (dateString) => {
+  if (!dateString) return 'Just now'
+  const date = new Date(dateString)
+  return date.toLocaleDateString()
+}
 </script>
 
 <style scoped>
@@ -50,6 +70,25 @@ defineProps({
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+}
+
+.review-card-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-card-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .review-card-user {

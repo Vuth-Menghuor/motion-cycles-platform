@@ -1,0 +1,19 @@
+meta {
+  name: Check payment status by order ID
+  type: http
+  seq: 5
+}
+
+post {
+  url: http://localhost:8100/api/orders/14/check-payment
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 1|dKNLblCOUqhJZ0acspVcgSMlBSNXj6u37X8OvEHd8e33b5c0
+}
+
+settings {
+  encodeUrl: true
+}

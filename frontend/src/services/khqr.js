@@ -144,7 +144,6 @@ export async function verifyKHQR(qr_string) {
 export const checkPaymentStatus = async (md5) => {
   try {
     const response = await api.post('/khqr/check-payment-status', { md5 })
-    console.log('✅ Payment status response:', response.data)
     return response.data
   } catch (error) {
     console.error('❌ Payment status check error:', error)

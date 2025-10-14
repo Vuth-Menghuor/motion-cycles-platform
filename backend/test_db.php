@@ -1,0 +1,1 @@
+<?php try { $pdo = new PDO('pgsql:host=db;port=5432;dbname=bike_ecommerce;user=laravel;password=laravel'); echo 'Connection successful'; } catch(Exception $e) { echo 'Connection failed: ' . $e->getMessage(); }

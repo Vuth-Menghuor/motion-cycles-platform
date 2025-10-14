@@ -1,11 +1,11 @@
-import axios from 'axios'
 import { defineStore } from 'pinia'
+import api from '@/services/api.js'
 
 export const useAuthStore = defineStore('auth', () => {
   // Function to log in a user
   async function login(email, password) {
     try {
-      const result = await axios.post('/api/auth/login', { email, password })
+      const result = await api.post('/auth/login', { email, password })
       const token = result.data.data.token
       const user = result.data.data.user
 
@@ -13,7 +13,6 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('user', JSON.stringify(user))
       localStorage.setItem('userRole', user.role || 'user')
 
-      console.log('Login Successful:', result)
       return result.data
     } catch (e) {
       console.error('Auth store login error:', e)
@@ -24,8 +23,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Function to register a new user
   async function register(payload) {
     try {
-      const result = await axios.post(`/api/auth/register`, payload)
-      console.log('Register Successful:', result)
+      const result = await api.post('/auth/register', payload)
       return result.data
     } catch (e) {
       console.error('Auth store register error:', e)

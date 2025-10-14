@@ -55,22 +55,24 @@
         />
       </div>
 
-      <div class="form-column">
-        <ProductImage :disabled="isFormDisabled" />
-        <ProductPrice
-          :product="product"
-          @update:product="product = $event"
-          :disabled="isFormDisabled"
-          :prefilled-fields="prefilledFields"
-        />
-        <ProductSpecs
-          :specs="specs"
-          @update:specs="specs = $event"
-          @add-product="updateProduct"
-          @discard="discardForm"
-          :disabled="isFormDisabled"
-          mode="edit"
-        />
+      <div>
+        <div class="form-column">
+          <ProductImage :disabled="isFormDisabled" />
+          <ProductPrice
+            :product="product"
+            @update:product="product = $event"
+            :disabled="isFormDisabled"
+            :prefilled-fields="prefilledFields"
+          />
+          <ProductSpecs
+            :specs="specs"
+            @update:specs="specs = $event"
+            @add-product="updateProduct"
+            @discard="discardForm"
+            :disabled="isFormDisabled"
+            mode="edit"
+          />
+        </div>
       </div>
     </div>
 
@@ -294,8 +296,6 @@ const loadProduct = () => {
 }
 
 const updateProduct = () => {
-  console.log('Product updated:', product.value)
-  console.log('Specifications:', specs.value)
   alert('Product updated successfully!')
 }
 
@@ -565,18 +565,19 @@ onMounted(() => {
   margin: 0 auto;
   width: auto;
   overflow-y: scroll;
-  height: 68vh;
+  height: 72vh;
 }
 
 .form-column {
   display: flex;
   flex-direction: column;
+  position: sticky;
+  top: 0;
 }
 
 .form-column-left {
-  position: sticky;
-  top: 20px;
-  height: fit-content;
+  display: flex;
+  flex-direction: column;
 }
 
 .no-selection-message {

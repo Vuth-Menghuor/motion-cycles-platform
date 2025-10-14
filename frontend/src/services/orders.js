@@ -134,7 +134,6 @@ export const createOrderWithPayment = async ({
     }
 
     const response = await api.post('/orders', orderData)
-    console.log('Order created successfully:', response.data)
     return response.data
   } catch (error) {
     console.error('Enhanced order creation error:', error)
@@ -164,23 +163,18 @@ export const pollForPaymentCompletion = async (
           onProgress(attempts, maxAttempts)
         }
 
-        console.log(`🔍 Payment check attempt ${attempts}/${maxAttempts} for order ${orderId}`)
-
         const result = await checkOrderPaymentStatus(orderId)
 
         // Check if payment is completed
         if (result.success && result.payment_status === 'completed') {
-          console.log('🎉 Payment completed for order:', orderId)
           resolve(result)
           return
         }
 
         // Continue polling if not completed and within limits
         if (attempts < maxAttempts) {
-          console.log(`⏰ Scheduling next check in ${intervalMs / 1000} seconds...`)
           setTimeout(checkPayment, intervalMs)
         } else {
-          console.log('⏰ Polling timeout reached')
           reject(new Error('Payment polling timeout reached'))
         }
       } catch (error) {

@@ -26,16 +26,18 @@
         <ProductDiscount :product="product" @update:product="product = $event" />
       </div>
 
-      <div class="form-column">
-        <ProductImage />
-        <ProductPrice :product="product" @update:product="product = $event" />
-        <ProductSpecs
-          :specs="specs"
-          @update:specs="specs = $event"
-          @add-product="addProduct"
-          @discard="discardForm"
-          :prefilled-fields="prefilledFields"
-        />
+      <div>
+        <div class="form-column">
+          <ProductImage @update:images="productImages = $event" />
+          <ProductPrice :product="product" @update:product="product = $event" />
+          <ProductSpecs
+            :specs="specs"
+            @update:specs="specs = $event"
+            @add-product="addProduct"
+            @discard="discardForm"
+            :prefilled-fields="prefilledFields"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -51,6 +53,7 @@ import ProductDiscount from '@/components/admin/products/ProductDiscount.vue'
 import ProductImage from '@/components/admin/products/ProductImage.vue'
 import ProductPrice from '@/components/admin/products/ProductPrice.vue'
 import ProductSpecs from '@/components/admin/products/ProductSpecs.vue'
+import { productsApi } from '@/services/api.js'
 
 const route = useRoute()
 
@@ -61,7 +64,6 @@ const product = ref({
   brand: '',
   category: '',
   quantity: '',
-  highlight: '',
   description: '',
   quality: '',
   price: '',
@@ -82,6 +84,9 @@ const specs = ref({
   weight: '',
   display: '',
 })
+
+// Product images from ProductImage component
+const productImages = ref([])
 
 // Check if there are query parameters
 const hasQueryParams = computed(() => {
@@ -105,9 +110,6 @@ const prefilledFields = computed(() => {
   // For restocking, don't prefill quantity so user can modify it
   if (route.query.quantity && !route.query.restockMode) {
     fields.quantity = true
-  }
-  if (route.query.highlight) {
-    fields.highlight = true
   }
   if (route.query.description) {
     fields.description = true
@@ -181,11 +183,121 @@ const convertDateFormat = (dateString) => {
   }
 }
 
-// Add product (placeholder for actual save logic)
-const addProduct = () => {
-  console.log('Product added:', product.value)
-  console.log('Specifications:', specs.value)
-  // TODO: Implement actual save logic
+// Add product to database
+const addProduct = async () => {
+  // Basic validation
+  if (!product.value.name.trim()) {
+    alert('Product name is required')
+    return
+  }
+  if (!product.value.category) {
+    alert('Product category is required')
+    return
+  }
+  if (!product.value.price || parseFloat(product.value.price) <= 0) {
+    alert('Product price is required and must be greater than 0')
+    return
+  }
+
+  try {
+    // Map category name to ID
+    const categoryMap = {
+      'Mountain Bike': 1,
+      'Road Bike': 2,
+    }
+
+    // Handle images - use uploaded images if available, otherwise use default
+    let mainImage = '/images/default-product.jpg'
+    const additionalImages = []
+
+    // Check if images were uploaded via ProductImage component
+    if (productImages.value && productImages.value.length > 0) {
+      // Use the first uploaded image as the main image
+      mainImage = productImages.value[0]
+
+      // Add additional images if more than one was uploaded
+      if (productImages.value.length > 1) {
+        for (let i = 1; i < productImages.value.length; i++) {
+          additionalImages.push({
+            url: productImages.value[i],
+            alt: `${product.value.name} - View ${i}`,
+          })
+        }
+      }
+    }
+
+    // Prepare product data for API
+    const categoryId = categoryMap[product.value.category]
+    if (!categoryId) {
+      alert('Invalid category selected')
+      return
+    }
+
+    const productData = {
+      name: product.value.name,
+      description: product.value.description,
+      pricing: parseFloat(product.value.price) || 0,
+      category_id: categoryId,
+      brand: product.value.brand,
+      color: product.value.color,
+      badge: [], // Will be populated from discount data if applicable
+      discount: [], // Will be populated from discount data
+      specs: specs.value,
+      additional_images: additionalImages,
+      image: mainImage,
+      quantity: parseInt(product.value.quantity) || 1,
+    }
+
+    // Handle discount data - use discount fields
+    if (product.value.discountType && product.value.discountValue) {
+      let discountTypeValue = 'fixed'
+      if (product.value.discountType.toLowerCase().includes('percent')) {
+        discountTypeValue = 'percentage'
+      }
+
+      const discountData = {
+        type: discountTypeValue,
+        value: parseFloat(product.value.discountValue) || 0,
+        badge: product.value.discountCode || 'Sale', // Use discount code as badge text, fallback to 'Sale'
+      }
+      productData.discount = [discountData]
+
+      // Add badge if there's a discount
+      productData.badge = [product.value.discountCode || 'Sale']
+    }
+
+    // Create multiple products based on quantity
+    const quantity = parseInt(product.value.quantity) || 1
+    const createdProducts = []
+
+    for (let i = 0; i < quantity; i++) {
+      try {
+        const response = await productsApi.createProduct(productData)
+        createdProducts.push(response.data)
+      } catch (productError) {
+        console.error(`Error creating product ${i + 1}:`, productError)
+        throw productError
+      }
+    }
+
+    // Show success message
+    alert(`${quantity} product${quantity > 1 ? 's' : ''} created successfully!`)
+
+    // Reset form
+    resetForm()
+
+    // Optionally redirect to product list
+    // router.push('/admin/products/manage')
+  } catch (error) {
+    console.error('Error creating product:', error)
+
+    // Show error message
+    if (error.response && error.response.data) {
+      alert(`Error creating product: ${error.response.data.message || 'Unknown error'}`)
+    } else {
+      alert('Error creating product. Please check your connection and try again.')
+    }
+  }
 }
 
 // Discard form changes
@@ -203,7 +315,6 @@ const resetForm = () => {
     brand: '',
     category: '',
     quantity: '',
-    highlight: '',
     description: '',
     quality: '',
     price: '',
@@ -222,6 +333,7 @@ const resetForm = () => {
     weight: '',
     display: '',
   }
+  productImages.value = [] // Reset uploaded images
 }
 
 // Initialize on mount
@@ -242,7 +354,6 @@ onMounted(() => {
     quantity,
     productId,
     restockMode,
-    highlight,
     description,
     quality,
     price,
@@ -273,9 +384,6 @@ onMounted(() => {
   if (productId && restockMode) {
     // For restocking, use the existing product ID
     product.value.id = productId
-  }
-  if (highlight) {
-    product.value.highlight = highlight
   }
   if (description) {
     product.value.description = description
@@ -375,12 +483,14 @@ onMounted(() => {
   margin: 0 auto;
   width: auto;
   overflow-y: scroll;
-  height: 80vh;
+  height: 82vh;
 }
 
 .form-column {
   display: flex;
   flex-direction: column;
+  position: sticky;
+  top: 0;
 }
 
 @media (max-width: 768px) {

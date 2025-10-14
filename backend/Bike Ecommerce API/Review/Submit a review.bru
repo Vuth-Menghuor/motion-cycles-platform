@@ -1,0 +1,26 @@
+meta {
+  name: Submit a review
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8000/api/products/6/reviews
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 4|yEA3Uy7PDyobp6mg1HOXFd93fXlvh02TUW102vLM20bcfbd8
+}
+
+body:json {
+  {
+    "rating": 1,
+    "comment": "lol!"
+  }
+}
+
+settings {
+  encodeUrl: true
+}

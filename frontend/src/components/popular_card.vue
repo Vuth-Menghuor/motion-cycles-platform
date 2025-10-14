@@ -1,7 +1,7 @@
 <template>
   <div class="bikes-container">
     <div v-for="bike in bikes" :key="bike.id" class="popular-product-card" :data-id="bike.id">
-      <div class="sale-badge" :style="{ background: bike.badge.gradient }">
+      <div class="sale-badge" v-if="bike.badge" :style="{ background: bike.badge.gradient }">
         <Icon :icon="bike.badge.icon" class="sale-icon" />
         <span>{{ bike.badge.text }}</span>
       </div>
@@ -9,7 +9,6 @@
       <div class="card-header">
         <div class="product-info">
           <label class="product-title">{{ bike.title }}</label>
-          <span class="product-subtitle">{{ bike.subtitle }}</span>
         </div>
       </div>
 
@@ -217,13 +216,6 @@ onUnmounted(() => observer?.disconnect()) // Disconnect observer
   font-weight: 600;
   color: #333;
   margin: 0 0 4px 0;
-}
-
-.product-subtitle {
-  font-size: 14px;
-  color: grey;
-  font-weight: 400;
-  margin: 0;
 }
 
 /* Product Image */

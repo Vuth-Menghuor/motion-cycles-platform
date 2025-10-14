@@ -1,0 +1,15 @@
+meta {
+  name: Fetch all reviews for a product
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:8000/api/public/products/6/reviews
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

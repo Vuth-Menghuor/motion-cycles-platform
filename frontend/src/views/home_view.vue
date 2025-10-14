@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Navigation_header :cart-count="cartCount" />
+    <Navigation_header />
     <Landing_page />
     <div>
       <label class="brand-list-title">Brand Lists</label>
@@ -17,7 +17,7 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import Brand_carousel from '@/components/brand/brand_carousel.vue'
 import Landing_page from '@/components/landing_page.vue'
 import Navigation_header from '@/components/navigation_header.vue'
@@ -25,30 +25,12 @@ import Popular_card from '@/components/popular_card.vue'
 import Product_card from '@/components/product_card.vue'
 import { ref } from 'vue'
 
-export default {
-  name: 'HomeView',
-  props: ['type'],
-  components: {
-    Navigation_header,
-    Landing_page,
-    Brand_carousel,
-    Popular_card,
-    Product_card,
-  },
-  setup() {
-    // Initialize cart count
-    const cartCount = ref(0)
+// Initialize cart count
+const cartCount = ref(0)
 
-    // Handle adding item to cart by incrementing count
-    const handleAddToCart = () => {
-      cartCount.value++
-    }
-
-    return {
-      cartCount,
-      handleAddToCart,
-    }
-  },
+// Handle adding item to cart by incrementing count
+const handleAddToCart = () => {
+  cartCount.value++
 }
 </script>
 <style scoped>

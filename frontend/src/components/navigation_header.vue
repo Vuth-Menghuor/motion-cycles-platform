@@ -144,22 +144,14 @@ const isSidebarOpen = ref(false)
 const headerRef = ref(null)
 const menuIconRef = ref(null)
 
-let menuTl = null
-
 // Function to toggle sidebar
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
-  if (menuTl?.reversed()) {
-    menuTl.play()
-  } else {
-    menuTl.reverse()
-  }
 }
 
 // Function to close sidebar
 const closeSidebar = () => {
   isSidebarOpen.value = false
-  menuTl?.reverse()
 }
 
 // Function to navigate to a path
@@ -181,10 +173,6 @@ const handleClickOutside = (event) => {
 // Lifecycle hook for mounting
 onMounted(() => {
   if (props.disableAnimation) return // Skip animations if disabled
-
-  // Create menu timeline
-  menuTl = gsap.timeline({ reversed: true })
-  menuTl.to('.sidebar-content', { x: 0, duration: 0.3, ease: 'power2.out' })
 
   // Scroll trigger for header
   gsap.to(headerRef.value, {

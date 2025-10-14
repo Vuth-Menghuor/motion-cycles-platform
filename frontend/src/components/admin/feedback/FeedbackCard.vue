@@ -11,38 +11,22 @@
       </div>
 
       <div class="card-info">
-        <div class="feedback-id">{{ feedback.id }}</div>
         <div class="feedback-date">{{ formatDate(feedback.date) }}</div>
-      </div>
-
-      <div class="card-status">
-        <span
-          class="status-badge"
-          :class="`status-${feedback.status.toLowerCase().replace(' ', '-')}`"
-        >
-          {{ feedback.status }}
-        </span>
       </div>
     </div>
 
     <div class="card-content">
       <div class="customer-info">
-        <div class="customer-name">
-          <img
-            :src="feedback.customerAvatar"
-            :alt="feedback.customerName"
-            class="customer-avatar"
-          />
-          {{ feedback.customerName }}
+        <div class="customer-avatar">
+          {{ getInitials(feedback.customerName) }}
         </div>
-        <div class="product-name">
-          <Icon icon="mdi:bike" />
-          {{ feedback.productName }}
+        <div class="customer-name">
+          {{ feedback.customerName }}
         </div>
       </div>
 
       <div class="rating-section">
-        <div class="rating-stars">
+        <div v-if="!isEditing" class="rating-stars">
           <span
             v-for="star in 5"
             :key="star"
@@ -53,39 +37,77 @@
           </span>
           <span class="rating-number">({{ feedback.rating }}/5)</span>
         </div>
+        <div v-else class="rating-input">
+          <label class="rating-label">Rating:</label>
+          <select v-model="editRating" class="rating-select">
+            <option value="1">1 ★</option>
+            <option value="2">2 ★★</option>
+            <option value="3">3 ★★★</option>
+            <option value="4">4 ★★★★</option>
+            <option value="5">5 ★★★★★</option>
+          </select>
+        </div>
       </div>
 
       <div class="comment-section">
-        <div class="comment-text">"{{ feedback.comment }}"</div>
+        <div v-if="!isEditing" class="comment-text">"{{ feedback.comment }}"</div>
+        <div v-else class="comment-input">
+          <label class="comment-label">Comment:</label>
+          <textarea
+            v-model="editComment"
+            class="comment-textarea"
+            placeholder="Enter your review comment..."
+            rows="3"
+          ></textarea>
+        </div>
       </div>
     </div>
 
     <div class="card-actions">
-      <button @click="$emit('view', feedback.id)" class="btn-action btn-view" title="View Feedback">
-        <Icon icon="mdi:eye" />
-        View
-      </button>
-      <button
-        @click="$emit('respond', feedback.id)"
-        class="btn-action btn-respond"
-        title="Respond to Feedback"
-      >
-        <Icon icon="mdi:reply" />
-        Respond
-      </button>
-      <button
-        @click="$emit('delete', feedback.id)"
-        class="btn-action btn-delete"
-        title="Delete Feedback"
-      >
-        <Icon icon="mdi:delete" />
-        Delete
-      </button>
+      <template v-if="!isEditing">
+        <button
+          @click="$emit('view', feedback.id)"
+          class="btn-action btn-view"
+          title="View Feedback"
+        >
+          <Icon icon="mdi:eye" />
+          View
+        </button>
+        <button @click="startEdit" class="btn-action btn-update" title="Update Feedback">
+          <Icon icon="mdi:pencil" />
+          Update
+        </button>
+        <button
+          @click="$emit('delete', feedback.id)"
+          class="btn-action btn-delete"
+          title="Delete Feedback"
+        >
+          <Icon icon="mdi:delete" />
+          Delete
+        </button>
+      </template>
+      <template v-else>
+        <button @click="cancelEdit" class="btn-action btn-cancel" title="Cancel Edit">
+          <Icon icon="mdi:close" />
+          Cancel
+        </button>
+        <button
+          @click="saveEdit"
+          class="btn-action btn-save"
+          title="Save Changes"
+          :disabled="saving"
+        >
+          <Icon v-if="!saving" icon="mdi:check" />
+          <Icon v-else icon="mdi:loading" class="spin" />
+          {{ saving ? 'Saving...' : 'Save' }}
+        </button>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
 
 // Props
@@ -97,7 +119,13 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['view', 'respond', 'delete', 'toggle-select'])
+const emit = defineEmits(['view', 'respond', 'delete', 'toggle-select', 'update-review'])
+
+// Reactive state for editing
+const isEditing = ref(false)
+const editRating = ref(5)
+const editComment = ref('')
+const saving = ref(false)
 
 // Methods
 const formatDate = (dateString) => {
@@ -108,12 +136,55 @@ const formatDate = (dateString) => {
   })
 }
 
+const getInitials = (name) => {
+  if (!name) return 'U'
+  return name
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase())
+    .join('')
+    .slice(0, 2)
+}
+
 const handleCardClick = (event) => {
   // Don't toggle if clicking on buttons or checkbox
   if (event.target.closest('.card-actions') || event.target.closest('.card-checkbox')) {
     return
   }
   emit('toggle-select', props.feedback.id)
+}
+
+const startEdit = () => {
+  isEditing.value = true
+  editRating.value = props.feedback.rating
+  editComment.value = props.feedback.comment
+}
+
+const cancelEdit = () => {
+  isEditing.value = false
+  editRating.value = props.feedback.rating
+  editComment.value = props.feedback.comment
+}
+
+const saveEdit = async () => {
+  if (!editComment.value.trim()) {
+    alert('Comment cannot be empty')
+    return
+  }
+
+  saving.value = true
+  try {
+    await emit('update-review', {
+      id: props.feedback.id,
+      rating: parseInt(editRating.value),
+      comment: editComment.value.trim(),
+    })
+    isEditing.value = false
+  } catch (error) {
+    console.error('Failed to update review:', error)
+    alert('Failed to update review. Please try again.')
+  } finally {
+    saving.value = false
+  }
 }
 </script>
 
@@ -168,40 +239,29 @@ const handleCardClick = (event) => {
   margin-top: 2px;
 }
 
-.card-status {
-  flex-shrink: 0;
-}
-
 .card-content {
   padding: 20px;
 }
 
 .customer-info {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   flex-wrap: wrap;
   gap: 12px;
-}
-
-.customer-name,
-.product-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #4a5568;
-  font-weight: 500;
 }
 
 .customer-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid #e2e8f0;
-  flex-shrink: 0;
+  background-color: #3b82f6;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .customer-name svg,
@@ -286,12 +346,12 @@ const handleCardClick = (event) => {
   transform: translateY(-1px);
 }
 
-.btn-respond {
+.btn-update {
   background-color: #38a169;
   color: white;
 }
 
-.btn-respond:hover {
+.btn-update:hover {
   background-color: #2f855a;
   transform: translateY(-1px);
 }
@@ -306,27 +366,105 @@ const handleCardClick = (event) => {
   transform: translateY(-1px);
 }
 
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+.btn-cancel {
+  background-color: #718096;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background-color: #4a5568;
+  transform: translateY(-1px);
+}
+
+.btn-save {
+  background-color: #38a169;
+  color: white;
+}
+
+.btn-save:hover:not(:disabled) {
+  background-color: #2f855a;
+  transform: translateY(-1px);
+}
+
+.btn-save:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.rating-input {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rating-label {
+  font-size: 14px;
   font-weight: 500;
-  text-transform: uppercase;
+  color: #2d3748;
+  min-width: 50px;
 }
 
-.status-pending {
-  background-color: #fef5e7;
-  color: #f59e0b;
+.rating-select {
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+  min-width: 120px;
 }
 
-.status-reviewed {
-  background-color: #e6fffa;
-  color: #38b2ac;
+.rating-select:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
 }
 
-.status-responded {
-  background-color: #ebf8ff;
-  color: #4299e1;
+.comment-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.comment-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.comment-textarea {
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 14px;
+  line-height: 1.5;
+  font-family: 'Poppins', sans-serif;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.comment-textarea:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+}
+
+.comment-textarea::placeholder {
+  color: #a0aec0;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {

@@ -96,27 +96,30 @@ const isFormValid = computed(() => {
 })
 
 // Function to submit the review
-const submitReview = () => {
+const submitReview = async () => {
   if (!isFormValid.value) return // Don't submit if form is invalid
 
-  // Prepare review data
-  const reviewData = {
-    user: formData.value.name,
-    rating: selectedRating.value,
-    comment: formData.value.review,
-    email: formData.value.email,
-    date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+  try {
+    // Prepare review data
+    const reviewData = {
+      user: formData.value.name,
+      rating: selectedRating.value,
+      comment: formData.value.review,
+      email: formData.value.email,
+    }
+
+    // Emit the review data to parent component
+    emit('submit-review', reviewData)
+
+    // Show success message and reset form
+    showSuccess.value = true
+    setTimeout(() => (showSuccess.value = false), 3000) // Hide after 3 seconds
+
+    selectedRating.value = 0
+    formData.value = { name: '', email: '', review: '' }
+  } catch (error) {
+    console.error('Failed to submit review:', error)
   }
-
-  // Emit the review data to parent component
-  emit('submit-review', reviewData)
-
-  // Show success message and reset form
-  showSuccess.value = true
-  setTimeout(() => (showSuccess.value = false), 3000) // Hide after 3 seconds
-
-  selectedRating.value = 0
-  formData.value = { name: '', email: '', review: '' }
 }
 </script>
 

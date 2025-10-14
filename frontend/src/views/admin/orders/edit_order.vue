@@ -207,7 +207,6 @@ const loadOrder = () => {
 const saveOrder = async () => {
   isSaving.value = true
   try {
-    console.log('Updating:', formData)
     await new Promise((resolve) => setTimeout(resolve, 1000))
     alert('Order status updated successfully!')
   } catch (error) {

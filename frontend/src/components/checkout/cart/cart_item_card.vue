@@ -10,12 +10,14 @@
         <span v-if="displayDiscount" class="discount-badge">{{ displayDiscount }}</span>
       </div>
       <div class="subtitle-color">
-        <span class="product-subtitle">{{ item.subtitle }}</span>
-        <span class="separator">|</span>
-        <span class="product-color">Color {{ item.color }}</span>
+        <span class="product-brand">{{ item.brand }}</span>
+        <span class="separator"> | </span>
+        <span class="product-color">Color: {{ item.color }}</span>
       </div>
       <div class="item-price">
-        <span v-if="hasDiscount" class="original-price">${{ formatPrice(item.price) }}</span>
+        <span v-if="hasDiscount" class="original-price"
+          >${{ formatPrice(item.originalPrice || item.price) }}</span
+        >
         <span class="current-price">${{ formatPrice(finalPrice) }}</span>
       </div>
     </div>
@@ -46,20 +48,15 @@ defineEmits(['increaseQuantity', 'decreaseQuantity', 'removeItem'])
 const hasDiscount = computed(
   () =>
     props.item.discount &&
-    (props.item.discount.type === 'percent' || props.item.discount.type === 'fixed'),
+    Array.isArray(props.item.discount) &&
+    props.item.discount.length > 0 &&
+    (props.item.discount[0].type === 'percent' || props.item.discount[0].type === 'fixed'),
 )
 
 // Computed property to calculate the final price after discount
 const finalPrice = computed(() => {
-  if (!hasDiscount.value) {
-    return props.item.price
-  }
-  const discount = props.item.discount
-  if (discount.type === 'percent') {
-    return props.item.price - (props.item.price * discount.value) / 100
-  } else {
-    return props.item.price - discount.value
-  }
+  // The price is already discounted in the cart store, so just return it
+  return parseFloat(props.item.price) || 0
 })
 
 // Computed property to display the discount text
@@ -67,7 +64,7 @@ const displayDiscount = computed(() => {
   if (!hasDiscount.value) {
     return null
   }
-  const discount = props.item.discount
+  const discount = props.item.discount[0] // Take the first discount
   if (discount.type === 'percent') {
     return `${discount.value}% OFF`
   } else {
@@ -76,7 +73,10 @@ const displayDiscount = computed(() => {
 })
 
 // Function to format price with commas
-const formatPrice = (price) => price.toLocaleString()
+const formatPrice = (price) => {
+  const numPrice = parseFloat(price)
+  return isNaN(numPrice) ? '0.00' : numPrice.toLocaleString()
+}
 </script>
 
 <style scoped>
@@ -89,6 +89,16 @@ const formatPrice = (price) => price.toLocaleString()
   color: grey;
   font-weight: 400;
   margin: 4px 0;
+}
+
+.product-brand {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.separator {
+  color: grey;
+  margin-right: 8px;
 }
 
 .product-color {

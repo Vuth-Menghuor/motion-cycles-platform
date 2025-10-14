@@ -108,10 +108,16 @@ const discountStatuses = [
 ]
 
 // Computed for unique available colors from bikes
-const availableColors = computed(() => [...new Set(props.bikes.map((b) => b.color))].sort())
+const availableColors = computed(() => {
+  if (!Array.isArray(props.bikes)) return []
+  return [...new Set(props.bikes.map((b) => b.color))].sort()
+})
 
 // Computed for unique available brands from bikes
-const availableBrands = computed(() => [...new Set(props.bikes.map((b) => b.subtitle))].sort())
+const availableBrands = computed(() => {
+  if (!Array.isArray(props.bikes)) return []
+  return [...new Set(props.bikes.map((b) => b.brand).filter(Boolean))].sort()
+})
 
 // Computed for selected price range with getter/setter
 const selectedPriceRange = computed({

@@ -28,9 +28,14 @@ const router = useRouter()
 // Extract query parameters
 const image = route.query.image
 const title = route.query.title
-const additionalImages = route.query.additionalImages
-  ? JSON.parse(route.query.additionalImages)
-  : []
+const additionalImages = (() => {
+  try {
+    const parsed = route.query.additionalImages ? JSON.parse(route.query.additionalImages) : []
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+})()
 
 // Computed property for grid images (main image + up to 7 additional)
 const gridImages = computed(() => [image, ...additionalImages.slice(0, 7)])

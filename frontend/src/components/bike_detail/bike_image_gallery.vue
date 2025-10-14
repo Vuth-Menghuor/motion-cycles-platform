@@ -47,7 +47,11 @@ const lightboxOpen = ref(false)
 
 // Computed property for all thumbnails
 const thumbnails = computed(() => {
-  if (props.additionalImages.length > 0) {
+  if (
+    props.additionalImages &&
+    Array.isArray(props.additionalImages) &&
+    props.additionalImages.length > 0
+  ) {
     // Include main image plus additional images
     const mainImage = { src: props.image, alt: props.title }
     const additional = props.additionalImages.map((img, i) => ({
@@ -83,7 +87,7 @@ const goToGallery = () => {
     query: {
       image: props.image,
       title: props.title,
-      additionalImages: JSON.stringify(props.additionalImages),
+      additionalImages: JSON.stringify(props.additionalImages || []),
     },
   })
 }
@@ -114,11 +118,14 @@ watch(
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 580px;
 }
 
 .main-image img {
   width: 100%;
+  height: 100%;
   object-fit: contain;
+  height: 100%;
   cursor: pointer;
 }
 
@@ -135,6 +142,7 @@ watch(
   cursor: pointer;
   overflow: hidden;
   border: 1px solid #e2e8f0;
+  height: 284px;
 }
 
 .thumbnail-item img {

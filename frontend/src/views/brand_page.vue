@@ -2,7 +2,7 @@
 import Brand_carousel from '@/components/brand/brand_carousel.vue'
 import Brand_product_showcase from '@/components/brand_showcase/brand_product_showcase.vue'
 import Product_card from '@/components/product_card.vue'
-import Back_btn from '@/ui/back_btn.vue'
+import Back_btn from '@/components/back_btn.vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()

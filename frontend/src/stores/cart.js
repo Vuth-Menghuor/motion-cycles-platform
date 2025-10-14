@@ -21,12 +21,13 @@ export const useCartStore = defineStore('cart', () => {
       existingItem.quantity++
     } else {
       // If new item, add it with calculated price and default quantity
+      const originalPrice = parseFloat(product.price) || 0
       cartItems.value.push({
         ...product,
         name: product.title, // Use product title as name
         quantity: 1,
-        price: calculateDiscountedPrice(product), // Apply discount if any
-        originalPrice: product.price,
+        price: calculateDiscountedPrice({ ...product, price: originalPrice }), // Apply discount if any
+        originalPrice: originalPrice,
       })
     }
   }
@@ -59,16 +60,18 @@ export const useCartStore = defineStore('cart', () => {
 
   // Private helper function: Calculates the discounted price for a product
   function calculateDiscountedPrice(product) {
-    if (!product.discount) {
+    const price = parseFloat(product.price) || 0
+    if (!product.discount || !Array.isArray(product.discount) || product.discount.length === 0) {
       // No discount, return original price
-      return product.price
+      return price
     }
-    if (product.discount.type === 'percent') {
+    const discount = product.discount[0] // Take the first discount if it's an array
+    if (discount.type === 'percent') {
       // Percentage discount
-      return product.price - (product.price * product.discount.value) / 100
+      return price - (price * discount.value) / 100
     } else {
       // Fixed amount discount
-      return product.price - product.discount.value
+      return price - discount.value
     }
   }
 

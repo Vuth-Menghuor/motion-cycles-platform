@@ -3,11 +3,10 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\KHQRController;
 use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\BakongController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ProductController;
-
+use App\Http\Controllers\ReviewController;
 
 // Authentication routes (public)
 Route::prefix('auth')->group(function () {
@@ -33,13 +32,15 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{category}', 'deleteCategory');
     });
 
-    Route::controller(ProductController::class)->prefix('products')->group(function () {
-        Route::get('/', 'getProducts');
-        Route::post('/', 'createProduct');
-        Route::get('/{product}', 'getProduct');
-        Route::patch('/{product}', 'updateProduct');
-        Route::delete('/{product}', 'deleteProduct');
-    });
+});
+
+// Temporarily remove auth for testing
+Route::middleware(['auth:sanctum'])->controller(ProductController::class)->prefix('products')->group(function () {
+    Route::get('/', 'getProducts');
+    Route::post('/', 'createProduct');
+    Route::get('/{product}', 'getProduct');
+    Route::patch('/{product}', 'updateProduct');
+    Route::delete('/{product}', 'deleteProduct');
 });
 
 // Public routes (if you want some endpoints to be accessible without auth)
@@ -81,5 +82,29 @@ Route::prefix('orders')->group(function () {
     Route::post('/{id}/confirm-payment', [OrderController::class, 'confirmPayment']);
 });
 
+// Public routes
+Route::get('/products/{id}/reviews', [ReviewController::class, 'index']);
+Route::get('/public/products/{id}/reviews', [ReviewController::class, 'index']);
+
+// User routes (authenticated)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
+});
+
+
+// Admin routes (authenticated + admin role)
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+    Route::controller(ProductController::class)->prefix('products')->group(function () {
+        Route::post('/', 'createProduct');
+        Route::patch('/{product}', 'updateProduct');
+        Route::delete('/{product}', 'deleteProduct');
+    });
+    Route::controller(ReviewController::class)->prefix('reviews')->group(function () {
+        Route::get('/', 'adminIndex');
+        Route::delete('/{reviewId}', 'adminDestroy');
+    });
+    Route::patch('/products/{id}/reviews/{reviewId}', [ReviewController::class, 'update']);
+    Route::delete('/products/{id}/reviews/{reviewId}', [ReviewController::class, 'destroy']);
+});
 
 

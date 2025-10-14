@@ -1,0 +1,19 @@
+meta {
+  name: Get order details
+  type: http
+  seq: 5
+}
+
+get {
+  url: http://localhost:8100/api/orders/14
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 1|dKNLblCOUqhJZ0acspVcgSMlBSNXj6u37X8OvEHd8e33b5c0
+}
+
+settings {
+  encodeUrl: true
+}

@@ -75,12 +75,13 @@ const totalRatings = computed(() =>
 
 // Average rating calculated from all reviews
 const averageRating = computed(() => {
+  if (totalRatings.value === 0) return 0
   let totalScore = 0
   for (const [rating, count] of Object.entries(ratings.value)) {
     totalScore += Number(rating) * count
   }
   const average = totalScore / totalRatings.value
-  return average.toFixed(1) // One decimal place
+  return parseFloat(average.toFixed(1))
 })
 
 // Rating distribution sorted by rating descending

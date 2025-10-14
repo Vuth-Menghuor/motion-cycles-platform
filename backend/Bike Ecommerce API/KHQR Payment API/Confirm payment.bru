@@ -1,0 +1,20 @@
+meta {
+  name: Confirm payment
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8100/api/orders/14/confirm-payment
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 1|dKNLblCOUqhJZ0acspVcgSMlBSNXj6u37X8OvEHd8e33b5c0
+  Content-Type: application/json
+}
+
+settings {
+  encodeUrl: true
+}
