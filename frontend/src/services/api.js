@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getFilteredProducts, mockCategories } from './mockData.js'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
@@ -26,67 +27,76 @@ api.interceptors.request.use(
 // Products API
 export const productsApi = {
   // Get all products (public) with advanced filtering
-  getProducts: (params = {}) => {
-    const queryParams = new URLSearchParams()
+  getProducts: async (params = {}) => {
+    try {
+      const queryParams = new URLSearchParams()
 
-    // Search parameter
-    if (params.search) {
-      queryParams.append('search', params.search)
-    }
+      // Search parameter
+      if (params.search) {
+        queryParams.append('search', params.search)
+      }
 
-    // Category filter
-    if (params.category_id) {
-      queryParams.append('category_id', params.category_id)
-    }
+      // Category filter
+      if (params.category_id) {
+        queryParams.append('category_id', params.category_id)
+      }
 
-    // Brand filter
-    if (params.brand) {
-      queryParams.append('brand', params.brand)
-    }
+      // Brand filter
+      if (params.brand) {
+        queryParams.append('brand', params.brand)
+      }
 
-    // Color filter
-    if (params.color) {
-      queryParams.append('color', params.color)
-    }
+      // Color filter
+      if (params.color) {
+        queryParams.append('color', params.color)
+      }
 
-    // Price range filters
-    if (params.min_price !== undefined && params.min_price !== null) {
-      queryParams.append('min_price', params.min_price)
-    }
-    if (params.max_price !== undefined && params.max_price !== null) {
-      queryParams.append('max_price', params.max_price)
-    }
+      // Price range filters
+      if (params.min_price !== undefined && params.min_price !== null) {
+        queryParams.append('min_price', params.min_price)
+      }
+      if (params.max_price !== undefined && params.max_price !== null) {
+        queryParams.append('max_price', params.max_price)
+      }
 
-    // Rating filter
-    if (params.min_rating !== undefined && params.min_rating !== null) {
-      queryParams.append('min_rating', params.min_rating)
-    }
+      // Rating filter
+      if (params.min_rating !== undefined && params.min_rating !== null) {
+        queryParams.append('min_rating', params.min_rating)
+      }
 
-    // Discount filter
-    if (params.has_discount !== undefined) {
-      queryParams.append('has_discount', params.has_discount)
-    }
+      // Discount filter
+      if (params.has_discount !== undefined) {
+        queryParams.append('has_discount', params.has_discount)
+      }
 
-    // Sorting
-    if (params.sort_by) {
-      queryParams.append('sort_by', params.sort_by)
-    }
-    if (params.sort_order) {
-      queryParams.append('sort_order', params.sort_order)
-    }
+      // Sorting
+      if (params.sort_by) {
+        queryParams.append('sort_by', params.sort_by)
+      }
+      if (params.sort_order) {
+        queryParams.append('sort_order', params.sort_order)
+      }
 
-    // Pagination
-    if (params.per_page) {
-      queryParams.append('per_page', params.per_page)
-    }
-    if (params.page) {
-      queryParams.append('page', params.page)
-    }
+      // Pagination
+      if (params.per_page) {
+        queryParams.append('per_page', params.per_page)
+      }
+      if (params.page) {
+        queryParams.append('page', params.page)
+      }
 
-    const queryString = queryParams.toString()
-    const url = queryString ? `/public/products?${queryString}` : '/public/products'
+      const queryString = queryParams.toString()
+      const url = queryString ? `/public/products?${queryString}` : '/public/products'
 
-    return api.get(url)
+      const response = await api.get(url)
+      return response
+    } catch (error) {
+      console.warn('API call failed, using mock data:', error.message)
+      // Return mock data as fallback
+      return {
+        data: getFilteredProducts(params),
+      }
+    }
   },
 
   // Get product by ID (public)
@@ -108,7 +118,18 @@ export const productsApi = {
 // Categories API
 export const categoriesApi = {
   // Get all categories (public)
-  getCategories: () => api.get('/public/categories'),
+  getCategories: async () => {
+    try {
+      const response = await api.get('/public/categories')
+      return response
+    } catch (error) {
+      console.warn('Categories API call failed, using mock data:', error.message)
+      // Return mock data as fallback
+      return {
+        data: mockCategories
+      }
+    }
+  },
 
   // Get category by ID (public)
   getCategory: (id) => api.get(`/public/categories/${id}`),
