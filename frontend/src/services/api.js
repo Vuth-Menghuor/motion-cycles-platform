@@ -6,11 +6,16 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 // Check if we should use mock data (when API is not available)
 const shouldUseMockData = () => {
   // Use mock data if API_BASE_URL is localhost (development) or empty
-  return !API_BASE_URL ||
+  const useMock = !API_BASE_URL ||
          API_BASE_URL.includes('localhost') ||
          API_BASE_URL.includes('127.0.0.1') ||
          API_BASE_URL === 'http://localhost:8000' ||
          API_BASE_URL === 'http://localhost:8100'
+
+  console.log('API_BASE_URL:', API_BASE_URL)
+  console.log('shouldUseMockData:', useMock)
+
+  return useMock
 }
 
 const api = axios.create({
@@ -41,9 +46,9 @@ export const productsApi = {
     // Use mock data if API is not available
     if (shouldUseMockData()) {
       console.log('Using mock data for products')
-      return {
-        data: getFilteredProducts(params),
-      }
+      const result = { data: getFilteredProducts(params) }
+      console.log('Mock data result:', result)
+      return result
     }
 
     try {
