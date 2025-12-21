@@ -1,29 +1,6 @@
 import axios from 'axios'
-import {
-  getFilteredProducts,
-  mockProducts,
-  mockCategories,
-  getMockReviewsForProduct,
-} from './mockData.js'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
-
-// Check if we should use mock data (when API is not available)
-const shouldUseMockData = () => {
-  // Use mock data by default for development/demo
-  // Only use real API if explicitly set to a non-localhost URL
-  const useRealApi =
-    API_BASE_URL &&
-    !API_BASE_URL.includes('localhost') &&
-    !API_BASE_URL.includes('127.0.0.1') &&
-    API_BASE_URL !== 'http://localhost:8000' &&
-    API_BASE_URL !== 'http://localhost:8100'
-
-  console.log('API_BASE_URL:', API_BASE_URL)
-  console.log('shouldUseMockData (inverted logic):', !useRealApi)
-
-  return !useRealApi // Use mock data unless we have a real API URL
-}
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -49,101 +26,71 @@ api.interceptors.request.use(
 // Products API
 export const productsApi = {
   // Get all products (public) with advanced filtering
-  getProducts: async (params = {}) => {
-    // Use mock data if API is not available
-    if (shouldUseMockData()) {
-      console.log('Using mock data for products')
-      const result = { data: getFilteredProducts(params) }
-      console.log('Mock data result:', result)
-      return result
+  getProducts: (params = {}) => {
+    const queryParams = new URLSearchParams()
+
+    // Search parameter
+    if (params.search) {
+      queryParams.append('search', params.search)
     }
 
-    try {
-      const queryParams = new URLSearchParams()
-
-      // Search parameter
-      if (params.search) {
-        queryParams.append('search', params.search)
-      }
-
-      // Category filter
-      if (params.category_id) {
-        queryParams.append('category_id', params.category_id)
-      }
-
-      // Brand filter
-      if (params.brand) {
-        queryParams.append('brand', params.brand)
-      }
-
-      // Color filter
-      if (params.color) {
-        queryParams.append('color', params.color)
-      }
-
-      // Price range filters
-      if (params.min_price !== undefined && params.min_price !== null) {
-        queryParams.append('min_price', params.min_price)
-      }
-      if (params.max_price !== undefined && params.max_price !== null) {
-        queryParams.append('max_price', params.max_price)
-      }
-
-      // Rating filter
-      if (params.min_rating !== undefined && params.min_rating !== null) {
-        queryParams.append('min_rating', params.min_rating)
-      }
-
-      // Discount filter
-      if (params.has_discount !== undefined) {
-        queryParams.append('has_discount', params.has_discount)
-      }
-
-      // Sorting
-      if (params.sort_by) {
-        queryParams.append('sort_by', params.sort_by)
-      }
-      if (params.sort_order) {
-        queryParams.append('sort_order', params.sort_order)
-      }
-
-      // Pagination
-      if (params.per_page) {
-        queryParams.append('per_page', params.per_page)
-      }
-      if (params.page) {
-        queryParams.append('page', params.page)
-      }
-
-      const queryString = queryParams.toString()
-      const url = queryString ? `/public/products?${queryString}` : '/public/products'
-
-      const response = await api.get(url)
-      return response
-    } catch (error) {
-      console.warn('API call failed, using mock data:', error.message)
-      // Return mock data as fallback
-      return {
-        data: getFilteredProducts(params),
-      }
+    // Category filter
+    if (params.category_id) {
+      queryParams.append('category_id', params.category_id)
     }
+
+    // Brand filter
+    if (params.brand) {
+      queryParams.append('brand', params.brand)
+    }
+
+    // Color filter
+    if (params.color) {
+      queryParams.append('color', params.color)
+    }
+
+    // Price range filters
+    if (params.min_price !== undefined && params.min_price !== null) {
+      queryParams.append('min_price', params.min_price)
+    }
+    if (params.max_price !== undefined && params.max_price !== null) {
+      queryParams.append('max_price', params.max_price)
+    }
+
+    // Rating filter
+    if (params.min_rating !== undefined && params.min_rating !== null) {
+      queryParams.append('min_rating', params.min_rating)
+    }
+
+    // Discount filter
+    if (params.has_discount !== undefined) {
+      queryParams.append('has_discount', params.has_discount)
+    }
+
+    // Sorting
+    if (params.sort_by) {
+      queryParams.append('sort_by', params.sort_by)
+    }
+    if (params.sort_order) {
+      queryParams.append('sort_order', params.sort_order)
+    }
+
+    // Pagination
+    if (params.per_page) {
+      queryParams.append('per_page', params.per_page)
+    }
+    if (params.page) {
+      queryParams.append('page', params.page)
+    }
+
+    const queryString = queryParams.toString()
+    const url = queryString ? `/public/products?${queryString}` : '/public/products'
+
+    return api.get(url)
   },
 
   // Get product by ID (public)
-  getProduct: async (id) => {
-    // Use mock data if API is not available
-    if (shouldUseMockData()) {
-      console.log('Using mock data for single product')
-      const product = mockProducts.find((p) => p.id === parseInt(id))
-      if (product) {
-        return { data: product }
-      } else {
-        throw new Error('Product not found')
-      }
-    }
-
-    return api.get(`/products/${id}`)
-  },
+  getProduct: (id) => api.get(`/products/${id}`),
 
   // Get products by category (public)
   getProductsByCategory: (categoryId) => api.get(`/public/products?category_id=${categoryId}`),
@@ -161,26 +108,7 @@ export const productsApi = {
 // Categories API
 export const categoriesApi = {
   // Get all categories (public)
-  getCategories: async () => {
-    // Use mock data if API is not available
-    if (shouldUseMockData()) {
-      console.log('Using mock data for categories')
-      return {
-        data: mockCategories,
-      }
-    }
-
-    try {
-      const response = await api.get('/public/categories')
-      return response
-    } catch (error) {
-      console.warn('Categories API call failed, using mock data:', error.message)
-      // Return mock data as fallback
-      return {
-        data: mockCategories,
-      }
-    }
-  },
+  getCategories: () => api.get('/public/categories'),
 
   // Get category by ID (public)
   getCategory: (id) => api.get(`/public/categories/${id}`),
@@ -198,26 +126,7 @@ export const categoriesApi = {
 // Reviews API
 export const reviewsApi = {
   // Get reviews for a product (public)
-  getProductReviews: async (productId) => {
-    // Use mock data if API is not available
-    if (shouldUseMockData()) {
-      console.log('Using mock data for reviews')
-      return {
-        data: getMockReviewsForProduct(productId),
-      }
-    }
-
-    try {
-      const response = await api.get(`/products/${productId}/reviews`)
-      return response
-    } catch (error) {
-      console.warn('Reviews API call failed, using mock data:', error.message)
-      // Return mock data as fallback
-      return {
-        data: getMockReviewsForProduct(productId),
-      }
-    }
-  },
+  getProductReviews: (productId) => api.get(`/products/${productId}/reviews`),
 
   // Submit a review for a product (authenticated user)
   submitReview: (productId, reviewData) => api.post(`/products/${productId}/reviews`, reviewData),

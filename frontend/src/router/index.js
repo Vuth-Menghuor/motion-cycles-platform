@@ -33,16 +33,15 @@ const routes = [
     path: '/',
     component: Public_layout,
     children: [
-      // Home page - allow direct access for demo
+      // Home page - redirect to authentication first
       {
         path: '/',
-        name: 'Home',
-        component: Home_view,
+        redirect: '/authentication/sign_in',
       },
       // Home page (accessible after authentication)
       {
         path: '/home',
-        name: 'HomeAlt',
+        name: 'Home',
         component: Home_view,
       },
       // Brand specific pages
