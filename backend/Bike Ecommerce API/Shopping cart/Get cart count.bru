@@ -1,0 +1,19 @@
+meta {
+  name: Get cart count
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:8000/api/cart/3
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 21|8hHSHJdBRX67mDJiNfBLDvGjHGic0rCEgdLLwvY74607d0d9
+}
+
+settings {
+  encodeUrl: true
+}

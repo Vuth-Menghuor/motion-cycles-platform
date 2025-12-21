@@ -37,10 +37,10 @@
         </div>
       </div>
 
-      <div class="image-layout" v-if="images.length > 0">
+      <div class="image-layout" v-if="modelValue.length > 0">
         <div class="images-flex-group">
           <div
-            v-for="(image, index) in images"
+            v-for="(image, index) in modelValue"
             :key="index"
             class="image-item"
             :class="{ 'large-image': index < 2, 'small-image': index >= 2 }"
@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { Icon } from '@iconify/vue'
 
 // Define props for the component
@@ -75,24 +75,18 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  modelValue: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 // Define emits
-const emit = defineEmits(['update:images'])
+const emit = defineEmits(['update:modelValue'])
 
 // References for DOM elements and data
 const fileInput = ref(null) // Reference to the hidden file input
-const images = ref([]) // Array to store image data URLs
 const isDragOver = ref(false) // Flag for drag over state
-
-// Watch for changes in images and emit to parent
-watch(
-  images,
-  (newImages) => {
-    emit('update:images', newImages)
-  },
-  { deep: true },
-)
 
 // Function to trigger file input click
 const triggerFileUpload = () => {
@@ -133,7 +127,7 @@ const processFiles = (files) => {
   files.forEach((file) => {
     const reader = new FileReader()
     reader.onload = (e) => {
-      images.value.push(e.target.result)
+      emit('update:modelValue', [...props.modelValue, e.target.result])
     }
     reader.readAsDataURL(file)
   })
@@ -141,12 +135,15 @@ const processFiles = (files) => {
 
 // Remove an image by index
 const removeImage = (index) => {
-  images.value.splice(index, 1)
+  emit(
+    'update:modelValue',
+    props.modelValue.filter((_, i) => i !== index),
+  )
 }
 
 // Cancel upload and clear images
 const cancelUpload = () => {
-  images.value = []
+  emit('update:modelValue', [])
   if (fileInput.value) {
     fileInput.value.value = ''
   }

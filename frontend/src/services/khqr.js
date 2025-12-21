@@ -1,8 +1,10 @@
 import axios from 'axios'
 
 // API Configuration
+const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+
 const api = axios.create({
-  baseURL: 'http://localhost:8100/api', // Backend API base URL
+  baseURL: `${API_BASE_URL}/api`, // Backend API base URL
   timeout: 10000, // 10-second timeout for requests
 })
 
@@ -147,25 +149,6 @@ export const checkPaymentStatus = async (md5) => {
     return response.data
   } catch (error) {
     console.error('❌ Payment status check error:', error)
-    throw error
-  }
-}
-
-/**
- * Simulate Payment (Development Only)
- *
- * Simulates a payment completion for testing purposes.
- * Only works in development environment.
- *
- * @param {string} md5 - MD5 hash from QR generation
- * @returns {Object} Simulation result
- */
-export const simulatePayment = async (md5) => {
-  try {
-    const response = await api.post('/khqr/simulate-payment', { md5 })
-    return response.data
-  } catch (error) {
-    console.error('❌ Payment simulation error:', error)
     throw error
   }
 }

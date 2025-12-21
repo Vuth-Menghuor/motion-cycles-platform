@@ -1,13 +1,17 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\KHQRController;
 use App\Http\Controllers\Api\OrderController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\DiscountController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CategoryController;
 
 // Authentication routes (public)
 Route::prefix('auth')->group(function () {
@@ -16,7 +20,7 @@ Route::prefix('auth')->group(function () {
 });
 
 // Protected routes
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('api.auth')->group(function () {
     // Auth routes
     Route::prefix('auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -33,10 +37,39 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/{category}', 'deleteCategory');
     });
 
+    // Review submission (requires authentication)
+    Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
+
+    // Cart routes (require authentication)
+    Route::get('cart', [CartController::class, 'index']);
+    Route::post('cart', [CartController::class, 'store']);
+    Route::get('cart/{cart}', [CartController::class, 'show']);
+    Route::patch('cart/{cart}', [CartController::class, 'update']);
+    Route::delete('cart/{cart}', [CartController::class, 'destroy']);
+    Route::delete('cart', [CartController::class, 'clear']);
+    Route::get('cart-count', [CartController::class, 'count']);
+
+    // Favorites routes (require authentication)
+    Route::prefix('favorites')->group(function () {
+        Route::get('/', [FavoriteController::class, 'index']);
+        Route::post('/', [FavoriteController::class, 'store']);
+        Route::post('/toggle', [FavoriteController::class, 'toggle']);
+        Route::post('/check', [FavoriteController::class, 'check']);
+        Route::delete('/{productId}', [FavoriteController::class, 'destroy']);
+    });
+
 });
 
-// Temporarily remove auth for testing
-Route::middleware(['auth:sanctum'])->controller(ProductController::class)->prefix('products')->group(function () {
+// Temporarily make favorites public for testing
+// Route::prefix('favorites')->group(function () {
+//     Route::get('/', [FavoriteController::class, 'index']);
+//     Route::post('/', [FavoriteController::class, 'store']);
+//     Route::post('/toggle', [FavoriteController::class, 'toggle']);
+//     Route::post('/check', [FavoriteController::class, 'check']);
+//     Route::delete('/{productId}', [FavoriteController::class, 'destroy']);
+// });
+
+Route::controller(ProductController::class)->prefix('products')->group(function () {
     Route::get('/', 'getProducts');
     Route::post('/', 'createProduct');
     Route::get('/{product}', 'getProduct');
@@ -55,8 +88,11 @@ Route::controller(ProductController::class)->prefix('public/products')->group(fu
     Route::get('/{product}', 'getProduct');
 });
 
-// KHQR Payment Routes
-Route::prefix('khqr')->group(function () {
+// Get reviews for a product (public)
+Route::get('/products/{id}/reviews', [ReviewController::class, 'index']);
+
+// KHQR Payment Routes (with CORS)
+Route::middleware('api')->prefix('khqr')->group(function () {
     // Basic KHQR generation
     Route::post('/individual', [KHQRController::class, 'generateIndividual']);
     Route::post('/merchant', [KHQRController::class, 'generateMerchant']);
@@ -71,39 +107,30 @@ Route::prefix('khqr')->group(function () {
 
     // Payment Detection Routes
     Route::post('/check-payment-status', [KHQRController::class, 'checkPaymentStatus']);
-    Route::post('/simulate-payment', [KHQRController::class, 'simulatePayment']); // For testing
 });
 
-// Order Management Routes
-Route::prefix('orders')->group(function () {
+// Order Management Routes (with authentication)
+Route::middleware('api.auth')->prefix('orders')->group(function () {
     Route::post('/', [OrderController::class, 'createOrder']);
     Route::get('/', [OrderController::class, 'listOrders']);
     Route::get('/{id}', [OrderController::class, 'getOrder']);
     Route::post('/{id}/check-payment', [OrderController::class, 'checkPaymentStatus']);
     Route::post('/{id}/confirm-payment', [OrderController::class, 'confirmPayment']);
+    Route::patch('/{id}/status', [OrderController::class, 'updateOrderStatus']);
 });
 
-// Public routes
-Route::get('/products/{id}/reviews', [ReviewController::class, 'index']);
-Route::get('/public/products/{id}/reviews', [ReviewController::class, 'index']);
+// Public discount validation route
+Route::post('/discounts/validate', [DiscountController::class, 'validateCode']);
 
-// User routes (authenticated)
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/products/{id}/reviews', [ReviewController::class, 'store']);
+// Admin routes (with authentication)
+Route::middleware('api.auth')->prefix('admin')->group(function () {
+    // Admin order management
+    Route::controller(OrderController::class)->prefix('orders')->group(function () {
+        Route::get('/', 'adminListOrders');
+        Route::get('/{id}', 'adminGetOrder');
+        Route::patch('/{id}/status', 'updateOrderStatus');
+    });
 
-    // Cart routes
-    Route::get('cart', [CartController::class, 'index']);
-    Route::post('cart', [CartController::class, 'store']);
-    Route::get('cart/{cart}', [CartController::class, 'show']);
-    Route::patch('cart/{cart}', [CartController::class, 'update']);
-    Route::delete('cart/{cart}', [CartController::class, 'destroy']);
-    Route::delete('cart', [CartController::class, 'clear']);
-    Route::get('cart-count', [CartController::class, 'count']);
-});
-
-
-// Admin routes (authenticated + admin role)
-Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
     Route::controller(ProductController::class)->prefix('products')->group(function () {
         Route::post('/', 'createProduct');
         Route::patch('/{product}', 'updateProduct');
@@ -115,6 +142,21 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(functi
     });
     Route::patch('/products/{id}/reviews/{reviewId}', [ReviewController::class, 'update']);
     Route::delete('/products/{id}/reviews/{reviewId}', [ReviewController::class, 'destroy']);
+
+    // Discount management routes
+    Route::apiResource('discounts', DiscountController::class);
 });
 
+// Dashboard routes (admin with CORS)
+Route::middleware('api')->prefix('admin/dashboard')->group(function () {
+    Route::get('/stats', [DashboardController::class, 'getStats']);
+    Route::get('/stock-alerts', [DashboardController::class, 'getStockAlerts']);
+    Route::get('/category-distribution', [DashboardController::class, 'getCategoryDistribution']);
+});
 
+// User management routes (admin with CORS)
+Route::middleware('api')->prefix('admin/users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/{id}', [UserController::class, 'show']);
+    Route::delete('/{id}', [UserController::class, 'destroy']);
+});

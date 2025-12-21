@@ -22,7 +22,7 @@
       <div class="cart-items-section">
         <Indecator_process />
         <Cart_item_card
-          v-for="item in cartItems"
+          v-for="item in safeCartItems"
           :key="item.id"
           :item="item"
           @increase-quantity="increaseQuantity"
@@ -32,7 +32,7 @@
         <Bike_suggestion_card :products="allBikes" @add-to-cart="addToCart" />
       </div>
       <Checkout_summary
-        :cart-items="cartItems"
+        :cart-items="safeCartItems"
         :promo-code="promoCode"
         @update:promo-code="updatePromoCode"
         @proceed-to-checkout="proceedToCheckout"
@@ -43,10 +43,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
-import { storeToRefs } from 'pinia'
 import Navigation_header from '@/components/navigation_header.vue'
 import Indecator_process from '@/components/checkout/cart/indecator_process.vue'
 import Cart_item_card from '@/components/checkout/cart/cart_item_card.vue'
@@ -55,25 +54,53 @@ import Checkout_summary from '@/components/checkout/cart/checkout_summary.vue'
 import { productsApi } from '@/services/api'
 
 const router = useRouter()
+const route = useRoute()
 const promoCode = ref('')
 const cartStore = useCartStore()
-const { cartItems } = storeToRefs(cartStore)
 const allBikes = ref([])
 
-const increaseQuantity = (item) => {
-  cartStore.increaseQuantity(item.id)
+// Add safety check for cartItems
+const safeCartItems = computed(() => cartStore.items || [])
+
+// Watch for route changes to clear promo code when leaving checkout
+watch(
+  () => route.path,
+  (newPath) => {
+    const checkoutRoutes = [
+      '/checkout/cart',
+      '/checkout/address',
+      '/checkout/payment',
+      '/checkout/purchase',
+    ]
+    if (!checkoutRoutes.includes(newPath)) {
+      promoCode.value = ''
+      localStorage.removeItem('checkoutPromoCode')
+    }
+  },
+)
+
+const increaseQuantity = async (item) => {
+  const newQuantity = item.quantity + 1
+  await cartStore.updateCartItem(item.id, newQuantity)
 }
 
-const decreaseQuantity = (item) => {
-  cartStore.decreaseQuantity(item.id)
+const decreaseQuantity = async (item) => {
+  if (item.quantity > 1) {
+    const newQuantity = item.quantity - 1
+    await cartStore.updateCartItem(item.id, newQuantity)
+  }
 }
 
-const removeItem = (itemId) => {
-  cartStore.removeItem(itemId)
+const removeItem = async (itemId) => {
+  await cartStore.removeFromCart(itemId)
 }
 
-const addToCart = (products) => {
-  cartStore.addItem(products)
+const addToCart = async (bike) => {
+  try {
+    await cartStore.addToCart(bike.id, 1)
+  } catch (error) {
+    console.error('Error adding to cart:', error)
+  }
 }
 
 const updatePromoCode = (newCode) => {
@@ -88,7 +115,7 @@ const proceedToCheckout = () => {
 const fetchProducts = async () => {
   try {
     const response = await productsApi.getProducts()
-    allBikes.value = response.data
+    allBikes.value = response.data.data || []
   } catch (err) {
     console.error('Error fetching products:', err)
   }
@@ -96,6 +123,13 @@ const fetchProducts = async () => {
 
 onMounted(() => {
   fetchProducts()
+  cartStore.fetchCart()
+
+  // Load saved promo code
+  const savedPromoCode = localStorage.getItem('checkoutPromoCode')
+  if (savedPromoCode) {
+    promoCode.value = savedPromoCode
+  }
 })
 </script>
 

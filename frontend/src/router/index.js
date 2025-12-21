@@ -10,17 +10,19 @@ import Checkout_address from '@/views/checkout/checkout_address.vue'
 import Checkout_payment from '@/views/checkout/checkout_payment.vue'
 import Checkout_purchase from '@/views/checkout/checkout_purchase.vue'
 import Purchase_summary from '@/views/checkout/purchase_summary.vue'
+import Orders_page from '@/views/orders_page.vue'
 import Admin_layout from '@/layouts/admin_layout.vue'
 import Dashboard_page from '@/views/admin/dashboard_page.vue'
 import Unauthorized from '@/views/unauthorized.vue'
 import Not_found from '@/views/not_found.vue'
+import Help_support_page from '@/views/help_support_page.vue'
+import Order_tracking_page from '@/views/order_tracking_page.vue'
 import { useAuthStore } from '@/stores/auth'
 import List_orders from '@/views/admin/orders/list_orders.vue'
 import View_order from '@/views/admin/orders/view_order.vue'
 import Edit_order from '@/views/admin/orders/edit_order.vue'
 import List_customers from '@/views/admin/customers/list_customers.vue'
 import View_customer from '@/views/admin/customers/view_customer.vue'
-import Edit_customer from '@/views/admin/customers/edit_customer.vue'
 import Analytics_page from '@/views/admin/analytics_page.vue'
 import Public_layout from '@/layouts/public_layout.vue'
 
@@ -67,6 +69,31 @@ const routes = [
         path: '/favorites',
         name: 'Favorites',
         component: Favorite_page,
+      },
+      // Orders page
+      {
+        path: '/orders',
+        name: 'Orders',
+        component: Orders_page,
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      // Order tracking page
+      {
+        path: '/orders/:id',
+        name: 'OrderTracking',
+        component: Order_tracking_page,
+        props: true,
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      // Help & Support page
+      {
+        path: '/help',
+        name: 'HelpSupport',
+        component: Help_support_page,
       },
       // Checkout process routes
       {
@@ -191,10 +218,41 @@ const routes = [
           },
           {
             path: 'discount',
-            name: 'ManageDiscount',
-            component: () => import('@/views/admin/products/discount_page.vue'),
+            children: [
+              {
+                path: '',
+                name: 'ManageDiscount',
+                component: () => import('@/views/admin/products/discount/view_discount.vue'),
+                meta: {
+                  title: 'Promotional Codes',
+                  requiresAuth: true,
+                  requiresRole: 'admin',
+                },
+              },
+              {
+                path: 'add',
+                name: 'AddDiscount',
+                component: () => import('@/views/admin/products/discount/add_discount.vue'),
+                meta: {
+                  title: 'Add Promotional Code',
+                  requiresAuth: true,
+                  requiresRole: 'admin',
+                },
+              },
+              {
+                path: 'edit/:id',
+                name: 'EditDiscount',
+                component: () => import('@/views/admin/products/discount/edit_discount.vue'),
+                props: true,
+                meta: {
+                  title: 'Edit Promotional Code',
+                  requiresAuth: true,
+                  requiresRole: 'admin',
+                },
+              },
+            ],
             meta: {
-              title: 'Manage Discount',
+              title: 'Promotional Codes',
               requiresAuth: true,
               requiresRole: 'admin',
             },
@@ -215,6 +273,17 @@ const routes = [
             component: () => import('@/views/admin/products/stock_page.vue'),
             meta: {
               title: 'Manage Stock',
+              requiresAuth: true,
+              requiresRole: 'admin',
+            },
+          },
+          {
+            path: 'restock/:id',
+            name: 'RestockProduct',
+            component: () => import('@/views/admin/products/manage/restock_page.vue'),
+            props: true,
+            meta: {
+              title: 'Restock Product',
               requiresAuth: true,
               requiresRole: 'admin',
             },
@@ -300,15 +369,6 @@ const routes = [
               title: 'View Customer',
             },
           },
-          {
-            path: 'edit/:id',
-            name: 'EditCustomer',
-            component: Edit_customer,
-            props: true,
-            meta: {
-              title: 'Edit Customer',
-            },
-          },
         ],
         meta: {
           title: 'Customers',
@@ -379,6 +439,11 @@ router.beforeEach((to) => {
       path: '/unauthorized',
     }
   }
+})
+
+// Scroll to top after each route change
+router.afterEach(() => {
+  setTimeout(() => window.scrollTo(0, 0), 100)
 })
 
 export default router

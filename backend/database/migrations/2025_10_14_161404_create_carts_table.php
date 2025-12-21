@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('carts', function (Blueprint $table) {
@@ -18,14 +15,10 @@ return new class extends Migration
             $table->integer('quantity')->default(1);
             $table->timestamps();
 
-            // Prevent duplicate cart items for same user+product
             $table->unique(['user_id', 'product_id']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('carts');

@@ -9,7 +9,16 @@
     </nav>
 
     <div class="table-container">
-      <table class="products-table">
+      <div v-if="loading" class="loading-state">
+        <Icon icon="mdi:loading" class="loading-icon" />
+        <p>Loading products...</p>
+      </div>
+      <div v-else-if="error" class="error-state">
+        <Icon icon="mdi:alert-circle" class="error-icon" />
+        <p>{{ error }}</p>
+        <button @click="fetchProducts" class="btn-retry">Retry</button>
+      </div>
+      <table v-else class="products-table">
         <thead>
           <tr>
             <th class="checkbox-column">
@@ -55,9 +64,9 @@
             <td>
               <span
                 class="quality-badge"
-                :class="`quality-${product.quality.toLowerCase().replace(' ', '-')}`"
+                :class="`quality-${(product.quality || 'unknown').toLowerCase().replace(' ', '-')}`"
               >
-                {{ product.quality }}
+                {{ product.quality || 'Unknown' }}
               </span>
             </td>
             <td class="price">${{ product.price }}</td>
@@ -133,9 +142,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
+import { productsApi } from '@/services/api.js'
 
 const ITEMS_PER_PAGE = 50
 
@@ -143,55 +153,62 @@ const ITEMS_PER_PAGE = 50
 const selectAll = ref(false)
 const currentPage = ref(1)
 const router = useRouter()
+const products = ref([])
+const loading = ref(false)
+const error = ref(null)
 
-// Generate sample products for demo
-const generateSampleProducts = () => {
-  const brands = [
-    'Cannondale',
-    'Trek',
-    'Bianchi',
-    'Giant',
-    'CERVÉLO',
-    'Specialized',
-    'Shimano',
-    'Calnago',
-  ]
-  const categories = ['Mountain Bike', 'Road Bike']
-  const qualities = ['New', 'Second Hand']
-  const colors = ['Black', 'White', 'Red', 'Blue', 'Green', 'Silver', 'Gray', 'Yellow']
-  const mountainBikeTypes = ['Trail', 'Enduro', 'Downhill', 'Cross Country', 'All Mountain']
-  const roadBikeTypes = ['Road Race', 'Gravel', 'Time Trial', 'Cyclocross', 'Touring']
+// Fetch products from API
+const fetchProducts = async () => {
+  try {
+    loading.value = true
+    error.value = null
+    const response = await productsApi.getProducts()
 
-  const products = []
-
-  for (let i = 0; i < 60; i++) {
-    const randomNum = Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(4, '0')
-    const category = categories[Math.floor(Math.random() * categories.length)]
-    const bikeTypes = category === 'Mountain Bike' ? mountainBikeTypes : roadBikeTypes
-    const bikeType = bikeTypes[Math.floor(Math.random() * bikeTypes.length)]
-    const modelSuffix = ['Pro', 'Elite', 'Race', 'Sport', 'Carbon', 'Aluminum'][
-      Math.floor(Math.random() * 6)
-    ]
-
-    products.push({
-      id: `P${randomNum}I`,
-      name: `${bikeType} ${modelSuffix}`,
-      brand: brands[Math.floor(Math.random() * brands.length)],
-      category: category,
-      quality: qualities[Math.floor(Math.random() * qualities.length)],
-      price: (Math.floor(Math.random() * 4000) + 500).toString(),
-      color: colors[Math.floor(Math.random() * colors.length)],
-      quantity: (Math.floor(Math.random() * 50) + 1).toString(),
-      selected: false,
-    })
+    // Ensure we have valid data
+    if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      // Transform API response to match the expected format
+      products.value = response.data.data.map((product) => ({
+        id: product.id,
+        name: product.title || 'Unknown Product', // API returns 'title' but we want 'name'
+        brand: product.brand || 'Unknown',
+        category: product.category?.name || 'Unknown',
+        quality: product.quality || 'Unknown',
+        price: product.price?.toString() || '0',
+        color: product.color || 'Unknown',
+        quantity: product.quantity?.toString() || '0',
+        selected: false,
+      }))
+    } else {
+      products.value = []
+      error.value = 'Invalid response format from server'
+    }
+  } catch (err) {
+    error.value = 'Failed to load products'
+    console.error('Error fetching products:', err)
+    products.value = []
+  } finally {
+    loading.value = false
   }
-
-  return products
 }
 
-const products = ref(generateSampleProducts())
+// Load products when component mounts
+onMounted(() => {
+  fetchProducts()
+})
+
+// Watch for route changes to refresh data when returning from add/edit pages
+watch(
+  () => router.currentRoute.value.path,
+  (newPath, oldPath) => {
+    // Refresh products when returning from add or edit pages
+    if (
+      (oldPath?.includes('/admin/products/add') || oldPath?.includes('/admin/products/edit/')) &&
+      newPath === '/admin/products'
+    ) {
+      fetchProducts()
+    }
+  },
+)
 
 // Pagination computed properties
 const totalItems = computed(() => products.value.length)
@@ -260,30 +277,31 @@ const editProduct = (productId) => {
   router.push(`/admin/products/edit/${productId}`)
 }
 
-const deleteProduct = (productId) => {
+const deleteProduct = async (productId) => {
   if (confirm(`Delete product ${productId}?`)) {
-    const index = products.value.findIndex((product) => product.id === productId)
-    if (index > -1) {
-      products.value.splice(index, 1)
-      if (paginatedProducts.value.length === 0 && currentPage.value > 1) {
-        currentPage.value--
-      }
+    try {
+      await productsApi.deleteProduct(productId)
+      // Refresh the products list after deletion
+      await fetchProducts()
+    } catch (err) {
+      console.error('Error deleting product:', err)
+      alert('Failed to delete product')
     }
-  } else {
-    // User cancelled deletion
   }
 }
 
-const bulkDelete = () => {
+const bulkDelete = async () => {
   const selectedIds = selectedProducts.value.map((product) => product.id)
   if (confirm(`Delete ${selectedIds.length} selected product(s)?`)) {
-    products.value = products.value.filter((product) => !product.selected)
-    selectAll.value = false
-    if (paginatedProducts.value.length === 0 && currentPage.value > 1) {
-      currentPage.value--
+    try {
+      // Delete each selected product
+      await Promise.all(selectedIds.map((id) => productsApi.deleteProduct(id)))
+      // Refresh the products list after deletion
+      await fetchProducts()
+    } catch (err) {
+      console.error('Error deleting products:', err)
+      alert('Failed to delete some products')
     }
-  } else {
-    // User cancelled bulk deletion
   }
 }
 
@@ -347,6 +365,58 @@ watch(currentPage, () => {
   overflow-y: auto;
   max-height: 60vh;
   margin-bottom: 20px;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #4a5568;
+  font-family: 'Poppins', sans-serif;
+}
+
+.loading-icon {
+  font-size: 48px;
+  color: #4299e1;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.error-icon {
+  font-size: 48px;
+  color: #e53e3e;
+  margin-bottom: 16px;
+}
+
+.btn-retry {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  transition: background-color 0.2s ease;
+}
+
+.btn-retry:hover {
+  background-color: #3182ce;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .products-table {
@@ -434,9 +504,9 @@ watch(currentPage, () => {
   color: #22543d;
 }
 
-.quality-second-hand {
-  background-color: #fed7d7;
-  color: #742a2a;
+.quality-unknown {
+  background-color: #a0aec0;
+  color: #2d3748;
 }
 
 .actions-column {

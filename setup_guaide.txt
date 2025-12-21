@@ -1,0 +1,485 @@
+# Bike E-commerce Project Setup Guide
+# Laravel 11 + Vue.js 3 + Docker + KHQR Payment Integration
+
+## 📋 Prerequisites
+- Docker & Docker Compose
+- Git
+- Node.js 18+ (for local development)
+- PHP 8.2+ (for local development)
+
+---
+
+## 🚀 1. Project Setup
+
+### Clone Repository
+```bash
+git clone https://github.com/Vuth-Menghuor/bike-ecommerce-project.git
+cd bike-ecommerce-project
+```
+
+### Environment Configuration
+```bash
+# Copy environment files
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env  # If exists
+```
+
+### Update Backend Environment Variables
+Edit `backend/.env`:
+```env
+# Database
+DB_CONNECTION=sqlite
+DB_DATABASE=/absolute/path/to/backend/database/database.sqlite
+
+# Or for MySQL (if using Docker)
+DB_CONNECTION=mysql
+DB_HOST=mysql_db
+DB_PORT=3306
+DB_DATABASE=bike_ecommerce
+DB_USERNAME=root
+DB_PASSWORD=password
+
+# Cache & Session
+CACHE_STORE=file
+SESSION_DRIVER=file
+
+# KHQR Payment Configuration
+BAKONG_API_TOKEN=your_bakong_api_token_here
+BAKONG_APP_ID=your_bakong_app_id_here
+BAKONG_TEST_MODE=true  # Set to false for production
+BAKONG_BASE_URL=https://api-bakong.nbc.org.kh
+
+# App
+APP_NAME="Bike E-commerce"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+```
+
+---
+
+## 🐳 2. Docker Setup (Recommended)
+
+### Start Services
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Access backend container
+docker-compose exec backend bash
+
+# Access database (if using MySQL)
+docker-compose exec mysql mysql -u root -p bike_ecommerce
+```
+
+### Stop Services
+```bash
+docker-compose down
+```
+
+---
+
+## 📦 3. Local Development Setup
+
+### Backend Setup
+```bash
+cd backend
+
+# Install PHP dependencies
+composer install
+
+# Generate application key
+php artisan key:generate
+
+# Set up database
+touch database/database.sqlite  # For SQLite
+# OR configure MySQL in .env
+
+# Run migrations
+php artisan migrate
+
+# Clear all caches
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+
+# Start development server
+php artisan serve
+```
+
+### Frontend Setup
+```bash
+cd ../frontend
+
+# Install Node.js dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+---
+
+## 🗄️ 4. Database Management
+
+### Migrations
+```bash
+cd backend
+
+# Run all migrations
+php artisan migrate
+
+# Rollback last migration
+php artisan migrate:rollback
+
+# Reset and rerun all migrations
+php artisan migrate:fresh
+
+# Create new migration
+php artisan make:migration create_example_table
+```
+
+### Seeders
+```bash
+cd backend
+
+# Run all seeders (safe - won't duplicate data)
+php artisan db:seed
+
+# Run specific seeder
+php artisan db:seed --class=AdminSeeder
+php artisan db:seed --class=CategorySeeder
+php artisan db:seed --class=ProductSeeder
+
+# Reset database and seed fresh (use when you want clean data)
+php artisan migrate:fresh --seed
+
+# Create new seeder
+php artisan make:seeder ExampleSeeder
+```
+
+### Database Commands
+```bash
+cd backend
+
+# Access SQLite database
+sqlite3 database/database.sqlite
+
+# View tables
+.schema
+
+# Query data
+SELECT * FROM users LIMIT 5;
+SELECT COUNT(*) FROM products;
+```
+
+---
+
+## 🔧 5. Development Commands
+
+### Laravel Commands
+```bash
+cd backend
+
+# Create new components
+php artisan make:model Product
+php artisan make:controller ProductController --api
+php artisan make:migration add_column_to_products_table
+php artisan make:seeder ProductSeeder
+php artisan make:middleware ApiAuthMiddleware
+
+# Generate API documentation
+php artisan route:list
+php artisan route:list --path=api
+
+# Interactive shell
+php artisan tinker
+```
+
+### Vue.js Commands
+```bash
+cd frontend
+
+# Development
+npm run dev
+
+# Build
+npm run build
+
+# Preview build
+npm run preview
+
+# Lint code
+npm run lint
+```
+
+---
+
+## 🔐 6. Authentication Setup
+
+### Sanctum Configuration
+```bash
+cd backend
+
+# Install Sanctum (if not already installed)
+composer require laravel/sanctum
+
+# Publish Sanctum config
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+
+# Configure CORS for API
+# Edit config/cors.php to allow frontend origin
+```
+
+### Create Admin User
+```bash
+cd backend
+
+# Via seeder (recommended)
+php artisan db:seed --class=AdminSeeder
+
+# Or via tinker
+php artisan tinker
+```
+```php
+use App\Models\User;
+User::create([
+    'username' => 'admin',
+    'name' => 'Administrator',
+    'email' => 'admin@example.com',
+    'password' => bcrypt('admin123'),
+    'role' => 'admin'
+]);
+```
+
+---
+
+## 💳 7. KHQR Payment Setup
+
+### Environment Variables
+Ensure these are set in `backend/.env`:
+```env
+BAKONG_API_TOKEN=your_actual_api_token
+BAKONG_APP_ID=your_actual_app_id
+BAKONG_TEST_MODE=true
+BAKONG_BASE_URL=https://api-bakong.nbc.org.kh
+```
+
+### Test Payment Integration
+```bash
+cd backend
+
+# Generate QR code via API
+curl -X POST http://localhost:8000/api/khqr/individual \
+  -H "Content-Type: application/json" \
+  -d '{
+    "bakong_account": "your_account@bakong",
+    "account_name": "Bike Store",
+    "amount": 25.50,
+    "currency": "USD"
+  }'
+
+# Check payment status
+curl -X POST http://localhost:8000/api/khqr/check-payment-status \
+  -H "Content-Type: application/json" \
+  -d '{"md5": "your_md5_hash"}'
+```
+
+---
+
+## 🧪 8. Testing
+
+### Backend Testing
+```bash
+cd backend
+
+# Run all tests
+php artisan test
+
+# Run specific test
+php artisan test --filter=ExampleTest
+
+# Create new test
+php artisan make:test ExampleTest
+```
+
+### API Testing
+```bash
+# Test authentication
+curl -X POST http://localhost:8000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@example.com","password":"admin123"}'
+
+# Test products API
+curl http://localhost:8000/api/public/products
+
+# Test with authentication
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+  http://localhost:8000/api/products
+```
+
+### Frontend Testing
+```bash
+cd frontend
+
+# Run tests (if configured)
+npm test
+```
+
+---
+
+## 🚀 9. Deployment
+
+### Production Build
+```bash
+# Backend
+cd backend
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Frontend
+cd ../frontend
+npm run build
+```
+
+### Environment for Production
+Update `backend/.env`:
+```env
+APP_ENV=production
+APP_DEBUG=false
+BAKONG_TEST_MODE=false
+```
+
+---
+
+## 🔍 10. Troubleshooting
+
+### Common Issues
+
+**Database Seeding Issues:**
+```bash
+# If you get "duplicate key" errors when seeding:
+cd backend
+
+# Option 1: Reset database and seed fresh (recommended for development)
+php artisan migrate:fresh --seed
+
+# Option 2: Run seeders individually to see which ones fail
+php artisan db:seed --class=AdminSeeder
+php artisan db:seed --class=CategorySeeder
+
+# Option 3: Check existing data first
+php artisan tinker
+```
+```php
+User::where('username', 'admin')->first(); // Check if admin exists
+```
+
+**Permission Issues:**
+```bash
+# Fix storage permissions
+cd backend
+chmod -R 755 storage
+chmod -R 755 bootstrap/cache
+```
+
+**Cache Issues:**
+```bash
+cd backend
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+```
+
+**Database Connection:**
+```bash
+# Check database file
+cd backend
+ls -la database/database.sqlite
+
+# Or check MySQL connection
+php artisan tinker
+```
+```php
+DB::connection()->getPdo();
+```
+
+**Frontend Build Issues:**
+```bash
+cd frontend
+rm -rf node_modules package-lock.json
+npm install
+npm run dev
+```
+
+---
+
+## 📚 11. Project Structure
+
+```
+bike-ecommerce-project/
+├── backend/                 # Laravel API
+│   ├── app/
+│   │   ├── Models/         # Eloquent models
+│   │   ├── Http/Controllers/ # API controllers
+│   │   ├── Services/       # Business logic
+│   │   └── Console/Commands/ # Artisan commands
+│   ├── database/
+│   │   ├── migrations/     # Database migrations
+│   │   └── seeders/        # Database seeders
+│   ├── routes/api.php      # API routes
+│   └── .env                # Environment config
+├── frontend/               # Vue.js SPA
+│   ├── src/
+│   │   ├── views/          # Page components
+│   │   ├── components/     # Reusable components
+│   │   ├── stores/         # Pinia stores
+│   │   └── services/       # API services
+│   └── public/             # Static assets
+├── docker-compose.yml      # Docker services
+└── nginx.conf             # Nginx config
+```
+
+---
+
+## 🎯 12. Quick Start Commands
+
+```bash
+# Full setup (Docker)
+git clone https://github.com/Vuth-Menghuor/bike-ecommerce-project.git
+cd bike-ecommerce-project
+docker-compose up -d
+docker-compose exec backend bash
+
+# Inside backend container
+php artisan migrate
+php artisan db:seed
+
+# In new terminal
+cd frontend
+npm install
+npm run dev
+
+# Access app at http://localhost:8080
+```
+
+---
+
+## 📞 13. Support
+
+For issues specific to this project:
+1. Check the README.md files in backend/ and frontend/
+2. Review the API documentation in backend/Bike Ecommerce API/
+3. Check logs in backend/storage/logs/laravel.log
+4. Test API endpoints using the Bruno collection
+
+

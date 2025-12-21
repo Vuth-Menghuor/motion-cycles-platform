@@ -1,10 +1,10 @@
 FROM php:8.2-fpm
 
 # Install system dependencies
-RUN apt update && apt install -y unzip curl git nodejs npm libzip-dev libpq-dev
+RUN apt update && apt install -y unzip curl git nodejs npm libzip-dev libpq-dev libgd-dev
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo pdo_pgsql zip
+RUN docker-php-ext-install pdo pdo_pgsql zip gd
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

@@ -54,10 +54,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
-import { storeToRefs } from 'pinia'
 
 import Navigation_header from '@/components/navigation_header.vue'
 import Indecator_process from '@/components/checkout/cart/indecator_process.vue'
@@ -68,11 +67,29 @@ import image1 from '@/assets/images/payment_method/bakong_khqr.png'
 import image2 from '@/assets/images/payment_method/credit_card.png'
 
 const router = useRouter()
+const route = useRoute()
 const cartStore = useCartStore()
-const { cartItems } = storeToRefs(cartStore)
+const cartItems = computed(() => cartStore.items)
 
-const promoCode = ref('BOOKRIDE50')
+const promoCode = ref('')
 const selectedPaymentId = ref(1)
+
+// Watch for route changes to clear promo code when leaving checkout
+watch(
+  () => route.path,
+  (newPath) => {
+    const checkoutRoutes = [
+      '/checkout/cart',
+      '/checkout/address',
+      '/checkout/payment',
+      '/checkout/purchase',
+    ]
+    if (!checkoutRoutes.includes(newPath)) {
+      promoCode.value = ''
+      localStorage.removeItem('checkoutPromoCode')
+    }
+  },
+)
 
 const payments = ref([
   {
@@ -86,6 +103,14 @@ const payments = ref([
     image: image2,
   },
 ])
+
+// Load promo code from localStorage on mount
+onMounted(() => {
+  const savedPromoCode = localStorage.getItem('checkoutPromoCode')
+  if (savedPromoCode) {
+    promoCode.value = savedPromoCode
+  }
+})
 
 const updatePromoCode = (newCode) => {
   promoCode.value = newCode

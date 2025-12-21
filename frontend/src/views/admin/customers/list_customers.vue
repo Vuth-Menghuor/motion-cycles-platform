@@ -18,19 +18,29 @@
         </div>
 
         <div class="filter-row">
-          <select v-model="selectedStatus" @change="applyFilters" class="filter-select">
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-
           <button @click="clearFilters" class="btn btn-secondary clear-filters">
             Clear Filters
           </button>
         </div>
       </div>
 
-      <div v-if="filteredCustomers.length === 0" class="no-customers">
+      <div v-if="isLoading" class="loading-section">
+        <div class="loading-card">
+          <Icon icon="mdi:loading" class="loading-icon" />
+          <h3>Loading customers...</h3>
+        </div>
+      </div>
+
+      <div v-else-if="errorMessage" class="error-section">
+        <div class="error-card">
+          <Icon icon="mdi:alert-circle" class="error-icon" />
+          <h3>Error Loading Customers</h3>
+          <p>{{ errorMessage }}</p>
+          <button @click="loadUsers" class="btn btn-primary">Try Again</button>
+        </div>
+      </div>
+
+      <div v-else-if="filteredCustomers.length === 0" class="no-customers">
         <p>No customers found matching your criteria.</p>
       </div>
 
@@ -49,10 +59,8 @@
               <th>Customer ID</th>
               <th>Name</th>
               <th>Email</th>
-              <th>Phone</th>
               <th>Registration Date</th>
               <th>Total Orders</th>
-              <th>Status</th>
               <th class="actions-column">Action</th>
             </tr>
           </thead>
@@ -78,15 +86,9 @@
               </td>
               <td>{{ customer.name }}</td>
               <td>{{ customer.email }}</td>
-              <td>{{ customer.phone }}</td>
               <td>{{ formatDate(customer.registration_date) }}</td>
               <td>
                 <span class="order-count">{{ customer.total_orders }}</span>
-              </td>
-              <td>
-                <span :class="`status-badge status-${customer.status}`">
-                  {{ formatStatus(customer.status) }}
-                </span>
               </td>
               <td>
                 <div class="action-buttons">
@@ -96,13 +98,6 @@
                     title="View Details"
                   >
                     <Icon icon="mdi:eye" />
-                  </router-link>
-                  <router-link
-                    :to="`/admin/customers/edit/${customer.id}`"
-                    class="btn-action btn-edit"
-                    title="Edit Customer"
-                  >
-                    <Icon icon="mdi:pencil" />
                   </router-link>
                   <button
                     @click="deleteCustomer(customer)"
@@ -171,138 +166,16 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
-
-// Mock data for customers
-const mockCustomers = [
-  {
-    id: 1,
-    customer_id: 'CUST-001',
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1-555-0123',
-    registration_date: '2024-01-15T10:30:00Z',
-    total_orders: 5,
-    status: 'active',
-  },
-  {
-    id: 2,
-    customer_id: 'CUST-002',
-    name: 'Jane Smith',
-    email: 'jane.smith@example.com',
-    phone: '+1-555-0124',
-    registration_date: '2024-01-14T14:20:00Z',
-    total_orders: 3,
-    status: 'active',
-  },
-  {
-    id: 3,
-    customer_id: 'CUST-003',
-    name: 'Bob Johnson',
-    email: 'bob.johnson@example.com',
-    phone: '+1-555-0125',
-    registration_date: '2024-01-13T09:15:00Z',
-    total_orders: 2,
-    status: 'inactive',
-  },
-  {
-    id: 4,
-    customer_id: 'CUST-004',
-    name: 'Alice Brown',
-    email: 'alice.brown@example.com',
-    phone: '+1-555-0126',
-    registration_date: '2024-01-12T16:45:00Z',
-    total_orders: 7,
-    status: 'active',
-  },
-  {
-    id: 5,
-    customer_id: 'CUST-005',
-    name: 'Charlie Wilson',
-    email: 'charlie.wilson@example.com',
-    phone: '+1-555-0127',
-    registration_date: '2024-01-11T11:30:00Z',
-    total_orders: 1,
-    status: 'active',
-  },
-  {
-    id: 6,
-    customer_id: 'CUST-006',
-    name: 'Diana Prince',
-    email: 'diana.prince@example.com',
-    phone: '+1-555-0128',
-    registration_date: '2024-01-10T14:15:00Z',
-    total_orders: 4,
-    status: 'active',
-  },
-  {
-    id: 7,
-    customer_id: 'CUST-007',
-    name: 'Edward Norton',
-    email: 'edward.norton@example.com',
-    phone: '+1-555-0129',
-    registration_date: '2024-01-09T09:45:00Z',
-    total_orders: 6,
-    status: 'inactive',
-  },
-  {
-    id: 8,
-    customer_id: 'CUST-008',
-    name: 'Fiona Green',
-    email: 'fiona.green@example.com',
-    phone: '+1-555-0130',
-    registration_date: '2024-01-08T16:20:00Z',
-    total_orders: 2,
-    status: 'active',
-  },
-  {
-    id: 9,
-    customer_id: 'CUST-009',
-    name: 'George Lucas',
-    email: 'george.lucas@example.com',
-    phone: '+1-555-0131',
-    registration_date: '2024-01-07T11:10:00Z',
-    total_orders: 8,
-    status: 'active',
-  },
-  {
-    id: 10,
-    customer_id: 'CUST-010',
-    name: 'Helen Troy',
-    email: 'helen.troy@example.com',
-    phone: '+1-555-0132',
-    registration_date: '2024-01-06T13:30:00Z',
-    total_orders: 3,
-    status: 'active',
-  },
-  {
-    id: 11,
-    customer_id: 'CUST-011',
-    name: 'Ian Malcolm',
-    email: 'ian.malcolm@example.com',
-    phone: '+1-555-0133',
-    registration_date: '2024-01-05T10:00:00Z',
-    total_orders: 5,
-    status: 'inactive',
-  },
-  {
-    id: 12,
-    customer_id: 'CUST-012',
-    name: 'Julia Roberts',
-    email: 'julia.roberts@example.com',
-    phone: '+1-555-0134',
-    registration_date: '2024-01-04T15:45:00Z',
-    total_orders: 9,
-    status: 'active',
-  },
-]
+import { usersApi } from '@/services/api'
 
 // Reactive data
-const customers = ref(mockCustomers.map((c) => ({ ...c, selected: false })))
+const customers = ref([])
 const currentPage = ref(1)
 const itemsPerPage = ref(10)
 const searchQuery = ref('')
-const selectedStatus = ref('')
 const selectAll = ref(false)
+const isLoading = ref(false)
+const errorMessage = ref('')
 let searchTimeout = null
 
 // Computed properties
@@ -321,12 +194,6 @@ const filteredCustomers = computed(() => {
         c.email.toLowerCase().includes(query),
     )
   }
-
-  // Apply status filter
-  if (selectedStatus.value) {
-    filtered = filtered.filter((c) => c.status === selectedStatus.value)
-  }
-
   return filtered
 })
 
@@ -366,15 +233,40 @@ const visiblePages = computed(() => {
 
 // Functions
 
+// Load users from API
+const loadUsers = async () => {
+  try {
+    isLoading.value = true
+    errorMessage.value = ''
+
+    const params = {}
+    if (searchQuery.value) {
+      params.search = searchQuery.value
+    }
+
+    const response = await usersApi.getUsers(params)
+
+    if (response.data.success) {
+      let customersData = response.data.data.map((c) => ({ ...c, selected: false }))
+
+      customers.value = customersData
+    } else {
+      errorMessage.value = response.data.message || 'Failed to load users'
+    }
+  } catch (error) {
+    console.error('Error loading users:', error)
+    errorMessage.value = error.response?.data?.message || 'Failed to load users'
+  } finally {
+    isLoading.value = false
+  }
+}
+
 // Change to a specific page
 const changePage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
   }
 }
-
-// Format status for display
-const formatStatus = (status) => status.charAt(0).toUpperCase() + status.slice(1)
 
 // Format date for display
 const formatDate = (dateString) => {
@@ -388,27 +280,40 @@ const formatDate = (dateString) => {
 }
 
 // Delete a single customer
-const deleteCustomer = (customer) => {
-  if (confirm(`Delete customer ${customer.name}?`)) {
-    customers.value = customers.value.filter((c) => c.id !== customer.id)
-    alert('Customer deleted successfully')
+const deleteCustomer = async (customer) => {
+  if (!confirm(`Delete customer ${customer.name}?`)) {
+    return
+  }
+
+  try {
+    const response = await usersApi.deleteUser(customer.id)
+    if (response.data.success) {
+      // Remove from local array
+      customers.value = customers.value.filter((c) => c.id !== customer.id)
+      alert('Customer deleted successfully')
+    } else {
+      alert(response.data.message || 'Failed to delete customer')
+    }
+  } catch (error) {
+    console.error('Error deleting customer:', error)
+    alert(error.response?.data?.message || 'Failed to delete customer')
   }
 }
 
 // Debounced search to avoid too many filters
 const debouncedSearch = () => {
   clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => (currentPage.value = 1), 500)
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+    loadUsers()
+  }, 500)
 }
-
-// Apply filters and reset to first page
-const applyFilters = () => (currentPage.value = 1)
 
 // Clear all filters
 const clearFilters = () => {
   searchQuery.value = ''
-  selectedStatus.value = ''
   currentPage.value = 1
+  loadUsers()
 }
 
 // Toggle select all for current page
@@ -429,19 +334,41 @@ const toggleCustomerSelection = (customer) => {
 }
 
 // Bulk delete selected customers
-const bulkDelete = () => {
+const bulkDelete = async () => {
   const selectedNames = selectedCustomers.value.map((c) => c.name)
-  if (confirm(`Delete ${selectedNames.length} selected customer(s)?`)) {
+  if (!confirm(`Delete ${selectedNames.length} selected customer(s)?`)) {
+    return
+  }
+
+  try {
+    // Delete each selected customer
+    const deletePromises = selectedCustomers.value.map((customer) =>
+      usersApi.deleteUser(customer.id),
+    )
+
+    await Promise.all(deletePromises)
+
+    // Remove from local array
     customers.value = customers.value.filter((c) => !c.selected)
     selectAll.value = false
+
     if (paginatedCustomers.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
+
+    alert('Selected customers deleted successfully')
+  } catch (error) {
+    console.error('Error deleting customers:', error)
+    alert(error.response?.data?.message || 'Failed to delete some customers')
+    // Reload users to get current state
+    loadUsers()
   }
 }
 
 // Lifecycle hooks
-onMounted(() => {})
+onMounted(() => {
+  loadUsers()
+})
 
 // Watchers
 watch(
@@ -599,13 +526,47 @@ watch(currentPage, () => (selectAll.value = false))
   margin-left: auto;
 }
 
-.no-customers {
-  text-align: center;
-  padding: 3rem;
-  color: #666;
+.loading-section,
+.error-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.loading-card,
+.error-card {
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 48px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  max-width: 400px;
+  width: 100%;
+}
+
+.loading-icon {
+  font-size: 48px;
+  color: #14c9c9;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+.error-icon {
+  font-size: 48px;
+  color: #dc3545;
+  margin-bottom: 16px;
+}
+
+.loading-card h3,
+.error-card h3 {
+  margin: 0 0 12px 0;
+  color: #333;
+}
+
+.error-card p {
+  margin: 0 0 24px 0;
+  color: #666;
 }
 
 .table-container {
@@ -680,15 +641,6 @@ watch(currentPage, () => (selectAll.value = false))
   color: #38a169;
 }
 
-.status-badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-}
-
 .status-active {
   background-color: #dcfce7;
   color: #166534;
@@ -733,16 +685,6 @@ watch(currentPage, () => (selectAll.value = false))
 
 .btn-view:hover {
   background-color: #3182ce;
-  transform: translateY(-1px);
-}
-
-.btn-edit {
-  background-color: #ed8936;
-  color: white;
-}
-
-.btn-edit:hover {
-  background-color: #dd6b20;
   transform: translateY(-1px);
 }
 
@@ -951,27 +893,12 @@ watch(currentPage, () => (selectAll.value = false))
   }
 }
 
-@media (max-width: 480px) {
-  .customers-table th:nth-child(6),
-  .customers-table td:nth-child(6) {
-    display: none;
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
-
-  .pagination-controls {
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  .page-numbers {
-    order: 2;
-    width: 100%;
-    justify-content: center;
-    margin: 8px 0;
-  }
-
-  .btn-page {
-    padding: 6px 12px;
-    font-size: 13px;
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

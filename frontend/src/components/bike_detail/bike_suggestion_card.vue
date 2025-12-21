@@ -45,27 +45,26 @@
 
           <div class="product-info">
             <label class="product-title">{{ bike.title }}</label>
-            <div class="subtitle-color">
-              <span class="product-brand">{{ bike.brand }}</span>
-              <span class="separator"> | </span>
-              <span class="product-color">Color: {{ bike.color }}</span>
+            <div class="item-category-brand">
+              <span class="badge">{{ getCategoryName(bike) }}</span>
+              <span class="badge">{{ bike.brand }}</span>
+              <span class="badge">Color: {{ bike.color }}</span>
             </div>
-          </div>
-
-          <div class="rating-section">
-            <div class="stars">
-              <span
-                v-for="star in stars"
-                :key="star"
-                class="star"
-                :class="{ filled: star <= Math.floor(bike.rating || 0) }"
-              >
-                ★
+            <div class="rating-section">
+              <div class="stars">
+                <span
+                  v-for="star in stars"
+                  :key="star"
+                  class="star"
+                  :class="{ filled: star <= Math.floor(bike.rating || 0) }"
+                >
+                  ★
+                </span>
+              </div>
+              <span class="rating-text">
+                ({{ bike.rating }}) {{ formatNumber(bike.reviewCount) }}
               </span>
             </div>
-            <span class="rating-text">
-              ({{ bike.rating }}) {{ formatNumber(bike.reviewCount) }}
-            </span>
           </div>
 
           <div class="card-footer">
@@ -177,6 +176,22 @@ const addToCart = (bike) => {
 // Function to view bike details
 const viewBikeDetails = (bikeId) => {
   window.location.href = `/bike/${bikeId}`
+}
+
+// Get category name for display
+const getCategoryName = (bike) => {
+  // If category is already a string (from form data), use it directly
+  if (bike.category && typeof bike.category === 'string') {
+    return bike.category
+  }
+  // If category is an object (from API relationship), get the name
+  if (bike.category && typeof bike.category === 'object' && bike.category.name) {
+    return bike.category.name
+  }
+  // Otherwise, map from category_id
+  if (!bike.category_id) return 'Uncategorized'
+  // For suggestion cards, we might not have categories loaded, so return a default
+  return 'Bike'
 }
 </script>
 
@@ -418,7 +433,7 @@ const viewBikeDetails = (bikeId) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
+  margin-top: 6px;
 }
 
 .stars {
@@ -492,5 +507,25 @@ const viewBikeDetails = (bikeId) => {
   transition: all 0.2s ease;
   flex: 1;
   justify-content: center;
+}
+
+.item-category-brand {
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid #ddd;
+  border-radius: 90px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
 }
 </style>

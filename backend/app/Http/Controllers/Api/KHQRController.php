@@ -7,28 +7,19 @@ use Illuminate\Http\Request;
 use KHQR\BakongKHQR;
 use KHQR\Helpers\KHQRData;
 use KHQR\Models\IndividualInfo;
-use KHQR\Models\MerchantInfo;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use App\Services\BakongApiService;
+use Illuminate\Support\Facades\Log;
 
-/**
- * KHQR Payment Controller
- * 
- * Handles API endpoints for Bakong KHQR payment system:
- * - Generate QR codes for payments
- * - Check payment status
- * - Decode and verify QR codes
- * 
- * All endpoints return JSON responses for the frontend.
- */
 class KHQRController extends Controller
 {
     /**
-     * Generate KHQR for individual payment
+     * Generate QR code for individual payments
      */
     public function generateIndividual(Request $request)
     {
         try {
+            // Step 1: Validate input data
             $validated = $request->validate([
                 'bakong_account' => 'required|string',
                 'account_name' => 'required|string',
@@ -36,10 +27,11 @@ class KHQRController extends Controller
                 'currency' => 'nullable|string|in:KHR,USD',
             ]);
 
-            // Set currency based on user input with proper default handling
+            // Step 2: Set default currency and get currency code
             $currency = strtoupper($validated['currency'] ?? 'USD');
             $currencyCode = ($currency === 'USD') ? KHQRData::CURRENCY_USD : KHQRData::CURRENCY_KHR;
 
+            // Step 3: Create individual info object
             $individualInfo = new IndividualInfo(
                 $validated['bakong_account'],
                 $validated['account_name'],
@@ -48,8 +40,10 @@ class KHQRController extends Controller
                 (float) $validated['amount']
             );
 
+            // Step 4: Generate QR string
             $khqrString = BakongKHQR::generateIndividual($individualInfo);
 
+            // Step 5: Return success response
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -58,10 +52,12 @@ class KHQRController extends Controller
                     'account_name' => $validated['account_name'],
                     'amount' => $validated['amount'],
                     'currency' => $currency,
-                    'currency_symbol' => $currency === 'KHR' ? '៛' : '$'                ]
+                    'currency_symbol' => $currency === 'KHR' ? '៛' : '$'
+                ]
             ]);
 
         } catch (\Exception $e) {
+            // Step 6: Handle errors
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -70,11 +66,12 @@ class KHQRController extends Controller
     }
 
     /**
-     * Generate KHQR for merchant payment
+     * Generate QR code for merchant payments
      */
     public function generateMerchant(Request $request)
     {
         try {
+            // Step 1: Validate input data
             $validated = $request->validate([
                 'bakong_account' => 'required|string',
                 'merchant_name' => 'required|string',
@@ -84,29 +81,27 @@ class KHQRController extends Controller
                 'store_label' => 'nullable|string',
             ]);
 
-            // Set currency based on user input with proper default handling
-            $currency = strtoupper($validated['currency'] ?? 'USD');
-            $currencyCode = ($currency === 'USD') ? KHQRData::CURRENCY_USD : KHQRData::CURRENCY_KHR;
-
-            // Use the BakongApiService for merchant QR generation
+            // Step 2: Use service to generate QR
             $result = BakongApiService::generateIndividual(
                 $validated['bakong_account'],
                 $validated['merchant_name'],
                 $validated['amount'],
                 $validated['currency'] ?? 'USD',
-                false // Don't track payment for merchant QR
+                false
             );
 
+            // Step 3: Check if generation was successful
             if (!$result['success']) {
                 return response()->json($result, 400);
             }
 
+            // Step 4: Return success response
             return response()->json([
                 'success' => true,
                 'data' => [
                     'qr_string' => $result['qr_string'],
                     'bakong_account' => $result['bakong_account'],
-                    'merchant_name' => $result['account_name'], // Service returns 'account_name'
+                    'merchant_name' => $result['account_name'],
                     'amount' => $result['amount'],
                     'currency' => $result['currency'],
                     'currency_symbol' => $result['currency_symbol'],
@@ -115,6 +110,7 @@ class KHQRController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            // Step 5: Handle errors
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -123,23 +119,27 @@ class KHQRController extends Controller
     }
 
     /**
-     * Decode KHQR string
+     * Decode QR string to get payment information
      */
     public function decode(Request $request)
     {
         try {
+            // Step 1: Validate input
             $validated = $request->validate([
                 'qr_string' => 'required|string'
             ]);
 
+            // Step 2: Decode the QR string
             $decoded = BakongKHQR::decode($validated['qr_string']);
 
+            // Step 3: Return decoded data
             return response()->json([
                 'success' => true,
                 'data' => $decoded
             ]);
 
         } catch (\Exception $e) {
+            // Step 4: Handle errors
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -148,17 +148,20 @@ class KHQRController extends Controller
     }
 
     /**
-     * Verify KHQR string
+     * Verify if QR code is valid
      */
     public function verify(Request $request)
     {
         try {
+            // Step 1: Validate input
             $validated = $request->validate([
                 'qr_string' => 'required|string'
             ]);
 
+            // Step 2: Verify the QR string
             $isValid = BakongKHQR::verify($validated['qr_string']);
 
+            // Step 3: Return verification result
             return response()->json([
                 'success' => true,
                 'is_valid' => $isValid,
@@ -166,6 +169,7 @@ class KHQRController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            // Step 4: Handle errors
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -174,28 +178,16 @@ class KHQRController extends Controller
     }
 
     /**
-     * Generate KHQR for Frontend Checkout (Main Endpoint)
-     * 
-     * This is the primary endpoint used by the frontend checkout process.
-     * It generates a QR code that customers can scan with their banking apps
-     * and optionally enables real-time payment tracking.
-     * 
-     * @param Request $request Contains payment details:
-     *                        - bakong_account: Merchant's Bakong ID
-     *                        - account_name: Display name for merchant
-     *                        - amount: Payment amount
-     *                        - currency: "USD" or "KHR" 
-     *                        - track_payment: Enable real-time detection
-     * 
-     * @return JsonResponse QR code string and tracking information
+     * Generate QR code with optional image for individual payments
      */
     public function generateIndividualWithImage(Request $request)
     {
         try {
+            // Step 1: Validate input data
             $validated = $request->validate([
                 'bakong_account' => 'required|string',
                 'account_name' => 'required|string',
-                'amount' => 'required|numeric|min:0',
+                'amount' => 'required|numeric|min:0.01',
                 'currency' => 'nullable|string|in:KHR,USD',
                 'include_image' => 'nullable|boolean',
                 'qr_size' => 'nullable|integer|min:50|max:1000',
@@ -204,10 +196,14 @@ class KHQRController extends Controller
                 'track_payment' => 'nullable|boolean',
             ]);
 
+            // Step 2: Log the request
+            Log::info('KHQR Generation Request', $validated);
+
+            // Step 3: Set defaults
             $currency = $validated['currency'] ?? 'USD';
             $trackPayment = $validated['track_payment'] ?? false;
 
-            // Use the BakongApiService with optional payment tracking
+            // Step 4: Generate QR using service
             $result = BakongApiService::generateIndividual(
                 $validated['bakong_account'],
                 $validated['account_name'],
@@ -216,10 +212,13 @@ class KHQRController extends Controller
                 $trackPayment
             );
 
+            // Step 5: Check if generation failed
             if (!$result['success']) {
+                Log::error('KHQR Generation Failed', $result);
                 return response()->json($result, 400);
             }
 
+            // Step 6: Prepare response data
             $response = [
                 'success' => true,
                 'data' => [
@@ -232,13 +231,13 @@ class KHQRController extends Controller
                 ]
             ];
 
-            // Add tracking info if available
+            // Step 7: Add tracking info if available
             if (isset($result['md5'])) {
                 $response['data']['md5'] = $result['md5'];
                 $response['data']['tracking_enabled'] = $result['tracking_enabled'] ?? true;
             }
 
-            // Generate QR image if requested
+            // Step 8: Generate QR image if requested
             if ($validated['include_image'] ?? false) {
                 $qrSize = $validated['qr_size'] ?? 300;
                 $qrFormat = $validated['qr_format'] ?? 'svg';
@@ -250,10 +249,9 @@ class KHQRController extends Controller
                     ->errorCorrection('M')
                     ->generate($result['qr_string']);
 
-                // Convert to base64 data URI for easy display
                 $base64 = base64_encode($qrImage);
                 $dataUri = "data:image/{$qrFormat}+xml;base64," . $base64;
-                
+
                 $response['data']['qr_image'] = [
                     'format' => $qrFormat,
                     'size' => $qrSize,
@@ -264,9 +262,11 @@ class KHQRController extends Controller
                 ];
             }
 
+            // Step 9: Return response
             return response()->json($response);
 
         } catch (\Exception $e) {
+            // Step 10: Handle errors
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -275,11 +275,12 @@ class KHQRController extends Controller
     }
 
     /**
-     * Generate QR Image from KHQR string
+     * Generate QR code image from QR string
      */
     public function generateQrImage(Request $request)
     {
         try {
+            // Step 1: Validate input
             $validated = $request->validate([
                 'qr_string' => 'required|string',
                 'size' => 'nullable|integer|min:50|max:1000',
@@ -287,16 +288,19 @@ class KHQRController extends Controller
                 'margin' => 'nullable|integer|min:0|max:50',
             ]);
 
+            // Step 2: Set defaults
             $size = $validated['size'] ?? 300;
             $format = $validated['format'] ?? 'png';
             $margin = $validated['margin'] ?? 10;
 
+            // Step 3: Generate QR image
             $qrImage = QrCode::format($format)
                 ->size($size)
                 ->margin($margin)
                 ->errorCorrection('M')
                 ->generate($validated['qr_string']);
 
+            // Step 4: Return image response
             if ($format === 'png') {
                 return response($qrImage, 200)
                     ->header('Content-Type', 'image/png')
@@ -308,6 +312,7 @@ class KHQRController extends Controller
             }
 
         } catch (\Exception $e) {
+            // Step 5: Handle errors
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -316,48 +321,28 @@ class KHQRController extends Controller
     }
 
     /**
-     * Check payment status by MD5 hash
+     * Check payment status using MD5 hash
      */
     public function checkPaymentStatus(Request $request)
     {
         try {
+            // Step 1: Validate input
             $validated = $request->validate([
                 'md5' => 'required|string'
             ]);
 
+            // Step 2: Check payment status via service
             $result = BakongApiService::checkPaymentStatus($validated['md5']);
-            
+
+            // Step 3: Return result
             return response()->json($result);
 
         } catch (\Exception $e) {
+            // Step 4: Handle errors
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 500);
         }
     }
-
-    /**
-     * Simulate payment completion for testing (development only)
-     */
-    public function simulatePayment(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'md5' => 'required|string'
-            ]);
-
-            $result = BakongApiService::simulatePayment($validated['md5']);
-            
-            return response()->json($result);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-
 }

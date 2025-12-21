@@ -3,17 +3,6 @@
     <h2 class="section-title">Product</h2>
 
     <div class="form-group">
-      <label>Product ID</label>
-      <input
-        type="text"
-        v-model="localProduct.id"
-        placeholder="Product ID will be generated"
-        disabled
-        readonly
-      />
-    </div>
-
-    <div class="form-group">
       <label>Product Name</label>
       <input
         type="text"
@@ -196,14 +185,6 @@ select:disabled {
   color: #38a169;
   border-color: #9ae6b4;
   opacity: 1;
-}
-
-.form-group:first-child input:disabled {
-  background-color: #e6fffa;
-  color: #38a169;
-  font-weight: 500;
-  border-color: #9ae6b4;
-  cursor: not-allowed;
 }
 
 .quantity-message {

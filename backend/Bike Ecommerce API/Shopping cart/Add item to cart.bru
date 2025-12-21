@@ -1,0 +1,27 @@
+meta {
+  name: Add item to cart
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8000/api/cart
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 10|y6zEMLuGjY85i6Io5jyZSDxNz1q6QGX6zRCYThndc077e666
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "product_id": 124,
+    "quantity": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Update cart item quantity
+  type: http
+  seq: 4
+}
+
+patch {
+  url: http://localhost:8000/api/cart/12
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 10|y6zEMLuGjY85i6Io5jyZSDxNz1q6QGX6zRCYThndc077e666
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "quantity": 3
+  }
+}
+
+settings {
+  encodeUrl: true
+}

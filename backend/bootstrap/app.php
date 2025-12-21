@@ -12,8 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->api([\Illuminate\Http\Middleware\HandleCors::class]);
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'api.auth' => \App\Http\Middleware\ApiAuthMiddleware::class,
+            'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

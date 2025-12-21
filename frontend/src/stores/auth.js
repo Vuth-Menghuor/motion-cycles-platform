@@ -1,7 +1,13 @@
 import { defineStore } from 'pinia'
 import api from '@/services/api.js'
+import { useFavoritesStore } from './favorites'
+import { useCartStore } from './cart'
+import { useOrdersStore } from './orders'
+import { useRouter } from 'vue-router'
 
 export const useAuthStore = defineStore('auth', () => {
+  const router = useRouter()
+
   // Function to log in a user
   async function login(email, password) {
     try {
@@ -12,6 +18,29 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', token)
       localStorage.setItem('user', JSON.stringify(user))
       localStorage.setItem('userRole', user.role || 'user')
+
+      // Initialize user data after login
+      const favoritesStore = useFavoritesStore()
+      const cartStore = useCartStore()
+      const ordersStore = useOrdersStore()
+
+      // Clear any previous user data and load current user's data
+      ordersStore.clearOrders()
+      try {
+        await favoritesStore.fetchFavorites()
+        await cartStore.fetchCart()
+        await ordersStore.fetchUserOrders()
+      } catch (error) {
+        console.warn('Failed to load user data after login:', error)
+      }
+
+      // Redirect based on user role
+      if (user.role === 'admin') {
+        router.push('/admin')
+      } else {
+        // Redirect to home for regular users
+        router.push('/home')
+      }
 
       return result.data
     } catch (e) {
@@ -36,6 +65,15 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     localStorage.removeItem('userRole')
+
+    // Clear user data from stores
+    const favoritesStore = useFavoritesStore()
+    const cartStore = useCartStore()
+    const ordersStore = useOrdersStore()
+
+    favoritesStore.clearFavorites()
+    cartStore.clearCart()
+    ordersStore.clearOrders()
   }
 
   // Getter to get the current user

@@ -341,13 +341,17 @@ const TAB_CONFIG = {
     icon: 'material-symbols:inventory',
     label: 'Manage Stock',
   },
+  restock: {
+    path: '/admin/products/restock',
+    icon: 'material-symbols:package',
+    label: 'Restock Product',
+  },
   orderList: { path: '/admin/orders/list', icon: 'lets-icons:order', label: 'Order List' },
   viewOrder: {
     path: '/admin/orders/view',
     icon: 'material-symbols:visibility',
     label: 'View Order',
   },
-  editOrder: { path: '/admin/orders/edit', icon: 'material-symbols:edit', label: 'Edit Order' },
   customerList: {
     path: '/admin/customers/list',
     icon: 'hugeicons:user-ai',
@@ -357,11 +361,6 @@ const TAB_CONFIG = {
     path: '/admin/customers/view',
     icon: 'material-symbols:visibility',
     label: 'View Customer',
-  },
-  editCustomer: {
-    path: '/admin/customers/edit',
-    icon: 'material-symbols:edit',
-    label: 'Edit Customer',
   },
   analytics: {
     path: '/admin/analytics',
@@ -496,8 +495,8 @@ const getTabKeyFromRoute = (path) => {
 
   // Handle dynamic routes (edit pages)
   if (path.startsWith('/admin/products/edit/')) return 'edit'
-  if (path.startsWith('/admin/orders/edit/')) return 'editOrder'
-  if (path.startsWith('/admin/customers/edit/')) return 'editCustomer'
+  if (path.startsWith('/admin/products/add/discount/')) return 'discount'
+  if (path.startsWith('/admin/products/restock/')) return 'restock'
 
   return null
 }
@@ -763,6 +762,7 @@ onMounted(() => {
 .admin-layout > .sidebar {
   width: 250px;
   background-color: #1e3a8a;
+  /* background-color: #0060aa; */
   color: white;
   padding: 20px;
   flex-shrink: 0;
@@ -877,22 +877,26 @@ onMounted(() => {
 
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #ff9934;
+  /* color: #ff9934; */
+  color: #ff9b00;
 }
 
 .nav-item:hover .nav-icon,
 .nav-item:hover .icon-chevron {
-  color: #ff9934;
+  /* color: #ff9934; */
+  color: #ff9b00;
 }
 
 .nav-item.active {
   background: rgba(255, 255, 255, 0.15);
-  color: #ff9934;
+  /* color: #ff9934; */
+  color: #ff9b00;
 }
 
 .nav-item.active .nav-icon,
 .nav-item.active .icon-chevron {
-  color: #ff9934;
+  /* color: #ff9934; */
+  color: #ff9b00;
 }
 
 .nav-item .icon-chevron {
@@ -934,12 +938,14 @@ onMounted(() => {
 
 .submenu-item:hover {
   background: rgba(255, 255, 255, 0.1);
-  color: #ff9934;
+  /* color: #ff9934; */
+  color: #ff9b00;
 }
 
 .submenu-item.active {
   background: rgba(255, 255, 255, 0.15);
-  color: #ff9934;
+  /* color: #ff9934; */
+  color: #ff9b00;
 }
 
 /* ===========================================
@@ -1078,12 +1084,14 @@ onMounted(() => {
 
 .tab.active {
   background-color: #f7f7f7;
-  color: #ff9934;
+  /* color: #ff9934; */
+  color: #ff9b00;
   box-shadow: 0 6px 20px rgba(14, 165, 233, 0.06);
 }
 
 .tab:hover {
-  color: #ff9934;
+  /* color: #ff9934; */
+  color: #ff9b00;
 }
 
 .tab-icon {
@@ -1138,7 +1146,7 @@ onMounted(() => {
   padding: 16px;
   flex: 1;
   min-height: 0;
-  /* overflow-y: auto; */
+  overflow-y: auto;
 }
 
 /* ===========================================

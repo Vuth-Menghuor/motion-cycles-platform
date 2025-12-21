@@ -9,6 +9,12 @@
         <div>
           <h1 class="bike-summary-title">{{ bike.title }}</h1>
 
+          <div class="item-category-brand">
+            <span class="badge">{{ getCategoryName(bike) }}</span>
+            <span class="badge">{{ bike.brand }}</span>
+            <span class="badge">Color: {{ bike.color }}</span>
+          </div>
+
           <div class="bike-summary-rating">
             <div class="bike-summary-stars">
               <span
@@ -23,12 +29,6 @@
             <span class="bike-summary-rating-text">
               {{ bike.rating }} out of 5 ({{ formatNumber(bike.reviewCount) }} reviews)
             </span>
-          </div>
-
-          <div class="bike-summary-brand-color">
-            <span class="bike-summary-brand">{{ bike.brand }}</span>
-            <span class="bike-summary-separator"> | </span>
-            <span class="bike-summary-color">Color: {{ bike.color }}</span>
           </div>
         </div>
 
@@ -49,17 +49,6 @@
               ${{ formatNumber(bike.price) }}
             </div>
           </div>
-          <div
-            v-if="
-              bike.discount &&
-              Array.isArray(bike.discount) &&
-              bike.discount.length > 0 &&
-              bike.discount[0].value
-            "
-            class="bike-summary-savings"
-          >
-            You save: ${{ formatNumber(getSavings(bike)) }}
-          </div>
         </div>
       </div>
 
@@ -68,7 +57,7 @@
           <Icon icon="fa7-solid:cart-arrow-down" />
           <span>Add to Cart</span>
         </button>
-        <button class="bike-summary-buy-now">
+        <button class="bike-summary-buy-now" @click="$emit('buyNow', bike)">
           <Icon icon="mdi:flash" />
           <span>Buy Now</span>
         </button>
@@ -81,7 +70,7 @@
 import { Icon } from '@iconify/vue'
 
 // Define emits for parent component communication
-defineEmits(['addToCart'])
+defineEmits(['addToCart', 'buyNow'])
 
 // Define props for the component
 defineProps({
@@ -112,12 +101,20 @@ const getDiscountedPrice = (bike) => {
   }
 }
 
-// Function to calculate savings amount
-const getSavings = (bike) => {
-  if (!bike.price) return 0
-  const originalPrice = bike.price
-  const discountedPrice = getDiscountedPrice(bike)
-  return Math.max(0, originalPrice - discountedPrice)
+// Get category name for display
+const getCategoryName = (bike) => {
+  // If category is already a string (from form data), use it directly
+  if (bike.category && typeof bike.category === 'string') {
+    return bike.category
+  }
+  // If category is an object (from API relationship), get the name
+  if (bike.category && typeof bike.category === 'object' && bike.category.name) {
+    return bike.category.name
+  }
+  // Otherwise, map from category_id
+  if (!bike.category_id) return 'Uncategorized'
+  // For sticky cards, we might not have categories loaded, so return a default
+  return 'Bike'
 }
 </script>
 
@@ -198,7 +195,7 @@ const getSavings = (bike) => {
 
 .bike-summary-price-details {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
 }
 
@@ -212,11 +209,6 @@ const getSavings = (bike) => {
   font-size: 14px;
   color: #aaa;
   text-decoration: line-through;
-}
-
-.bike-summary-savings {
-  font-size: 14px;
-  color: #16a34a;
 }
 
 .bike-summary-actions {
@@ -247,5 +239,25 @@ const getSavings = (bike) => {
 
 .bike-summary-buy-now {
   background: #3b82f6;
+}
+
+.item-category-brand {
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid #ddd;
+  border-radius: 90px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
 }
 </style>

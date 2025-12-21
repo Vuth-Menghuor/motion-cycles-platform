@@ -44,7 +44,11 @@
           <button
             @click="handlePurchase"
             :disabled="
-              !formData.buyerName || !formData.buyerPhone || !formData.payment || isProcessing
+              !formData?.buyerName ||
+              !formData?.buyerEmail ||
+              !formData?.buyerPhone ||
+              !formData?.payment ||
+              isProcessing
             "
             class="btn btn-primary"
           >
@@ -72,7 +76,7 @@
                 </div>
                 <div class="khqr-merchant">
                   <div class="merchant-name">MOTION CYCLE</div>
-                  <div class="amount-display">${{ totalAmount.toFixed(2) }}</div>
+                  <div class="amount-display">${{ purchaseAmount.toFixed(2) }}</div>
                 </div>
                 <div class="qr-code-container">
                   <img
@@ -159,16 +163,18 @@
  * - Order processing and invoice generation
  */
 
-import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
-import { storeToRefs } from 'pinia'
 
 // Bakong Payment API Services
 import {
   generateKHQRIndividualWithImage, // Generate QR codes for payments
   checkPaymentStatus, // Check if payment completed
 } from '@/services/khqr'
+
+// Orders API
+import { useOrdersStore } from '@/stores/orders'
 
 // UI Components
 import Navigation_header from '@/components/navigation_header.vue'
@@ -180,17 +186,52 @@ import Purschase_section from '@/components/checkout/payment/purschase_section.v
 // STORE & ROUTER SETUP
 // ============================================
 const router = useRouter()
+const route = useRoute()
 const cartStore = useCartStore()
-const { cartItems } = storeToRefs(cartStore)
+const ordersStore = useOrdersStore()
+const cartItems = computed(() => cartStore.items)
 
 // ============================================
 // FORM DATA & PURCHASE INFO
 // ============================================
-const promoCode = ref('BOOKRIDE50') // Promo code for discounts
+const promoCode = ref('') // Promo code for discounts
 const formData = ref({
   buyerName: '', // Customer name
+  buyerEmail: '', // Customer email
   buyerPhone: '', // Customer phone
   payment: null, // Selected payment method
+})
+const selectedAddress = ref(null) // Selected shipping address
+
+// Watch for route changes to clear promo code when leaving checkout
+watch(
+  () => route.path,
+  (newPath) => {
+    const checkoutRoutes = [
+      '/checkout/cart',
+      '/checkout/address',
+      '/checkout/payment',
+      '/checkout/purchase',
+    ]
+    if (!checkoutRoutes.includes(newPath)) {
+      promoCode.value = ''
+      localStorage.removeItem('checkoutPromoCode')
+    }
+  },
+)
+
+// Load selected address from localStorage on mount
+onMounted(() => {
+  const savedAddress = localStorage.getItem('selectedShippingAddress')
+  if (savedAddress) {
+    selectedAddress.value = JSON.parse(savedAddress)
+  }
+
+  // Load saved promo code
+  const savedPromoCode = localStorage.getItem('checkoutPromoCode')
+  if (savedPromoCode) {
+    promoCode.value = savedPromoCode
+  }
 })
 
 const purchaseAmount = ref(0) // Total amount to pay
@@ -219,9 +260,12 @@ const generateQRImageUrl = (qrString) => {
 
 // Total amount from cart (reactive)
 const totalAmount = computed(() => {
+  if (!cartItems.value || !Array.isArray(cartItems.value)) return 0
+
   // Calculate total from cart items (using already discounted prices)
   const cartTotal = cartItems.value.reduce((total, item) => {
-    return total + item.price * item.quantity
+    if (!item.product || typeof item.product.pricing !== 'number') return total
+    return total + item.product.pricing * item.quantity
   }, 0)
 
   // Check if promo code is valid
@@ -281,7 +325,7 @@ const returnToPayment = () => {
  */
 const handlePurchase = async () => {
   // Step 1: Validate required fields
-  if (!formData.value.buyerName || !formData.value.buyerPhone) {
+  if (!formData.value.buyerName || !formData.value.buyerEmail || !formData.value.buyerPhone) {
     alert('Please fill in all required fields')
     return
   }
@@ -300,7 +344,7 @@ const handlePurchase = async () => {
       const requestData = {
         bakong_account: 'vuth_menghuor@aclb', // Merchant's Bakong account
         account_name: 'MOTION CYCLE', // Display name for customer
-        amount: totalAmount.value, // Total amount to pay
+        amount: purchaseAmount.value, // Total amount to pay
         currency: 'USD', // Payment currency (USD/KHR)
         track_payment: true, // Enable real-time payment detection
         include_image: false, // Generate QR image URL separately for better control
@@ -375,32 +419,73 @@ const handlePurchase = async () => {
 }
 
 // Confirm payment manually (for demo purposes)
-const confirmPayment = () => {
-  paymentStatus.value = 'success'
+const confirmPayment = async () => {
+  try {
+    // Calculate order breakdown
+    const cartTotal = cartItems.value.reduce((total, item) => {
+      return total + item.product.pricing * item.quantity
+    }, 0)
 
-  // Store order data for invoice
-  localStorage.setItem(
-    'lastOrderData',
-    JSON.stringify({
-      cartItems: cartItems.value,
-      formData: formData.value,
-      totalAmount: totalAmount.value,
-      promoCode: promoCode.value,
-      paymentMethod: 'Bakong KHQR',
-      timestamp: new Date().toISOString(),
-      paymentType: 'manual_confirmation',
-      summaryBreakdown: summaryBreakdown.value, // Include detailed breakdown
-    }),
-  )
+    let discountAmount = summaryBreakdown.value?.discountAmount || 0
+    const shippingAmount = 2.0
+    const subtotal = summaryBreakdown.value?.totalMRP || cartTotal
+    const totalAmount = Math.max(subtotal - discountAmount, 0) + shippingAmount
 
-  // Clear cart
-  cartStore.clearCart()
+    // Prepare order data
+    const orderData = {
+      customer_name: formData.value.buyerName,
+      customer_email: formData.value.buyerEmail,
+      customer_phone: formData.value.buyerPhone,
+      payment_method: 'Bakong KHQR',
+      total_amount: totalAmount,
+      subtotal: subtotal,
+      discount_amount: discountAmount,
+      shipping_amount: shippingAmount,
+      currency: 'USD',
+      promo_code: promoCode.value || null,
+      shipping_address: selectedAddress.value,
+      items: cartItems.value.map((item) => ({
+        id: item.product.id,
+        quantity: item.quantity,
+        price: item.product.pricing,
+        name: item.product.title || item.product.name,
+        image: item.product.image,
+        description: item.product.description,
+      })),
+    }
 
-  // Navigate to summary
-  setTimeout(() => {
-    // Keep the success modal visible during navigation
-    router.push('/checkout/purchase/summary')
-  }, 5000)
+    // Create order in backend
+    const order = await ordersStore.createOrder(orderData)
+
+    // Store order data for invoice
+    localStorage.setItem(
+      'lastOrderData',
+      JSON.stringify({
+        cartItems: cartItems.value,
+        formData: formData.value,
+        totalAmount: purchaseAmount.value,
+        promoCode: promoCode.value,
+        paymentMethod: 'Bakong KHQR',
+        timestamp: new Date().toISOString(),
+        paymentType: 'manual_confirmation',
+        summaryBreakdown: summaryBreakdown.value,
+        orderId: order.id,
+      }),
+    )
+
+    paymentStatus.value = 'success'
+
+    // Clear cart after successful payment
+    cartStore.clearCart()
+
+    // Navigate to summary
+    setTimeout(() => {
+      router.push('/checkout/purchase/summary')
+    }, 2000)
+  } catch (error) {
+    console.error('Error creating order:', error)
+    alert('Failed to create order. Please try again.')
+  }
 }
 
 // Payment detection polling
@@ -427,29 +512,76 @@ const startPaymentPolling = (md5) => {
         stopPaymentPolling()
         paymentStatus.value = 'success'
 
-        // Store complete order data and navigate to summary
-        localStorage.setItem(
-          'lastOrderData',
-          JSON.stringify({
-            cartItems: cartItems.value,
-            formData: formData.value,
-            totalAmount: totalAmount.value,
-            promoCode: promoCode.value,
-            paymentMethod: 'Bakong KHQR',
-            timestamp: new Date().toISOString(),
-            paymentType: 'automatic_detection',
-            summaryBreakdown: summaryBreakdown.value, // Include detailed breakdown
-          }),
-        )
+        try {
+          // Calculate order breakdown
+          const cartTotal = cartItems.value.reduce((total, item) => {
+            return total + item.product.pricing * item.quantity
+          }, 0)
 
-        // Clear cart after successful payment
-        cartStore.clearCart()
+          let discountAmount = summaryBreakdown.value?.discountAmount || 0
 
-        // Navigate to success page after 5 second delay
-        setTimeout(() => {
-          // Keep the success modal visible during navigation
-          router.push('/checkout/purchase/summary')
-        }, 5000)
+          const shippingAmount = 2.0
+          const subtotal = summaryBreakdown.value?.totalMRP || cartTotal
+          const totalAmount = Math.max(subtotal - discountAmount, 0) + shippingAmount
+
+          // Prepare order data
+          const orderData = {
+            customer_name: formData.value.buyerName,
+            customer_email: formData.value.buyerEmail,
+            customer_phone: formData.value.buyerPhone,
+            payment_method: 'Bakong KHQR',
+            total_amount: totalAmount,
+            subtotal: subtotal,
+            discount_amount: discountAmount,
+            shipping_amount: shippingAmount,
+            currency: 'USD',
+            promo_code: promoCode.value || null,
+            bakong_account: 'vuth_menghuor@aclb', // Merchant's Bakong account
+            account_name: 'MOTION CYCLE', // Display name for merchant
+            shipping_address: selectedAddress.value,
+            items: cartItems.value.map((item) => ({
+              id: item.product.id,
+              name: item.product.title || item.product.name,
+              price: item.product.pricing,
+              quantity: item.quantity,
+              image: item.product.image,
+              description: item.product.description,
+            })),
+          }
+
+          // Create order in backend
+          const order = await ordersStore.createOrder(orderData)
+
+          // Store complete order data and navigate to summary
+          localStorage.setItem(
+            'lastOrderData',
+            JSON.stringify({
+              cartItems: cartItems.value,
+              formData: formData.value,
+              totalAmount: purchaseAmount.value,
+              promoCode: promoCode.value,
+              paymentMethod: 'Bakong KHQR',
+              timestamp: new Date().toISOString(),
+              paymentType: 'automatic_detection',
+              summaryBreakdown: summaryBreakdown.value,
+              orderId: order.id,
+            }),
+          )
+
+          // Clear cart after successful payment
+          cartStore.clearCart()
+
+          // Navigate to success page after 5 second delay
+          setTimeout(() => {
+            router.push('/checkout/purchase/summary')
+          }, 5000)
+        } catch (orderError) {
+          console.error('Error creating order:', orderError)
+          // Still navigate to summary even if order creation fails
+          setTimeout(() => {
+            router.push('/checkout/purchase/summary')
+          }, 5000)
+        }
         return
       }
 

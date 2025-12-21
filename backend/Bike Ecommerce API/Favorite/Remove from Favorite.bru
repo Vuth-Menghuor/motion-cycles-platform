@@ -1,0 +1,19 @@
+meta {
+  name: Remove from Favorite
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://localhost:8000/api/favorites/1
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 21|8hHSHJdBRX67mDJiNfBLDvGjHGic0rCEgdLLwvY74607d0d9
+}
+
+settings {
+  encodeUrl: true
+}

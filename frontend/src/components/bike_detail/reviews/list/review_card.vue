@@ -3,13 +3,14 @@
     <div class="review-card-header">
       <div class="review-card-user-info">
         <div class="review-card-avatar">
-          {{ getInitials(review.user.name) }}
+          {{ getInitials(getUserName(review)) }}
         </div>
         <h3 class="review-card-user">
-          {{ review.user.name }}
+          {{ getUserName(review) }}
+          <span v-if="review.isGuest" class="guest-badge">(Guest)</span>
         </h3>
       </div>
-      <span class="review-card-date">{{ formatDate(review.created_at) }} </span>
+      <span class="review-card-date">{{ formatDate(review.created_at || review.date) }} </span>
     </div>
     <div class="review-card-stars">
       <span
@@ -35,6 +36,19 @@ defineProps({
     required: true,
   },
 })
+
+// Function to get user name from review (handles both authenticated and guest reviews)
+const getUserName = (review) => {
+  // For authenticated users, name is in review.user.name
+  if (review.user && typeof review.user === 'object' && review.user.name) {
+    return review.user.name
+  }
+  // For guest reviews, name is directly in review.user
+  if (review.user && typeof review.user === 'string') {
+    return review.user
+  }
+  return 'Anonymous'
+}
 
 // Function to get initials from name
 const getInitials = (name) => {
@@ -96,6 +110,18 @@ const formatDate = (dateString) => {
   font-size: 16px;
   font-weight: 600;
   color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.guest-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  background-color: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
 .review-card-date {

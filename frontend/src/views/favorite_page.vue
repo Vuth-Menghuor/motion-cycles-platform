@@ -21,22 +21,21 @@
   <div class="favorites-page">
     <h2>Your Favorites</h2>
     <div class="favorites-saved">
-      <span class="length-saved">{{ favoritesStore.favorites.length }}</span>
+      <span class="length-saved">{{ favoritesStore.favoriteCount }}</span>
       <span>Bike saved </span>
     </div>
 
     <div v-if="favoritesStore.favorites.length > 0" class="favorites-container">
-      <div v-for="bike in favoritesStore.favorites" :key="bike.id" class="favorite-card">
+      <div v-for="favorite in favoritesStore.favorites" :key="favorite.id" class="favorite-card">
         <div class="info-section">
-          <img :src="bike.image" alt="bike image" class="bike-image" />
+          <img :src="favorite.product.image" alt="bike image" class="bike-image" />
 
           <div class="bike-info">
             <div class="bike-content-name">
-              <h3>{{ bike.title }}</h3>
-              <div class="subtitle-color">
-                <span class="product-subtitle">{{ bike.brand }}</span>
-                <span class="separator">|</span>
-                <span class="product-color">Color: {{ bike.color }}</span>
+              <h3>{{ favorite.product.name }}</h3>
+              <div class="item-category-brand">
+                <span class="badge">{{ favorite.product.brand }}</span>
+                <span class="badge">Color: {{ favorite.product.color }}</span>
               </div>
               <div class="rating-section">
                 <div class="stars">
@@ -44,32 +43,37 @@
                     v-for="star in stars"
                     :key="star"
                     class="star"
-                    :class="{ filled: star <= Math.floor(bike.rating) }"
+                    :class="{ filled: star <= Math.floor(favorite.product.rating || 0) }"
                   >
                     <Icon icon="line-md:star-filled" />
                   </span>
                 </div>
                 <span class="rating-text">
-                  ({{ bike.rating }}) {{ formatNumber(bike.reviewCount) }}
+                  ({{ favorite.product.rating || 0 }})
+                  {{ formatNumber(favorite.product.review_count || 0) }}
                 </span>
               </div>
             </div>
 
             <div class="price-info">
-              <span class="price"> ${{ getDiscountedPrice(bike).toLocaleString() }} </span>
-              <span v-if="bike.discount" class="original-price">
-                ${{ bike.price.toLocaleString() }}
+              <span class="price">
+                ${{ getDiscountedPrice(favorite.product).toLocaleString() }}
+              </span>
+              <span v-if="favorite.product.discount" class="original-price">
+                ${{ favorite.product.pricing.toLocaleString() }}
               </span>
             </div>
 
-            <div v-if="bike.discount" class="promotion-price">
-              <span>{{ getDiscountLabel(bike) }}</span>
+            <div v-if="favorite.product.discount" class="promotion-price">
+              <span>{{ getDiscountLabel(favorite.product) }}</span>
             </div>
           </div>
 
           <div class="card-actions">
-            <button class="btn view-btn" @click="viewBikeDetails(bike.id)">View Details</button>
-            <button class="btn remove-btn" @click="favoritesStore.removeFavorite(bike.id)">
+            <button class="btn view-btn" @click="viewBikeDetails(favorite.product.id)">
+              View Details
+            </button>
+            <button class="btn remove-btn" @click="removeFromFavorites(favorite.product.id)">
               Remove
             </button>
           </div>
@@ -93,11 +97,26 @@ import Navigation_header from '@/components/navigation_header.vue'
 import { useFavoritesStore } from '@/stores/favorites'
 import { useRouter } from 'vue-router'
 import { Icon } from '@iconify/vue'
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 
 const favoritesStore = useFavoritesStore()
 const router = useRouter()
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
+
+// Fetch favorites when component mounts
+onMounted(async () => {
+  const token = localStorage.getItem('token')
+  if (!token) {
+    router.push('/authentication/sign_in')
+    return
+  }
+
+  try {
+    await favoritesStore.fetchFavorites()
+  } catch (error) {
+    console.error('Failed to fetch favorites:', error)
+  }
+})
 
 function formatNumber(number) {
   // Format number with commas if it exists
@@ -111,13 +130,21 @@ const viewBikeDetails = (bikeId) => {
   router.push(`/bike/${bikeId}`).then(() => window.scrollTo(0, 0))
 }
 
-const getDiscountLabel = (bike) => {
+const removeFromFavorites = async (productId) => {
+  try {
+    await favoritesStore.removeFromFavorites(productId)
+  } catch (error) {
+    console.error('Failed to remove from favorites:', error)
+  }
+}
+
+const getDiscountLabel = (product) => {
   // Return null if no discount
-  if (!bike.discount || !Array.isArray(bike.discount) || bike.discount.length === 0) {
+  if (!product.discount || !Array.isArray(product.discount) || product.discount.length === 0) {
     return null
   }
 
-  const discount = bike.discount[0]
+  const discount = product.discount[0]
   // Return label based on discount type
   if (discount.type === 'percent') {
     return `${discount.value}% OFF`
@@ -126,18 +153,18 @@ const getDiscountLabel = (bike) => {
   }
 }
 
-const getDiscountedPrice = (bike) => {
+const getDiscountedPrice = (product) => {
   // Return original price if no discount
-  if (!bike.discount || !Array.isArray(bike.discount) || bike.discount.length === 0) {
-    return bike.price
+  if (!product.discount || !Array.isArray(product.discount) || product.discount.length === 0) {
+    return product.pricing
   }
 
-  const discount = bike.discount[0]
+  const discount = product.discount[0]
   // Calculate discounted price based on type
   if (discount.type === 'percent') {
-    return bike.price - (bike.price * discount.value) / 100
+    return product.pricing - (product.pricing * discount.value) / 100
   } else {
-    return bike.price - discount.value
+    return product.pricing - discount.value
   }
 }
 </script>
@@ -365,5 +392,25 @@ const getDiscountedPrice = (bike) => {
 
 .product-color {
   font-weight: 500;
+}
+
+.item-category-brand {
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  margin: 2px;
+  border: 1px solid #ddd;
+  border-radius: 90px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 8px 0;
 }
 </style>

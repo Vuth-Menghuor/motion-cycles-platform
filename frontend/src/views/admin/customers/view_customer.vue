@@ -15,31 +15,37 @@
             <span class="registration-date"
               >Registered {{ formatDate(customer?.registration_date) }}</span
             >
-            <span :class="`customer-status status-${customer?.status}`">
-              Status: {{ formatStatus(customer?.status) }}
-            </span>
           </div>
         </div>
         <div class="customer-actions">
-          <router-link :to="`/admin/customers/edit/${customer?.id}`" class="btn btn-simple">
-            <Icon icon="mdi:pencil" />
-            Edit Customer
-          </router-link>
+          <!-- Edit functionality removed -->
         </div>
       </div>
 
-      <div v-if="!customer" class="loading-section">
+      <div v-if="isLoading" class="loading-section">
         <div class="loading-card">
           <Icon icon="mdi:loading" class="loading-icon" />
           <h3>Loading customer details...</h3>
         </div>
       </div>
 
-      <div v-else-if="!customer.id" class="error-section">
+      <div v-else-if="errorMessage" class="error-section">
         <div class="error-card">
           <Icon icon="mdi:alert-circle" class="error-icon" />
-          <h3>Customer Not Found</h3>
-          <p>The customer you're looking for doesn't exist or has been deleted.</p>
+          <h3>
+            {{
+              errorMessage === 'Customer not found'
+                ? 'Customer Not Found'
+                : 'Error Loading Customer'
+            }}
+          </h3>
+          <p>
+            {{
+              errorMessage === 'Customer not found'
+                ? "The customer you're looking for doesn't exist or has been deleted."
+                : errorMessage
+            }}
+          </p>
           <router-link to="/admin/customers/list" class="btn btn-primary">
             <Icon icon="mdi:arrow-left" />
             Back to Customers List
@@ -47,7 +53,7 @@
         </div>
       </div>
 
-      <template v-else>
+      <template v-else-if="!errorMessage && !isLoading && customer">
         <div class="customer-view-inner">
           <div class="content-section">
             <div class="section-header">
@@ -64,10 +70,6 @@
                   <span class="info-value">{{ customer.email }}</span>
                 </div>
                 <div class="info-row">
-                  <span class="info-label">Phone Number:</span>
-                  <span class="info-value">{{ customer.phone || 'Not provided' }}</span>
-                </div>
-                <div class="info-row">
                   <span class="info-label">Registration Date:</span>
                   <span class="info-value">{{ formatDate(customer.registration_date) }}</span>
                 </div>
@@ -75,50 +77,88 @@
                   <span class="info-label">Total Orders:</span>
                   <span class="info-value">{{ customer.total_orders }}</span>
                 </div>
-                <div class="info-row">
-                  <span class="info-label">Account Status:</span>
-                  <span :class="`status-badge status-${customer.status}`" class="info-value">
-                    {{ formatStatus(customer.status) }}
-                  </span>
-                </div>
               </div>
             </div>
           </div>
 
           <div class="content-section">
             <div class="section-header">
-              <h2><Icon icon="mdi:history" /> Recent Orders</h2>
+              <h2><Icon icon="mdi:history" /> Order History</h2>
             </div>
             <div class="section-content">
-              <div
-                v-if="customer.recent_orders && customer.recent_orders.length > 0"
-                class="orders-grid"
-              >
-                <div v-for="order in customer.recent_orders" :key="order.id" class="order-card">
-                  <div class="order-header">
-                    <div class="order-info">
-                      <h4 class="order-number">{{ order.order_number }}</h4>
-                      <span class="order-date">{{ formatDate(order.created_at) }}</span>
+              <div v-if="customer.orders && customer.orders.length > 0">
+                <div class="orders-list">
+                  <div v-for="order in customer.orders" :key="order.id" class="order-group">
+                    <div class="order-header-info">
+                      <div class="order-header-row">
+                        <div class="order-left">
+                          <div class="order-number">Order #{{ order.order_number }}</div>
+                        </div>
+                        <div class="order-date">{{ formatDate(order.created_at) }}</div>
+                      </div>
+                      <div class="item-flex-container">
+                        <img
+                          v-if="order.items && order.items.length > 0"
+                          :src="order.items[0].image"
+                          :alt="order.items[0].name"
+                          class="item-thumb"
+                        />
+                        <div class="item-details">
+                          <div class="item-info">
+                            <div class="item-name">{{ order.items[0].name }}</div>
+                            <div class="item-category-brand">
+                              <span>{{ order.items[0].category || 'N/A' }}</span>
+                              <span class="separator">•</span>
+                              <span>{{ order.items[0].brand || 'N/A' }}</span>
+                            </div>
+                            <div class="item-price">
+                              Quantity: {{ order.items[0].quantity || 1 }}
+                            </div>
+                          </div>
+                          <div class="order-statuses">
+                            <span class="status-badge status-completed">Payment: Completed</span>
+                            <span class="status-badge"
+                              >Delivery Phone: {{ order.customer_phone || 'N/A' }}</span
+                            >
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div class="order-status">
-                      <span :class="`status-badge status-${order.status}`">{{
-                        formatStatus(order.status)
-                      }}</span>
+
+                    <div class="order-summary">
+                      <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span>${{ parseFloat(order.subtotal || 0).toFixed(2) }}</span>
+                      </div>
+                      <div class="summary-row discount">
+                        <span>Item Discount</span>
+                        <span>-${{ calculateItemDiscount(order).toFixed(2) }}</span>
+                      </div>
+                      <div class="summary-row">
+                        <span>Net Price</span>
+                        <span
+                          >${{
+                            (
+                              parseFloat(order.subtotal || 0) - calculateItemDiscount(order)
+                            ).toFixed(2)
+                          }}</span
+                        >
+                      </div>
+                      <div class="summary-row discount">
+                        <span>Promo Discount</span>
+                        <span>-${{ parseFloat(order.discount_amount || 0).toFixed(2) }}</span>
+                      </div>
+                      <div class="summary-row shipping">
+                        <span>Shipping</span>
+                        <span>${{ parseFloat(order.shipping_amount || 0).toFixed(2) }}</span>
+                      </div>
+                      <div class="summary-row total">
+                        <span><strong>Total Amount</strong></span>
+                        <span class="total-amount"
+                          ><strong>${{ calculateTotal(order).toFixed(2) }}</strong></span
+                        >
+                      </div>
                     </div>
-                  </div>
-                  <div class="order-details">
-                    <div class="order-items">
-                      <span class="items-count">{{ order.items_count }} item(s)</span>
-                    </div>
-                    <div class="order-total">
-                      <span class="total-amount">${{ order.total_amount }}</span>
-                    </div>
-                  </div>
-                  <div class="order-actions">
-                    <router-link :to="`/admin/orders/view/${order.id}`" class="btn btn-small">
-                      <Icon icon="mdi:eye" />
-                      View Order
-                    </router-link>
                   </div>
                 </div>
               </div>
@@ -138,77 +178,38 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
+import { usersApi } from '@/services/api'
 
 const props = defineProps({
   id: { type: [String, Number], required: true },
 })
 
 const customer = ref(null)
+const isLoading = ref(false)
+const errorMessage = ref('')
 
-// Mock data for customers
-const mockCustomers = [
-  {
-    id: 1,
-    customer_id: 'CUST-001',
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1-555-0123',
-    registration_date: '2024-01-15T10:30:00Z',
-    total_orders: 5,
-    status: 'active',
-    recent_orders: [
-      {
-        id: 1,
-        order_number: 'ORD-001',
-        created_at: '2024-01-15T10:30:00Z',
-        status: 'completed',
-        items_count: 1,
-        total_amount: 299.99,
-      },
-      {
-        id: 2,
-        order_number: 'ORD-002',
-        created_at: '2024-01-14T14:20:00Z',
-        status: 'processing',
-        items_count: 1,
-        total_amount: 399.99,
-      },
-    ],
-  },
-  {
-    id: 2,
-    customer_id: 'CUST-002',
-    name: 'Jane Smith',
-    email: 'jane.smith@example.com',
-    phone: '+1-555-0124',
-    registration_date: '2024-01-14T14:20:00Z',
-    total_orders: 3,
-    status: 'active',
-    recent_orders: [
-      {
-        id: 3,
-        order_number: 'ORD-003',
-        created_at: '2024-01-13T09:15:00Z',
-        status: 'pending',
-        items_count: 1,
-        total_amount: 299.99,
-      },
-    ],
-  },
-]
+// Load customer data from API
+const loadCustomer = async () => {
+  try {
+    isLoading.value = true
+    errorMessage.value = ''
 
-// Load customer data
-const loadCustomer = () => {
-  const customerId = parseInt(props.id)
-  customer.value = mockCustomers.find((c) => c.id === customerId) || null
-}
+    const response = await usersApi.getUser(props.id)
 
-// Format status for display
-const formatStatus = (status) => {
-  if (status) {
-    return status.charAt(0).toUpperCase() + status.slice(1)
-  } else {
-    return 'Unknown'
+    if (response.data.success) {
+      customer.value = response.data.data
+    } else {
+      errorMessage.value = response.data.message || 'Failed to load customer'
+    }
+  } catch (error) {
+    console.error('Error loading customer:', error)
+    if (error.response?.status === 404) {
+      errorMessage.value = 'Customer not found'
+    } else {
+      errorMessage.value = error.response?.data?.message || 'Failed to load customer'
+    }
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -225,6 +226,33 @@ const formatDate = (dateString) => {
       minute: '2-digit',
     })
   }
+}
+
+// Calculate item discount amount for an order
+const calculateItemDiscount = (order) => {
+  return (order.items || []).reduce((total, item) => {
+    const discount = item.discount?.[0]
+    if (!discount) return total
+
+    const pricing = parseFloat(item.price) || 0
+    let discountValue = 0
+
+    if (discount.type === 'percent') {
+      discountValue = pricing * (discount.value / 100) * item.quantity
+    } else if (discount.type === 'fixed') {
+      discountValue = discount.value * item.quantity
+    }
+    return total + discountValue
+  }, 0)
+}
+
+// Calculate total amount for an order
+const calculateTotal = (order) => {
+  const subtotal = parseFloat(order.subtotal || 0)
+  const shipping = parseFloat(order.shipping_amount || 0)
+  const itemDiscount = calculateItemDiscount(order)
+  const promoDiscount = parseFloat(order.discount_amount || 0)
+  return subtotal - itemDiscount + shipping - promoDiscount
 }
 
 onMounted(() => loadCustomer())
@@ -438,6 +466,8 @@ onMounted(() => loadCustomer())
   font-size: 12px;
   font-weight: 500;
   text-transform: uppercase;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
 }
 
 .orders-grid {
@@ -507,6 +537,113 @@ onMounted(() => loadCustomer())
 .order-actions {
   display: flex;
   gap: 8px;
+}
+
+.items-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.order-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.order-header-section {
+  background: #f8f9fa;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.order-header-section h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.order-status-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.order-items {
+  padding: 8px;
+}
+
+.item-card {
+  display: flex;
+  gap: 16px;
+  background: white;
+  border-radius: 6px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.item-card:last-child {
+  margin-bottom: 0;
+}
+
+.item-image {
+  width: 240px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.item-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 18px;
+}
+
+.item-category-brand {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.price-total-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.separator {
+  color: #64748b;
+}
+
+.meta-item {
+  font-size: 14px;
+  color: #475569;
+  font-weight: 500;
+}
+
+.meta-item.total {
+  color: #10b981;
+  font-weight: 600;
 }
 
 .no-orders {
@@ -615,13 +752,177 @@ onMounted(() => loadCustomer())
   border-color: #0fa5a5;
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  margin: 2px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-group {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.order-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.order-image {
+  flex-shrink: 0;
+}
+
+.item-image {
+  width: 320px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.order-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.order-number {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 18px;
+}
+
+.order-date {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.order-statuses {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.order-summary {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row.total {
+  border-top: 2px solid #e2e8f0;
+  padding-top: 12px;
+  margin-top: 8px;
+  font-size: 16px;
+}
+
+.summary-row.discount {
+  color: #dc3545;
+}
+
+.summary-row.shipping {
+  border-bottom: none;
+}
+
+.total-amount {
+  color: #10b981;
+}
+
+.order-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-flex-container {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.item-details {
+  flex-direction: column;
+  justify-content: space-between;
+  height: 130px;
+  flex: 1;
+}
+
+.item-thumb {
+  width: 230px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 16px;
+}
+
+.item-category-brand {
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+}
+
+.item-price {
+  font-size: 14px;
+  color: #475569;
+  margin-top: 4px;
+}
+
+.separator {
+  color: grey;
 }
 
 @media (max-width: 768px) {

@@ -14,5 +14,7 @@ export default defineConfig({
   server: {
     host: 'localhost',
     port: 5173,
+    historyApiFallback: true, // Enable history API fallback for SPA routing
   },
+  base: '/', // Base public path for the app
 })

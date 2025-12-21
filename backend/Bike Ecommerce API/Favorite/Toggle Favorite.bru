@@ -1,0 +1,26 @@
+meta {
+  name: Toggle Favorite
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8000/api/favorites/toggle
+  body: json
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer 21|8hHSHJdBRX67mDJiNfBLDvGjHGic0rCEgdLLwvY74607d0d9
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "product_id": 1
+  }
+}
+
+settings {
+  encodeUrl: true
+}

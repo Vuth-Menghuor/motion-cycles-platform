@@ -120,7 +120,7 @@ const paginatedFeedback = computed(() => {
     productRating: review.product?.rating || 0,
     category: review.product?.category?.name || 'Unknown Category',
     brand: review.product?.brand || 'Unknown Brand',
-    customerName: review.user?.name || 'Anonymous',
+    customerName: review.customer_name || 'Anonymous',
     customerAvatar: review.user?.avatar || '/images/default-avatar.png',
     rating: review.rating,
     comment: review.comment,
@@ -158,6 +158,7 @@ const selectedProduct = computed(() => {
       image: mostCommonReview.product.image || '/images/road_1.png',
       category: mostCommonReview.product.category?.name || 'Unknown',
       brand: mostCommonReview.product.brand || 'Unknown',
+      color: mostCommonReview.product.color || null,
     }
   }
 

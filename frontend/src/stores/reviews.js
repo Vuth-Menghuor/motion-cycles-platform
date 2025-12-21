@@ -112,19 +112,35 @@ export const useReviewsStore = defineStore('reviews', () => {
         throw new Error('Review comment is required')
       }
 
-      // Call API to submit review
-      const response = await reviewsApi.submitReview(productId, {
-        rating: reviewData.rating,
-        comment: reviewData.comment.trim(),
-      })
+      // Check if user is authenticated (has token)
+      const token = localStorage.getItem('token')
+      let newReview
 
-      // Add the returned review to local state
+      if (token) {
+        // Authenticated user - submit to API
+        const response = await reviewsApi.submitReview(productId, {
+          rating: reviewData.rating,
+          comment: reviewData.comment.trim(),
+        })
+        newReview = response.data
+      } else {
+        // Guest user - submit to guest endpoint
+        const response = await reviewsApi.submitGuestReview(productId, {
+          rating: reviewData.rating,
+          comment: reviewData.comment.trim(),
+          user: reviewData.user,
+          email: reviewData.email,
+        })
+        newReview = response.data
+      }
+
+      // Add the review to local state
       if (!reviews.value[productId]) {
         reviews.value[productId] = []
       }
-      reviews.value[productId].unshift(response.data)
+      reviews.value[productId].unshift(newReview)
 
-      return response.data
+      return newReview
     } catch (error) {
       errors.value.submit = error.message
       throw error

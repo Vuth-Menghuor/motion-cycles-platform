@@ -2,10 +2,30 @@
   <div class="stock-page">
     <nav class="breadcrumb">
       <span class="breadcrumb-item active">Stock Management</span>
+      <button @click="loadStockData" class="btn-refresh" :disabled="loading">
+        <Icon icon="mdi:refresh" />
+        Refresh
+      </button>
     </nav>
 
+    <!-- Loading State -->
+    <div v-if="loading" class="loading-state">
+      <div class="loading-icon">⟳</div>
+      <p>Loading stock data...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="error-state">
+      <div class="error-icon">⚠</div>
+      <p>{{ error }}</p>
+      <button @click="loadStockData" class="btn-retry">
+        <Icon icon="mdi:refresh" />
+        Retry
+      </button>
+    </div>
+
     <!-- Stock Table -->
-    <div class="table-container">
+    <div v-else class="table-container">
       <table class="stock-table">
         <thead>
           <tr>
@@ -44,7 +64,7 @@
                 class="checkbox"
               />
             </td>
-            <td class="product-id">{{ item.productId }}</td>
+            <td class="product-id">{{ item.id }}</td>
             <td class="product-name">{{ item.productName }}</td>
             <td class="brand">{{ item.brand }}</td>
             <td class="category">{{ item.category }}</td>
@@ -86,7 +106,7 @@
     <!-- Pagination -->
     <div class="pagination-container">
       <div class="pagination-info">
-        Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} stock items (Page
+        Showing {{ startItem }} to {{ endItem }} of {{ totalItems }} products (Page
         {{ currentPage }} of {{ totalPages }})
       </div>
       <div class="pagination-controls">
@@ -120,81 +140,62 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
+import { productsApi } from '@/services/api.js'
 
 const ITEMS_PER_PAGE = 50
 const selectAll = ref(false)
 const currentPage = ref(1)
 const router = useRouter()
 
-// Sample data for generating stock
-const sampleData = {
-  names: [
-    'Trail Pro Carbon',
-    'Road Race Elite',
-    'Mountain Bike Aluminum',
-    'Gravel Sport',
-    'Time Trial Aero',
-    'Cyclocross Race',
-    'Touring Comfort',
-    'Downhill Extreme',
-  ],
-  categories: ['Mountain Bike', 'Road Bike'],
-  brands: [
-    'Cannondale',
-    'Trek',
-    'Bianchi',
-    'Giant',
-    'CERVÉLO',
-    'Specialized',
-    'Shimano',
-    'Calnago',
-  ],
+// Data states
+const stock = ref([])
+const loading = ref(false)
+const error = ref('')
+
+// Load stock data from API
+const loadStockData = async () => {
+  try {
+    loading.value = true
+    error.value = ''
+
+    // Get all products (no pagination for stock management)
+    const response = await productsApi.getProducts({ per_page: 1000 })
+
+    // Transform API data to stock format
+    stock.value = response.data.data.map((product) => {
+      const quantity = product.quantity || 0
+      const minimumStock = 5 // Default minimum stock level
+
+      let status = 'In Stock'
+      if (quantity === 0) {
+        status = 'Out of Stock'
+      } else if (quantity <= minimumStock) {
+        status = 'Low Stock'
+      }
+
+      return {
+        id: product.id,
+        productId: product.id.toString(), // Use raw database ID instead of formatted ID
+        productName: product.title || 'Unknown Product',
+        brand: product.brand || 'Unknown Brand',
+        category: product.category?.name || 'Unknown Category',
+        currentStock: quantity,
+        minimumStock,
+        status,
+        lastUpdated: new Date(product.updated_at).toLocaleDateString(),
+        selected: false,
+      }
+    })
+  } catch (err) {
+    error.value = `Failed to load stock data: ${err.response?.data?.message || err.message}`
+    console.error('Error loading stock data:', err)
+  } finally {
+    loading.value = false
+  }
 }
-
-// Utility functions
-const generateId = (prefix) =>
-  `${prefix}${Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, '0')}`
-const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)]
-
-// Generate sample stock data
-const generateSampleStock = () => {
-  return Array.from({ length: 55 }, () => {
-    const currentStock = Math.floor(Math.random() * 100)
-    const minimumStock = Math.floor(Math.random() * 20) + 5
-
-    let status = 'In Stock'
-    if (currentStock === 0) {
-      status = 'Out of Stock'
-    } else if (currentStock <= minimumStock) {
-      status = 'Low Stock'
-    } else {
-      // Status remains 'In Stock'
-    }
-
-    const lastUpdated = new Date()
-    lastUpdated.setDate(lastUpdated.getDate() - Math.floor(Math.random() * 30))
-
-    return {
-      id: generateId('S'),
-      productId: generateId('P'),
-      productName: randomItem(sampleData.names),
-      brand: randomItem(sampleData.brands),
-      category: randomItem(sampleData.categories),
-      currentStock,
-      minimumStock,
-      status,
-      lastUpdated: lastUpdated.toLocaleDateString(),
-      selected: false,
-    }
-  })
-}
-
-const stock = ref(generateSampleStock())
 
 // Computed properties
 const totalItems = computed(() => stock.value.length)
@@ -271,107 +272,9 @@ const bulkRestock = () => {
   }
 
   const item = selected[0]
-  const suggestedQuantity = item.currentStock + Math.max(5, Math.ceil(item.currentStock * 0.2))
-  const stockAlert = getStockAlert(item)
 
-  let highlight
-  if (item.category === 'Mountain Bike') {
-    highlight = `${item.productName} - ${item.category} by ${item.brand}`
-  } else {
-    highlight = `${item.productName} - ${item.category} by ${item.brand}`
-  }
-
-  let description
-  if (item.category === 'Mountain Bike') {
-    description = `Complete description for ${item.productName}. This is a high-quality ${item.category.toLowerCase()} from ${item.brand}. Perfect for off-road adventures and trails.`
-  } else {
-    description = `Complete description for ${item.productName}. This is a high-quality ${item.category.toLowerCase()} from ${item.brand}. Perfect for road cycling and commuting.`
-  }
-
-  let quality
-  if (['Cannondale', 'Trek', 'Specialized'].includes(item.brand)) {
-    quality = 'High'
-  } else {
-    quality = 'Standard'
-  }
-
-  let price
-  if (item.category === 'Mountain Bike') {
-    price = '2999'
-  } else {
-    price = '1899'
-  }
-
-  let color
-  if (item.category === 'Mountain Bike') {
-    color = 'Black'
-  } else {
-    color = 'Blue'
-  }
-
-  let range
-  if (item.category === 'Road Bike') {
-    range = 'N/A'
-  } else {
-    range = '100km'
-  }
-
-  let hubMotor
-  if (item.category === 'Road Bike') {
-    hubMotor = 'N/A'
-  } else {
-    hubMotor = '750W'
-  }
-
-  let controller
-  if (item.category === 'Road Bike') {
-    controller = 'Basic'
-  } else {
-    controller = 'LCD Display'
-  }
-
-  let weight
-  if (item.category === 'Road Bike') {
-    weight = '15kg'
-  } else {
-    weight = '25kg'
-  }
-
-  let display
-  if (item.category === 'Road Bike') {
-    display = 'None'
-  } else {
-    display = 'Digital'
-  }
-
-  const productInfo = {
-    productName: item.productName,
-    brand: item.brand,
-    category: item.category,
-    quantity: suggestedQuantity.toString(),
-    productId: item.productId,
-    restockMode: 'true',
-    stockAlert,
-    highlight: highlight,
-    description: description,
-    quality: quality,
-    price: price,
-    color: color,
-    range: range,
-    hubMotor: hubMotor,
-    payload: '120kg',
-    controller: controller,
-    weight: weight,
-    display: display,
-  }
-
-  if (selected.length > 1) {
-    productInfo.bulkCount = selected.length.toString()
-  } else {
-    // Single item, no bulk count needed
-  }
-
-  router.push({ path: '/admin/products/add', query: productInfo })
+  // Navigate to restock page with product ID
+  router.push(`/admin/products/restock/${item.id}`)
 }
 
 // Watchers
@@ -381,6 +284,11 @@ watch(
   { deep: true },
 )
 watch(currentPage, () => (selectAll.value = false))
+
+// Load data on mount
+onMounted(() => {
+  loadStockData()
+})
 </script>
 
 <style scoped>
@@ -672,6 +580,7 @@ watch(currentPage, () => (selectAll.value = false))
 .breadcrumb {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 20px;
   padding: 12px 16px;
   border-radius: 5px;
@@ -693,6 +602,34 @@ watch(currentPage, () => (selectAll.value = false))
   color: #ff9934;
   font-weight: 400;
   cursor: default;
+}
+
+.btn-refresh {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #4a5568;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.2s ease;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  background-color: #f7fafc;
+  border-color: #cbd5e0;
+}
+
+.btn-refresh:disabled {
+  background-color: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+  border-color: #e2e8f0;
 }
 
 @media (max-width: 1024px) {

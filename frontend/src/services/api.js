@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8100'
+const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -25,11 +25,72 @@ api.interceptors.request.use(
 
 // Products API
 export const productsApi = {
-  // Get all products (public)
-  getProducts: () => api.get('/public/products'),
+  // Get all products (public) with advanced filtering
+  getProducts: (params = {}) => {
+    const queryParams = new URLSearchParams()
+
+    // Search parameter
+    if (params.search) {
+      queryParams.append('search', params.search)
+    }
+
+    // Category filter
+    if (params.category_id) {
+      queryParams.append('category_id', params.category_id)
+    }
+
+    // Brand filter
+    if (params.brand) {
+      queryParams.append('brand', params.brand)
+    }
+
+    // Color filter
+    if (params.color) {
+      queryParams.append('color', params.color)
+    }
+
+    // Price range filters
+    if (params.min_price !== undefined && params.min_price !== null) {
+      queryParams.append('min_price', params.min_price)
+    }
+    if (params.max_price !== undefined && params.max_price !== null) {
+      queryParams.append('max_price', params.max_price)
+    }
+
+    // Rating filter
+    if (params.min_rating !== undefined && params.min_rating !== null) {
+      queryParams.append('min_rating', params.min_rating)
+    }
+
+    // Discount filter
+    if (params.has_discount !== undefined) {
+      queryParams.append('has_discount', params.has_discount)
+    }
+
+    // Sorting
+    if (params.sort_by) {
+      queryParams.append('sort_by', params.sort_by)
+    }
+    if (params.sort_order) {
+      queryParams.append('sort_order', params.sort_order)
+    }
+
+    // Pagination
+    if (params.per_page) {
+      queryParams.append('per_page', params.per_page)
+    }
+    if (params.page) {
+      queryParams.append('page', params.page)
+    }
+
+    const queryString = queryParams.toString()
+    const url = queryString ? `/public/products?${queryString}` : '/public/products'
+
+    return api.get(url)
+  },
 
   // Get product by ID (public)
-  getProduct: (id) => api.get(`/public/products/${id}`),
+  getProduct: (id) => api.get(`/products/${id}`),
 
   // Get products by category (public)
   getProductsByCategory: (categoryId) => api.get(`/public/products?category_id=${categoryId}`),
@@ -70,6 +131,10 @@ export const reviewsApi = {
   // Submit a review for a product (authenticated user)
   submitReview: (productId, reviewData) => api.post(`/products/${productId}/reviews`, reviewData),
 
+  // Submit a guest review for a product (public)
+  submitGuestReview: (productId, reviewData) =>
+    api.post(`/products/${productId}/reviews/guest`, reviewData),
+
   // Admin: Get all reviews with filters
   getAdminReviews: (params = {}) => {
     const queryString = new URLSearchParams(params).toString()
@@ -95,7 +160,114 @@ export const cartApi = {
   updateCartItem: (cartId, quantity) => api.patch(`/cart/${cartId}`, { quantity }),
   removeFromCart: (cartId) => api.delete(`/cart/${cartId}`),
   clearCart: () => api.delete('/cart'),
-  getCartCount: () => api.get('/cart-count')
+  getCartCount: () => api.get('/cart-count'),
+}
+
+// Favorites API
+export const favoritesApi = {
+  // Get user's favorites
+  getFavorites: () => api.get('/favorites'),
+
+  // Add product to favorites
+  addToFavorites: (productId) => api.post('/favorites', { product_id: productId }),
+
+  // Remove product from favorites
+  removeFromFavorites: (productId) => api.delete(`/favorites/${productId}`),
+
+  // Toggle favorite status
+  toggleFavorite: (productId) => api.post('/favorites/toggle', { product_id: productId }),
+
+  // Check if product is favorited
+  checkFavorite: (productId) => api.post('/favorites/check', { product_id: productId }),
+}
+
+// Orders API
+export const ordersApi = {
+  createOrder: (orderData) => api.post('/orders', orderData),
+  listOrders: () => api.get('/orders'),
+  getOrder: (orderId) => api.get(`/orders/${orderId}`),
+  updateOrderStatus: (orderId, statusData) => api.patch(`/orders/${orderId}/status`, statusData),
+  // Admin orders API
+  adminListOrders: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString()
+    return api.get(`/admin/orders${queryString ? `?${queryString}` : ''}`)
+  },
+  adminGetOrder: (orderId) => api.get(`/admin/orders/${orderId}`),
+}
+
+// Dashboard API
+export const dashboardApi = {
+  // Get dashboard statistics
+  getStats: () => api.get('/admin/dashboard/stats'),
+
+  // Get stock alerts
+  getStockAlerts: (params = {}) => {
+    const queryParams = new URLSearchParams()
+    if (params.threshold) {
+      queryParams.append('threshold', params.threshold)
+    }
+    const queryString = queryParams.toString()
+    return api.get(`/admin/dashboard/stock-alerts${queryString ? `?${queryString}` : ''}`)
+  },
+
+  // Get category distribution
+  getCategoryDistribution: () => api.get('/admin/dashboard/category-distribution'),
+}
+
+// Users API (Admin)
+export const usersApi = {
+  // Get all users with filters
+  getUsers: (params = {}) => {
+    const queryParams = new URLSearchParams()
+    if (params.search) {
+      queryParams.append('search', params.search)
+    }
+    if (params.status) {
+      queryParams.append('status', params.status)
+    }
+    const queryString = queryParams.toString()
+    return api.get(`/admin/users${queryString ? `?${queryString}` : ''}`)
+  },
+
+  // Get user by ID
+  getUser: (id) => api.get(`/admin/users/${id}`),
+
+  // Delete user
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
+}
+
+// Discounts API (Admin)
+export const discountsApi = {
+  // Get all discounts
+  getDiscounts: (params = {}) => {
+    const queryParams = new URLSearchParams()
+    if (params.active !== undefined) {
+      queryParams.append('active', params.active)
+    }
+    if (params.search) {
+      queryParams.append('search', params.search)
+    }
+    if (params.per_page) {
+      queryParams.append('per_page', params.per_page)
+    }
+    const queryString = queryParams.toString()
+    return api.get(`/admin/discounts${queryString ? `?${queryString}` : ''}`)
+  },
+
+  // Get discount by ID
+  getDiscount: (id) => api.get(`/admin/discounts/${id}`),
+
+  // Create discount
+  createDiscount: (data) => api.post('/admin/discounts', data),
+
+  // Update discount
+  updateDiscount: (id, data) => api.patch(`/admin/discounts/${id}`, data),
+
+  // Delete discount
+  deleteDiscount: (id) => api.delete(`/admin/discounts/${id}`),
+
+  // Validate discount code (public)
+  validateCode: (data) => api.post('/discounts/validate', data),
 }
 
 export default api

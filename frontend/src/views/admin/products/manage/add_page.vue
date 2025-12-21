@@ -28,7 +28,7 @@
 
       <div>
         <div class="form-column">
-          <ProductImage @update:images="productImages = $event" />
+          <ProductImage v-model="productImages" />
           <ProductPrice :product="product" @update:product="product = $event" />
           <ProductSpecs
             :specs="specs"
@@ -59,7 +59,6 @@ const route = useRoute()
 
 // Product data
 const product = ref({
-  id: '',
   name: '',
   brand: '',
   category: '',
@@ -160,14 +159,6 @@ const prefilledFields = computed(() => {
   return fields
 })
 
-// Generate a random product ID
-const generateProductId = () => {
-  const randomNum = Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, '0')
-  return `P${randomNum}I`
-}
-
 // Convert date format from MM/DD/YYYY to YYYY-MM-DD
 const convertDateFormat = (dateString) => {
   if (!dateString || dateString === 'N/A') {
@@ -240,6 +231,7 @@ const addProduct = async () => {
       category_id: categoryId,
       brand: product.value.brand,
       color: product.value.color,
+      quality: product.value.quality, // Add quality field
       badge: [], // Will be populated from discount data if applicable
       discount: [], // Will be populated from discount data
       specs: specs.value,
@@ -252,7 +244,7 @@ const addProduct = async () => {
     if (product.value.discountType && product.value.discountValue) {
       let discountTypeValue = 'fixed'
       if (product.value.discountType.toLowerCase().includes('percent')) {
-        discountTypeValue = 'percentage'
+        discountTypeValue = 'percent'
       }
 
       const discountData = {
@@ -260,28 +252,29 @@ const addProduct = async () => {
         value: parseFloat(product.value.discountValue) || 0,
         badge: product.value.discountCode || 'Sale', // Use discount code as badge text, fallback to 'Sale'
       }
+
+      // Add start and expire dates if provided
+      if (product.value.discountStartDate) {
+        discountData.start_date = product.value.discountStartDate
+      }
+      if (product.value.discountExpireDate) {
+        discountData.expire_date = product.value.discountExpireDate
+      }
+
       productData.discount = [discountData]
 
       // Add badge if there's a discount
       productData.badge = [product.value.discountCode || 'Sale']
+    } else {
+      // No discount provided, set to null
+      productData.discount = null
     }
 
-    // Create multiple products based on quantity
-    const quantity = parseInt(product.value.quantity) || 1
-    const createdProducts = []
-
-    for (let i = 0; i < quantity; i++) {
-      try {
-        const response = await productsApi.createProduct(productData)
-        createdProducts.push(response.data)
-      } catch (productError) {
-        console.error(`Error creating product ${i + 1}:`, productError)
-        throw productError
-      }
-    }
+    // Create the product
+    await productsApi.createProduct(productData)
 
     // Show success message
-    alert(`${quantity} product${quantity > 1 ? 's' : ''} created successfully!`)
+    alert('Product created successfully!')
 
     // Reset form
     resetForm()
@@ -310,7 +303,6 @@ const discardForm = () => {
 // Reset form to initial state
 const resetForm = () => {
   product.value = {
-    id: generateProductId(),
     name: '',
     brand: '',
     category: '',
@@ -338,8 +330,6 @@ const resetForm = () => {
 
 // Initialize on mount
 onMounted(() => {
-  product.value.id = generateProductId()
-
   // Prefill form from query parameters
   const {
     productName,
@@ -352,8 +342,6 @@ onMounted(() => {
     discountEndDate,
     currentStock,
     quantity,
-    productId,
-    restockMode,
     description,
     quality,
     price,
@@ -380,10 +368,6 @@ onMounted(() => {
   }
   if (quantity) {
     product.value.quantity = quantity
-  }
-  if (productId && restockMode) {
-    // For restocking, use the existing product ID
-    product.value.id = productId
   }
   if (description) {
     product.value.description = description

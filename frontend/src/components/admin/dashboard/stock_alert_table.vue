@@ -3,7 +3,7 @@
     <div class="table-header">
       <h3>Stock Alert Breakdown</h3>
       <select v-model="filterCategory" class="filter-select">
-        <option value="all">Filter Category</option>
+        <option value="all">AllCategory</option>
         <option value="Mountain Bike">Mountain Bikes</option>
         <option value="Road Bike">Road Bikes</option>
       </select>
@@ -24,7 +24,7 @@
         <tbody>
           <tr v-for="(item, index) in filteredStockData" :key="index">
             <td>
-              <span class="status-badge" :class="`status-${item.status.toLowerCase()}`">
+              <span class="status-badge" :class="getStatusClass(item.status)">
                 <span class="status-dot"></span>
                 {{ item.status }}
               </span>
@@ -35,10 +35,7 @@
             <td>{{ item.minStock }}</td>
             <td>{{ item.lastUpdated }}</td>
             <td>
-              <span
-                class="action-badge"
-                :class="`action-${item.stockAlert.toLowerCase().replace(' ', '-')}`"
-              >
+              <span class="action-badge" :class="getActionClass(item.stockAlert)">
                 {{ item.stockAlert }}
               </span>
             </td>
@@ -51,94 +48,41 @@
 
 <script>
 export default {
-  // Data properties for the component
+  props: {
+    stockData: {
+      type: Array,
+      default: () => [],
+    },
+  },
   data() {
     return {
       filterCategory: 'all',
-      stockData: [
-        {
-          brand: 'Cannondale',
-          category: 'Mountain Bike',
-          currentStock: 15,
-          minStock: 10,
-          status: 'LOW',
-          stockAlert: 'Restock Needed',
-          lastUpdated: '2025-10-11',
-        },
-        {
-          brand: 'Trek',
-          category: 'Road Bike',
-          currentStock: 25,
-          minStock: 5,
-          status: 'FULL',
-          stockAlert: 'Well Stock',
-          lastUpdated: '2025-10-10',
-        },
-        {
-          brand: 'Bianchi',
-          category: 'Mountain Bike',
-          currentStock: 8,
-          minStock: 10,
-          status: 'Normal',
-          stockAlert: 'Monitor',
-          lastUpdated: '2025-10-09',
-        },
-        {
-          brand: 'Giant',
-          category: 'Road Bike',
-          currentStock: 12,
-          minStock: 15,
-          status: 'LOW',
-          stockAlert: 'Restock Needed',
-          lastUpdated: '2025-10-08',
-        },
-        {
-          brand: 'Cervélo',
-          category: 'Mountain Bike',
-          currentStock: 30,
-          minStock: 8,
-          status: 'FULL',
-          stockAlert: 'Well Stock',
-          lastUpdated: '2025-10-07',
-        },
-        {
-          brand: 'Specialized',
-          category: 'Road Bike',
-          currentStock: 5,
-          minStock: 10,
-          status: 'Normal',
-          stockAlert: 'Monitor',
-          lastUpdated: '2025-10-06',
-        },
-        {
-          brand: 'Shimano',
-          category: 'Mountain Bike',
-          currentStock: 18,
-          minStock: 12,
-          status: 'LOW',
-          stockAlert: 'Restock Needed',
-          lastUpdated: '2025-10-05',
-        },
-        {
-          brand: 'Colnago',
-          category: 'Road Bike',
-          currentStock: 22,
-          minStock: 6,
-          status: 'FULL',
-          stockAlert: 'Well Stock',
-          lastUpdated: '2025-10-04',
-        },
-      ],
     }
   },
   computed: {
-    // Computed property to filter stock data based on selected category
     filteredStockData() {
       if (this.filterCategory === 'all') {
         return this.stockData
-      } else {
-        return this.stockData.filter((item) => item.category === this.filterCategory)
       }
+      return this.stockData.filter((item) => item.category === this.filterCategory)
+    },
+  },
+  methods: {
+    getStatusClass(status) {
+      const classes = {
+        LOW: 'status-low',
+        FULL: 'status-full',
+        Normal: 'status-normal',
+      }
+      return classes[status] || ''
+    },
+    getActionClass(alert) {
+      const classes = {
+        'Restock Needed': 'action-restock-needed',
+        'Well Stock': 'action-well-stock',
+        Monitor: 'action-monitor',
+      }
+      return classes[alert] || ''
     },
   },
 }
@@ -176,7 +120,7 @@ export default {
   font-size: 12px;
   font-weight: 400;
   outline: none;
-  font-family: 'Poppins', sans-serif !important;
+  font-family: 'Poppins', sans-serif;
   color: #374151;
   transition: all 0.2s ease;
   min-width: 140px;
@@ -189,7 +133,6 @@ table {
   width: 100%;
   border-collapse: collapse;
   min-width: 720px;
-  height: auto;
 }
 
 thead {

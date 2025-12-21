@@ -1,24 +1,24 @@
 <template>
   <div class="cart-item">
     <div class="item-image">
-      <img :src="item.image" :alt="item.title || item.name" />
+      <img :src="item.product.image" :alt="item.product.name" />
     </div>
 
     <div class="item-details">
       <div class="item-name-row">
-        <h3 class="item-name">{{ item.title || item.name }}</h3>
+        <h3 class="item-name">{{ item.product.name }}</h3>
         <span v-if="displayDiscount" class="discount-badge">{{ displayDiscount }}</span>
       </div>
-      <div class="subtitle-color">
-        <span class="product-brand">{{ item.brand }}</span>
-        <span class="separator"> | </span>
-        <span class="product-color">Color: {{ item.color }}</span>
+      <div class="item-category-brand">
+        <span class="badge">{{ getCategoryName(item.product) }}</span>
+        <span class="badge">{{ item.product.brand }}</span>
+        <span class="badge">Color: {{ item.product.color }}</span>
       </div>
       <div class="item-price">
-        <span v-if="hasDiscount" class="original-price"
-          >${{ formatPrice(item.originalPrice || item.price) }}</span
-        >
         <span class="current-price">${{ formatPrice(finalPrice) }}</span>
+        <span v-if="hasDiscount" class="original-price"
+          >${{ formatPrice(item.product.pricing) }}</span
+        >
       </div>
     </div>
 
@@ -47,35 +47,63 @@ defineEmits(['increaseQuantity', 'decreaseQuantity', 'removeItem'])
 // Computed property to check if the item has a discount
 const hasDiscount = computed(
   () =>
-    props.item.discount &&
-    Array.isArray(props.item.discount) &&
-    props.item.discount.length > 0 &&
-    (props.item.discount[0].type === 'percent' || props.item.discount[0].type === 'fixed'),
+    props.item.product.discount?.length > 0 &&
+    ['percent', 'fixed'].includes(props.item.product.discount[0].type),
 )
 
 // Computed property to calculate the final price after discount
 const finalPrice = computed(() => {
-  // The price is already discounted in the cart store, so just return it
-  return parseFloat(props.item.price) || 0
+  let price = parseFloat(props.item.product.pricing) || 0
+  if (hasDiscount.value) {
+    const discount = props.item.product.discount[0]
+    if (discount.type === 'percent') {
+      price = price * (1 - discount.value / 100)
+    } else if (discount.type === 'fixed') {
+      price = Math.max(0, price - discount.value)
+    }
+  }
+  return price
 })
 
 // Computed property to display the discount text
 const displayDiscount = computed(() => {
-  if (!hasDiscount.value) {
-    return null
-  }
-  const discount = props.item.discount[0] // Take the first discount
-  if (discount.type === 'percent') {
-    return `${discount.value}% OFF`
-  } else {
-    return `$${discount.value} OFF`
-  }
+  if (!hasDiscount.value) return null
+  const discount = props.item.product.discount[0]
+  return discount.type === 'percent' ? `${discount.value}% OFF` : `$${discount.value} OFF`
 })
 
 // Function to format price with commas
 const formatPrice = (price) => {
   const numPrice = parseFloat(price)
   return isNaN(numPrice) ? '0.00' : numPrice.toLocaleString()
+}
+
+// Function to get category name for display
+const getCategoryName = (product) => {
+  if (!product) {
+    return 'Unknown'
+  }
+
+  // If category is an object (from API relationship), get the name
+  if (product.category && typeof product.category === 'object' && product.category.name) {
+    // Map category names to display names
+    const categoryDisplayMap = {
+      Mountain: 'Mountain Bike',
+      Road: 'Road Bike',
+    }
+    return categoryDisplayMap[product.category.name] || product.category.name
+  }
+
+  // If category is a string, use it directly
+  if (product.category && typeof product.category === 'string') {
+    const categoryDisplayMap = {
+      mountain: 'Mountain Bike',
+      road: 'Road Bike',
+    }
+    return categoryDisplayMap[product.category] || product.category
+  }
+
+  return 'Unknown'
 }
 </script>
 
@@ -92,6 +120,11 @@ const formatPrice = (price) => {
 }
 
 .product-brand {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.product-category {
   font-weight: 500;
   margin-right: 8px;
 }
@@ -141,6 +174,8 @@ const formatPrice = (price) => {
 }
 
 /* Item Details */
+
+/* Item Details */
 .item-details {
   flex: 1;
   font-family: 'Poppins', sans-serif;
@@ -153,11 +188,31 @@ const formatPrice = (price) => {
   color: #333;
 }
 
+.item-category-brand {
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid #ddd;
+  border-radius: 90px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
+}
+
 /* Item Price */
 .item-price {
   display: flex;
   gap: 10px;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .original-price {

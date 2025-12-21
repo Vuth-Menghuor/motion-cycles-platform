@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
@@ -19,7 +16,7 @@ return new class extends Migration
             $table->string('customer_name');
             $table->string('customer_phone', 20);
             $table->string('customer_email')->nullable();
-            $table->json('items'); // Store order items as JSON
+            $table->json('items');
             $table->decimal('subtotal', 10, 2);
             $table->decimal('discount_amount', 10, 2)->default(0);
             $table->decimal('shipping_amount', 10, 2)->default(0);
@@ -42,9 +39,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('orders');

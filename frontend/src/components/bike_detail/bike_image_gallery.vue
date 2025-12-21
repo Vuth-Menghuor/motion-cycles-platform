@@ -15,10 +15,10 @@
         <img
           :src="thumbnail.src"
           :alt="thumbnail.alt"
-          :class="{ grayscale: index === 3 && thumbnails.length > 4 }"
+          :class="{ grayscale: shouldShowMoreOverlay(index) }"
         />
-        <div v-if="index === 3 && thumbnails.length > 4" class="overlay" @click.stop="goToGallery">
-          +{{ thumbnails.length - 4 }} more
+        <div v-if="shouldShowMoreOverlay(index)" class="overlay" @click.stop="goToGallery">
+          +{{ additionalImagesCount }} more
         </div>
       </div>
     </div>
@@ -29,58 +29,70 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-// Define props for the component
+// Props
 const props = defineProps({
   image: { type: String, required: true },
   title: { type: String, required: true },
   additionalImages: { type: Array, default: () => [] },
 })
 
-// Get router and route instances
+// Router
 const router = useRouter()
 const route = useRoute()
 
-// Reactive data for selected image and state
+// Reactive state
 const selectedImage = ref(props.image)
-const currentImageIndex = ref(0)
 const lightboxOpen = ref(false)
 
-// Computed property for all thumbnails
-const thumbnails = computed(() => {
-  if (
-    props.additionalImages &&
-    Array.isArray(props.additionalImages) &&
-    props.additionalImages.length > 0
-  ) {
-    // Include main image plus additional images
-    const mainImage = { src: props.image, alt: props.title }
-    const additional = props.additionalImages.map((img, i) => ({
-      src: img.url,
-      alt: img.alt || `${props.title} - View ${i + 1}`,
-    }))
-    return [mainImage, ...additional]
-  } else {
-    // Only main image
-    return [{ src: props.image, alt: props.title }]
+// Computed properties
+const allImages = computed(() => {
+  const images = [createImageObject(props.image, props.title)]
+
+  if (hasAdditionalImages.value) {
+    images.push(
+      ...props.additionalImages.map((img, index) =>
+        createImageObject(img, `${props.title} - View ${index + 1}`),
+      ),
+    )
   }
+
+  return images
 })
 
-// Computed property for visible thumbnails (first 4)
-const visibleThumbnails = computed(() => thumbnails.value.slice(0, 4))
+const visibleThumbnails = computed(() => allImages.value.slice(0, 4))
 
-// Function to select an image
-const selectImage = (imageSrc) => {
-  selectedImage.value = imageSrc
-  currentImageIndex.value = thumbnails.value.findIndex((t) => t.src === imageSrc)
+const hasAdditionalImages = computed(
+  () => Array.isArray(props.additionalImages) && props.additionalImages.length > 0,
+)
+
+const additionalImagesCount = computed(() => Math.max(0, allImages.value.length - 4))
+
+// Helper functions
+function createImageObject(imageData, defaultAlt) {
+  if (typeof imageData === 'string') {
+    // Handle string URLs
+    return { src: imageData, alt: defaultAlt }
+  } else if (imageData && typeof imageData === 'object' && imageData.url) {
+    // Handle objects with url/alt properties
+    return { src: imageData.url, alt: imageData.alt || defaultAlt }
+  }
+  return null
 }
 
-// Function to open lightbox
-const openLightbox = () => {
+function shouldShowMoreOverlay(index) {
+  return index === 3 && allImages.value.length > 4
+}
+
+// Event handlers
+function selectImage(imageSrc) {
+  selectedImage.value = imageSrc
+}
+
+function openLightbox() {
   lightboxOpen.value = true
 }
 
-// Function to navigate to full gallery
-const goToGallery = () => {
+function goToGallery() {
   router.push({
     name: 'BikeGallery',
     params: { id: route.params.id },
@@ -92,11 +104,10 @@ const goToGallery = () => {
   })
 }
 
-// Watch for changes in additional images
+// Watchers
 watch(
   () => props.additionalImages,
   () => {
-    currentImageIndex.value = 0
     selectedImage.value = props.image
   },
   { deep: true },
@@ -125,7 +136,6 @@ watch(
   width: 100%;
   height: 100%;
   object-fit: contain;
-  height: 100%;
   cursor: pointer;
 }
 
@@ -149,12 +159,17 @@ watch(
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: 0.3s;
+  transition: transform 0.3s;
 }
 
 .thumbnail-item:hover img {
   transform: scale(1.05);
 }
+
+/* .thumbnail-item.active {
+  border-color: #4299e1;
+  box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+} */
 
 .thumbnail-item img.grayscale {
   filter: grayscale(100%) brightness(60%);
@@ -170,12 +185,15 @@ watch(
   justify-content: center;
   font-weight: bold;
   font-size: 1.2rem;
+  cursor: pointer;
 }
 
+/* Responsive design */
 @media (max-width: 768px) {
   .image-section {
     flex-direction: column;
   }
+
   .thumbnail-grid {
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: 1fr;

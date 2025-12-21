@@ -7,7 +7,7 @@
       <canvas ref="donutCanvas"></canvas>
     </div>
     <div class="chart-legend">
-      <div v-for="(item, index) in categories" :key="index" class="legend-item">
+      <div v-for="(item, index) in categoriesToUse" :key="index" class="legend-item">
         <span class="legend-color" :style="{ backgroundColor: item.color }"></span>
         <span class="legend-label">{{ item.name }} - {{ item.percentage }}%</span>
       </div>
@@ -22,38 +22,61 @@ ChartJS.register(ArcElement, Tooltip, Legend, DoughnutController)
 
 export default {
   name: 'CategoryChart',
-  // Data properties for the component
-  data() {
-    return {
-      chart: null,
-      categories: [
+  props: {
+    categories: {
+      type: Array,
+      default: () => [
         { name: 'Mountain Bike', percentage: 65, color: '#42A5F5' },
         { name: 'Road Bike', percentage: 35, color: '#EF5350' },
       ],
+    },
+  },
+  data() {
+    return {
+      chart: null,
     }
   },
-  // Lifecycle hook to initialize the chart when component is mounted
+  computed: {
+    categoriesToUse() {
+      return this.categories.length > 0
+        ? this.categories
+        : [
+            { name: 'Mountain Bike', percentage: 65, color: '#42A5F5' },
+            { name: 'Road Bike', percentage: 35, color: '#EF5350' },
+          ]
+    },
+  },
+  watch: {
+    categories: {
+      handler() {
+        this.updateChart()
+      },
+      deep: true,
+    },
+  },
   mounted() {
     this.initChart()
   },
-  // Lifecycle hook to destroy the chart before unmounting
   beforeUnmount() {
     if (this.chart) {
       this.chart.destroy()
     }
   },
   methods: {
-    // Method to initialize the donut chart
     initChart() {
-      const ctx = this.$refs.donutCanvas.getContext('2d')
+      const canvas = this.$refs.donutCanvas
+      if (!canvas) return
+
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
 
       const data = {
-        labels: this.categories.map((cat) => cat.name),
+        labels: this.categoriesToUse.map((cat) => cat.name),
         datasets: [
           {
-            data: this.categories.map((cat) => cat.percentage),
-            backgroundColor: this.categories.map((cat) => cat.color),
-            borderColor: this.categories.map((cat) => cat.color),
+            data: this.categoriesToUse.map((cat) => cat.percentage),
+            backgroundColor: this.categoriesToUse.map((cat) => cat.color),
+            borderColor: this.categoriesToUse.map((cat) => cat.color),
             borderWidth: 2,
           },
         ],
@@ -75,10 +98,18 @@ export default {
           animation: {
             animateScale: false,
             animateRotate: false,
-            duration: 800,
+            duration: 0,
           },
         },
       })
+    },
+
+    updateChart() {
+      if (this.chart) {
+        this.chart.destroy()
+        this.chart = null
+      }
+      this.initChart()
     },
   },
 }

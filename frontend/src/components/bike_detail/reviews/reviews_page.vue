@@ -60,8 +60,8 @@ const handleNewReview = async (reviewData) => {
     // The watch above will automatically emit the rating update
   } catch (error) {
     console.error('Failed to submit review:', error)
-    // You could emit an error event here if needed
-    alert('Failed to submit review. Please make sure you are logged in.')
+    // Show a more generic error message
+    alert('Failed to submit review. Please try again.')
   }
 }
 

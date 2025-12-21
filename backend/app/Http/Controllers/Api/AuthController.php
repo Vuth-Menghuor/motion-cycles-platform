@@ -6,39 +6,35 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
+    /**
+     * Register a new user.
+     */
     public function register(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Step 1: Validate the input data
+        $request->validate([
             'username' => 'required|string|max:255|unique:users',
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'terms' => 'required|accepted',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
+        // Step 2: Create the user in the database
         $user = User::create([
             'username' => $request->username,
-            'name' => $request->name ?? $request->username, // Use username as name if not provided
+            'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'user', // default role
+            'role' => 'user',
         ]);
 
+        // Step 3: Generate an authentication token
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Step 4: Return success response with user and token
         return response()->json([
             'success' => true,
             'message' => 'User registered successfully',
@@ -50,23 +46,21 @@ class AuthController extends Controller
         ], 201);
     }
 
+    /**
+     * Login user and return token.
+     */
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Step 1: Validate the input data
+        $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation failed',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
+        // Step 2: Find the user by email
         $user = User::where('email', $request->email)->first();
 
+        // Step 3: Check if user exists and password is correct
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'success' => false,
@@ -74,13 +68,10 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Delete previous tokens if remember me is not checked
-        if (!$request->remember_me) {
-            $user->tokens()->delete();
-        }
-
+        // Step 4: Generate an authentication token
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Step 5: Return success response with user and token
         return response()->json([
             'success' => true,
             'message' => 'Login successful',
@@ -90,7 +81,7 @@ class AuthController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'username' => $user->username,
-                    'role'=> $user->role, 
+                    'role' => $user->role,
                 ],
                 'token' => $token,
                 'token_type' => 'Bearer',
@@ -98,30 +89,48 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * Logout user.
+     */
     public function logout(Request $request)
     {
+        // Step 1: Delete the current access token
         $request->user()->currentAccessToken()->delete();
 
+        // Step 2: Return success response
         return response()->json([
             'success' => true,
             'message' => 'Logged out successfully'
         ]);
     }
 
+    /**
+     * Get authenticated user details.
+     */
     public function user(Request $request)
     {
+        // Step 1: Return the authenticated user data
         return response()->json([
             'success' => true,
             'data' => $request->user()
         ]);
     }
 
+    /**
+     * Refresh the authentication token.
+     */
     public function refreshToken(Request $request)
     {
+        // Step 1: Get the authenticated user
         $user = $request->user();
+
+        // Step 2: Delete the current access token
         $user->currentAccessToken()->delete();
+
+        // Step 3: Generate a new authentication token
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Step 4: Return success response with new token
         return response()->json([
             'success' => true,
             'data' => [

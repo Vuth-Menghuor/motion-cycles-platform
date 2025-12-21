@@ -13,6 +13,16 @@
         />
       </div>
       <div class="form-group">
+        <label for="buyerEmail">Email</label>
+        <input
+          id="buyerEmail"
+          type="email"
+          v-model="buyerEmail"
+          placeholder="Enter your email"
+          @input="emitForm"
+        />
+      </div>
+      <div class="form-group">
         <label for="buyerPhone">Phone number</label>
         <input
           id="buyerPhone"
@@ -42,15 +52,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
+import { useAuthStore } from '@/stores/auth'
 import image1 from '@/assets/images/payment_method/bakong_khqr.png'
 
 // Define the events the component can emit
 const emit = defineEmits(['update:formData'])
 
+// Get auth store
+const authStore = useAuthStore()
+
 // Reactive data for buyer name
 const buyerName = ref('')
+
+// Reactive data for buyer email
+const buyerEmail = ref('')
 
 // Reactive data for buyer phone
 const buyerPhone = ref('')
@@ -63,10 +80,26 @@ const selectedPayment = ref({
   image: image1,
 })
 
+// Auto-fill buyer name on component mount
+onMounted(() => {
+  if (authStore.isLoggedIn()) {
+    const user = authStore.getUser()
+    if (user && user.name) {
+      buyerName.value = user.name
+      emitForm() // Emit the updated form data
+    }
+    if (user && user.email) {
+      buyerEmail.value = user.email
+      emitForm() // Emit the updated form data
+    }
+  }
+})
+
 // Function to emit form data when input changes
 const emitForm = () =>
   emit('update:formData', {
     buyerName: buyerName.value,
+    buyerEmail: buyerEmail.value,
     buyerPhone: buyerPhone.value,
     payment: selectedPayment.value,
   })

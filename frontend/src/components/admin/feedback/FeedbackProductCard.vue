@@ -7,7 +7,9 @@
       <div class="product-header">
         <h3 class="product-name">{{ product.name }}</h3>
         <div class="product-meta">
-          <span class="product-brand">{{ product.brand }}</span>
+          <span class="badge">{{ product.brand }}</span>
+          <span class="badge" v-if="product.category">{{ getCategoryName(product.category) }}</span>
+          <span class="badge" v-if="product.color">Color: {{ product.color }}</span>
         </div>
       </div>
       <p class="product-description">{{ product.description }}</p>
@@ -40,6 +42,30 @@ defineProps({
     required: true,
   },
 })
+
+// Get category name for display
+const getCategoryName = (category) => {
+  if (!category) {
+    return 'Unknown'
+  }
+
+  // Handle object format (from database)
+  if (typeof category === 'object' && category.name) {
+    return category.name
+  }
+
+  // Handle string format
+  if (typeof category === 'string') {
+    const categories = { mountain: 'Mountain Bike', road: 'Road Bike' }
+    if (categories[category]) {
+      return categories[category]
+    } else {
+      return category.charAt(0).toUpperCase() + category.slice(1)
+    }
+  }
+
+  return 'Unknown'
+}
 </script>
 
 <style scoped>
@@ -88,15 +114,17 @@ defineProps({
   flex-wrap: wrap;
 }
 
-.product-brand,
-.product-category {
-  background-color: #f3f4f6;
-  padding: 4px 8px;
-  border-radius: 6px;
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  margin: 2px;
+  border: 1px solid #ddd;
+  border-radius: 90px;
+  background-color: #f0f0f0;
+  color: #333;
   font-size: 12px;
   font-weight: 500;
-  color: #374151;
-  border: 1px solid #d1d5db;
+  margin: 8px 0;
 }
 
 .product-description {

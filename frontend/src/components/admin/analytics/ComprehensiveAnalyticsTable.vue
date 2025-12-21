@@ -5,7 +5,7 @@
       <div class="filters-wrapper">
         <div class="table-filters">
           <select v-model="selectedView" @change="updateData" class="view-select">
-            <option value="daily">Daily Tracking</option>
+            <option value="daily">Weekly Tracking</option>
             <option value="monthly">Monthly Summary</option>
           </select>
 
@@ -71,16 +71,18 @@
             <th class="text-left">Revenue</th>
             <th class="text-left">Expense</th>
             <th class="text-left">Net Profit</th>
-            <th class="text-left">Margin %</th>
             <th class="text-left">Orders</th>
             <th class="text-left" v-if="selectedView === 'daily'">Customers</th>
-            <th class="text-left" v-if="selectedView === 'daily'">AOV</th>
-            <th class="text-left">Growth %</th>
             <th class="text-left" v-if="selectedView === 'daily'">Status</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in analyticsData" :key="item.id" class="table-row">
+          <tr
+            v-for="item in analyticsData"
+            :key="item.id"
+            class="table-row"
+            :class="{ 'selected-date-row': isSelectedDateRow(item.date) }"
+          >
             <td class="day-cell" v-if="selectedView === 'daily'">{{ item.day }}</td>
             <td class="date-cell" v-if="selectedView === 'daily'">{{ formatDate(item.date) }}</td>
             <td class="period-cell" v-if="selectedView === 'monthly'">{{ item.period }}</td>
@@ -89,19 +91,9 @@
             <td class="net-profit-cell" :class="{ negative: item.netProfit < 0 }">
               ${{ formatNumber(Math.abs(item.netProfit)) }}
             </td>
-            <td class="margin-cell" :class="{ negative: item.margin < 0 }">
-              {{ item.margin.toFixed(1) }}%
-            </td>
             <td class="orders-cell">{{ item.orders.toLocaleString() }}</td>
             <td class="customers-cell" v-if="selectedView === 'daily'">
               {{ item.customers.toLocaleString() }}
-            </td>
-            <td class="aov-cell" v-if="selectedView === 'daily'">${{ formatNumber(item.aov) }}</td>
-            <td class="growth-cell">
-              <div class="growth-indicator" :class="getGrowthClass(item.growth)">
-                <span class="growth-icon">{{ getGrowthIcon(item.growth) }}</span>
-                <span class="growth-value">{{ Math.abs(item.growth) }}%</span>
-              </div>
             </td>
             <td class="status-cell" v-if="selectedView === 'daily'">
               <span class="status-badge" :class="getStatusClass(item.status)">
@@ -127,23 +119,11 @@
             >
               <strong>${{ formatNumber(Math.abs(totalNetProfit)) }}</strong>
             </td>
-            <td class="summary-margin margin-cell" :class="{ negative: averageMargin < 0 }">
-              <strong>{{ averageMargin.toFixed(1) }}%</strong>
-            </td>
             <td class="summary-orders orders-cell">
               <strong>{{ totalOrders.toLocaleString() }}</strong>
             </td>
             <td class="summary-customers customers-cell" v-if="selectedView === 'daily'">
               <strong>{{ totalCustomers.toLocaleString() }}</strong>
-            </td>
-            <td class="summary-aov aov-cell" v-if="selectedView === 'daily'">
-              <strong>${{ formatNumber(averageOrderValue) }}</strong>
-            </td>
-            <td class="summary-growth growth-cell">
-              <div class="growth-indicator" :class="getGrowthClass(overallGrowth)">
-                <span class="growth-icon">{{ getGrowthIcon(overallGrowth) }}</span>
-                <span class="growth-value">{{ Math.abs(overallGrowth) }}%</span>
-              </div>
             </td>
             <td class="summary-status status-cell" v-if="selectedView === 'daily'">
               <span class="status-badge excellent">Excellent</span>
@@ -154,23 +134,24 @@
 
       <!-- Week Pagination Controls (only for daily view) -->
       <div v-if="selectedView === 'daily'" class="week-info">
-        <span class="week-indicator">
-          Showing data for the week of {{ formatDate(selectedDate) }}
-        </span>
+        <span class="date-indicator"> Week of {{ weekRange }} </span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
+import { ordersApi } from '@/services/api'
 
 // Reactive data
 const selectedView = ref('daily')
-const selectedDate = ref(new Date().toISOString().split('T')[0])
+const selectedDate = ref(new Date().toLocaleDateString('en-CA')) // Use local date in YYYY-MM-DD format
 const currentCalendarDate = ref(new Date())
 const showCalendar = ref(false)
+const orders = ref([])
+const isLoading = ref(false)
 
 // Watch for date changes
 watch(selectedDate, (newDate) => {
@@ -206,8 +187,6 @@ const calendarDates = computed(() => {
   const startDate = new Date(firstDay)
   startDate.setDate(startDate.getDate() - firstDay.getDay())
 
-  const dates = []
-  const currentDate = new Date(startDate)
   const today = new Date()
   const dataStartDate = new Date('2025-10-01')
   const todayNormalized = new Date(today.getFullYear(), today.getMonth(), today.getDate())
@@ -217,8 +196,11 @@ const calendarDates = computed(() => {
     dataStartDate.getDate(),
   )
 
+  const dates = []
   for (let i = 0; i < 42; i++) {
-    const dateString = currentDate.toISOString().split('T')[0]
+    const currentDate = new Date(startDate)
+    currentDate.setDate(startDate.getDate() + i)
+    const dateString = currentDate.toLocaleDateString('en-CA') // Use local date format
     const checkDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth(),
@@ -232,14 +214,13 @@ const calendarDates = computed(() => {
       isCurrentMonth: currentDate.getMonth() === month,
       isSelectable,
     })
-    currentDate.setDate(currentDate.getDate() + 1)
   }
   return dates
 })
 
 // Calendar functions
 const isSelectedDate = (dateString) => selectedDate.value === dateString
-const isToday = (dateString) => new Date().toISOString().split('T')[0] === dateString
+const isToday = (dateString) => new Date().toLocaleDateString('en-CA') === dateString
 
 const selectDate = (dateString) => {
   selectedDate.value = dateString
@@ -265,59 +246,254 @@ const nextMonth = () => {
   )
 }
 
-// Data generation functions
-const generateMockData = (startDate, days = 7) => {
-  const data = []
-  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-  const start = new Date(startDate)
+// Load orders from API
+const loadOrders = async () => {
+  try {
+    isLoading.value = true
+    const response = await ordersApi.adminListOrders()
 
-  for (let i = 0; i < days; i++) {
-    const currentDate = new Date(start)
-    currentDate.setDate(start.getDate() + i)
-    const baseRevenue = 3000 + Math.random() * 4000
-    const baseExpense = baseRevenue * 0.75
+    if (response.data.success) {
+      orders.value = response.data.orders.data || []
+    } else {
+      orders.value = []
+    }
+  } catch (error) {
+    console.error('Error loading orders:', error)
+    orders.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
 
-    data.push({
-      id: i + 1,
-      day: daysOfWeek[currentDate.getDay()],
-      date: currentDate.toISOString().split('T')[0],
-      revenue: Math.round(baseRevenue),
-      expense: Math.round(baseExpense),
-      netProfit: Math.round(baseRevenue - baseExpense),
-      margin: 25.0,
-      orders: Math.round(20 + Math.random() * 15),
-      customers: Math.round(18 + Math.random() * 10),
-      aov: Math.round(baseRevenue / (20 + Math.random() * 15)),
-      growth: Math.round((Math.random() - 0.5) * 40),
-      status: ['Excellent', 'Good', 'Fair'][Math.floor(Math.random() * 3)],
-    })
+// Helper functions for date calculations
+const getStartOfWeek = (date) => {
+  const dayOfWeek = date.getDay() // 0 = Sunday, 1 = Monday, etc.
+  let mondayOffset
+
+  if (dayOfWeek === 0) {
+    // If Sunday, go back 6 days to get to Monday
+    mondayOffset = -6
+  } else {
+    // Otherwise, calculate offset to Monday
+    mondayOffset = 1 - dayOfWeek
+  }
+
+  const startOfWeek = new Date(date)
+  startOfWeek.setDate(date.getDate() + mondayOffset)
+  return startOfWeek
+}
+
+const isDateInFuture = (dateString) => {
+  const selectedDate = new Date(dateString)
+  const today = new Date()
+  const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const checkDate = new Date(
+    selectedDate.getFullYear(),
+    selectedDate.getMonth(),
+    selectedDate.getDate(),
+  )
+
+  return checkDate > currentDate
+}
+
+const filterOrdersByDate = (ordersList, targetDate) => {
+  return ordersList.filter((order) => {
+    const orderDate = new Date(order.created_at)
+    const orderLocalDate = new Date(
+      orderDate.getFullYear(),
+      orderDate.getMonth(),
+      orderDate.getDate(),
+    )
+    const targetLocalDate = new Date(
+      targetDate.getFullYear(),
+      targetDate.getMonth(),
+      targetDate.getDate(),
+    )
+
+    return orderLocalDate.getTime() === targetLocalDate.getTime()
+  })
+}
+
+const filterOrdersByMonth = (ordersList, month, year) => {
+  return ordersList.filter((order) => {
+    const orderDate = new Date(order.created_at)
+    return orderDate.getMonth() === month && orderDate.getFullYear() === year
+  })
+}
+
+const calculateMetrics = (orders) => {
+  let totalRevenue = 0
+
+  orders.forEach((order) => {
+    const subtotal = parseFloat(order.subtotal || 0)
+    const shipping = parseFloat(order.shipping_amount || 0)
+    const promoDiscount = parseFloat(order.discount_amount || 0)
+    const itemDiscount = (order.items || []).reduce((total, item) => {
+      const discount = item.discount?.[0]
+      if (!discount) return total
+
+      const pricing = parseFloat(item.price) || 0
+      let discountValue = 0
+
+      if (discount.type === 'percent') {
+        discountValue = pricing * (discount.value / 100) * item.quantity
+      } else if (discount.type === 'fixed') {
+        discountValue = discount.value * item.quantity
+      }
+      return total + discountValue
+    }, 0)
+
+    const correctTotal = subtotal - itemDiscount + shipping - promoDiscount
+    totalRevenue += correctTotal
+  })
+
+  const ordersCount = orders.length
+  const customers = new Set(orders.map((order) => order.customer_email)).size
+  const expense = totalRevenue * 0.75 // Assume 75% expense
+  const netProfit = totalRevenue - expense
+  const margin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0
+  const aov = ordersCount > 0 ? totalRevenue / ordersCount : 0
+
+  return {
+    revenue: Math.round(totalRevenue),
+    ordersCount,
+    customers,
+    expense: Math.round(expense),
+    netProfit: Math.round(netProfit),
+    margin: parseFloat(margin.toFixed(1)),
+    aov: Math.round(aov),
+  }
+}
+
+const determineStatus = (margin) => {
+  if (margin >= 25) {
+    return 'Excellent'
+  } else if (margin >= 15) {
+    return 'Good'
+  } else if (margin >= 5) {
+    return 'Fair'
+  } else {
+    return 'Poor'
+  }
+}
+
+const calculateGrowth = (data) => {
+  for (let i = 1; i < data.length; i++) {
+    const prevRevenue = data[i - 1].revenue
+    const currentRevenue = data[i].revenue
+
+    if (prevRevenue > 0) {
+      const growth = ((currentRevenue - prevRevenue) / prevRevenue) * 100
+      data[i].growth = Math.round(growth)
+    } else {
+      data[i].growth = 0
+    }
   }
   return data
 }
 
-const generateDataForDate = (dateString, view) => {
-  const selectedDateObj = new Date(dateString)
-  const today = new Date()
-  const currentDate = new Date(today.getFullYear(), today.getMonth(), today.getDate())
-  const selectedDate = new Date(
-    selectedDateObj.getFullYear(),
-    selectedDateObj.getMonth(),
-    selectedDateObj.getDate(),
-  )
+const processDailyData = (ordersList, startDate, days) => {
+  const data = []
+  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
-  if (selectedDate > currentDate) {
-    return []
-  } else {
-    // Proceed with data generation
+  for (let i = 0; i < days; i++) {
+    const currentDate = new Date(startDate)
+    currentDate.setDate(startDate.getDate() + i)
+    const dateString = currentDate.toLocaleDateString('en-CA')
+
+    // Get orders for this specific date
+    const dayOrders = filterOrdersByDate(ordersList, currentDate)
+
+    // Calculate metrics for this day
+    const metrics = calculateMetrics(dayOrders)
+    const status = determineStatus(metrics.margin)
+
+    data.push({
+      id: i + 1,
+      day: daysOfWeek[currentDate.getDay()],
+      date: dateString,
+      revenue: metrics.revenue,
+      expense: metrics.expense,
+      netProfit: metrics.netProfit,
+      margin: metrics.margin,
+      orders: metrics.ordersCount,
+      customers: metrics.customers,
+      aov: metrics.aov,
+      growth: 0, // Will calculate later
+      status: status,
+    })
   }
 
+  // Calculate growth rates
+  return calculateGrowth(data)
+}
+
+const processMonthlyData = (ordersList, year) => {
+  const data = []
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ]
+
+  months.forEach((monthName, index) => {
+    // Get orders for this month
+    const monthOrders = filterOrdersByMonth(ordersList, index, year)
+
+    // Calculate metrics for this month
+    const metrics = calculateMetrics(monthOrders)
+
+    data.push({
+      id: index + 1,
+      period: monthName,
+      revenue: metrics.revenue,
+      expense: metrics.expense,
+      netProfit: metrics.netProfit,
+      margin: metrics.margin,
+      orders: metrics.ordersCount,
+      growth: 0, // Will calculate later
+      customers: metrics.customers,
+      aov: metrics.aov,
+    })
+  })
+
+  // Calculate growth rates
+  return calculateGrowth(data)
+}
+
+const processOrdersData = (ordersList, startDate, days = 7, view = 'daily') => {
   if (view === 'daily') {
-    const startOfWeek = new Date(selectedDateObj)
-    const dayOfWeek = startOfWeek.getDay()
-    const offset = dayOfWeek === 0 ? 6 : dayOfWeek - 1
-    startOfWeek.setDate(selectedDateObj.getDate() - offset)
-    return generateMockData(startOfWeek, 7)
+    return processDailyData(ordersList, startDate, days)
   } else {
+    // Monthly view
+    const year = startDate.getFullYear()
+    return processMonthlyData(ordersList, year)
+  }
+}
+
+const generateDataForDate = (dateString, view) => {
+  // Check if selected date is in the future
+  if (isDateInFuture(dateString)) {
+    return []
+  }
+
+  const selectedDateObj = new Date(dateString)
+
+  if (view === 'daily') {
+    // For daily view, show the entire week containing the selected date
+    const startOfWeek = getStartOfWeek(selectedDateObj)
+    return processOrdersData(orders.value, startOfWeek, 7, 'daily')
+  } else {
+    // For monthly view, find the specific month data
     const year = selectedDateObj.getFullYear()
     const month = selectedDateObj.getMonth()
     const monthlyEntry = monthlyData.value.find((item) => {
@@ -330,181 +506,62 @@ const generateDataForDate = (dateString, view) => {
 
 const monthlyData = computed(() => {
   const year = new Date(selectedDate.value).getFullYear()
-  const today = new Date()
-  const currentYear = today.getFullYear()
-  const currentMonth = today.getMonth()
-
-  const allMonthlyData = [
-    {
-      id: 1,
-      period: 'January',
-      revenue: 88000 + (year - 2024) * 5000,
-      expense: 66000 + (year - 2024) * 3000,
-      netProfit: 22000 + (year - 2024) * 2000,
-      margin: 25.0,
-      orders: 703 + (year - 2024) * 50,
-      growth: 12.5,
-    },
-    {
-      id: 2,
-      period: 'February',
-      revenue: 75600 + (year - 2024) * 4000,
-      expense: 56700 + (year - 2024) * 2500,
-      netProfit: 18900 + (year - 2024) * 1500,
-      margin: 25.0,
-      orders: 604 + (year - 2024) * 40,
-      growth: 8.3,
-    },
-    {
-      id: 3,
-      period: 'March',
-      revenue: 69200 + (year - 2024) * 3500,
-      expense: 51900 + (year - 2024) * 2200,
-      netProfit: 17300 + (year - 2024) * 1300,
-      margin: 25.0,
-      orders: 553 + (year - 2024) * 35,
-      growth: -2.1,
-    },
-    {
-      id: 4,
-      period: 'April',
-      revenue: 63400 + (year - 2024) * 3000,
-      expense: 47550 + (year - 2024) * 2000,
-      netProfit: 15850 + (year - 2024) * 1000,
-      margin: 25.0,
-      orders: 506 + (year - 2024) * 30,
-      growth: 6.7,
-    },
-    {
-      id: 5,
-      period: 'May',
-      revenue: 58000 + (year - 2024) * 2800,
-      expense: 43500 + (year - 2024) * 1800,
-      netProfit: 14500 + (year - 2024) * 1000,
-      margin: 25.0,
-      orders: 465 + (year - 2024) * 28,
-      growth: 4.3,
-    },
-    {
-      id: 6,
-      period: 'June',
-      revenue: 62000 + (year - 2024) * 3200,
-      expense: 46500 + (year - 2024) * 2000,
-      netProfit: 15500 + (year - 2024) * 1200,
-      margin: 25.0,
-      orders: 496 + (year - 2024) * 32,
-      growth: 7.1,
-    },
-    {
-      id: 7,
-      period: 'July',
-      revenue: 67000 + (year - 2024) * 3500,
-      expense: 50250 + (year - 2024) * 2200,
-      netProfit: 16750 + (year - 2024) * 1300,
-      margin: 25.0,
-      orders: 536 + (year - 2024) * 35,
-      growth: 8.2,
-    },
-    {
-      id: 8,
-      period: 'August',
-      revenue: 72000 + (year - 2024) * 3800,
-      expense: 54000 + (year - 2024) * 2400,
-      netProfit: 18000 + (year - 2024) * 1400,
-      margin: 25.0,
-      orders: 576 + (year - 2024) * 38,
-      growth: 7.5,
-    },
-    {
-      id: 9,
-      period: 'September',
-      revenue: 76000 + (year - 2024) * 4000,
-      expense: 57000 + (year - 2024) * 2500,
-      netProfit: 19000 + (year - 2024) * 1500,
-      margin: 25.0,
-      orders: 608 + (year - 2024) * 40,
-      growth: 5.6,
-    },
-    {
-      id: 10,
-      period: 'October',
-      revenue: 80000 + (year - 2024) * 4200,
-      expense: 60000 + (year - 2024) * 2600,
-      netProfit: 20000 + (year - 2024) * 1600,
-      margin: 25.0,
-      orders: 640 + (year - 2024) * 42,
-      growth: 5.3,
-    },
-    {
-      id: 11,
-      period: 'November',
-      revenue: 83000 + (year - 2024) * 4400,
-      expense: 62250 + (year - 2024) * 2700,
-      netProfit: 20750 + (year - 2024) * 1700,
-      margin: 25.0,
-      orders: 664 + (year - 2024) * 44,
-      growth: 3.8,
-    },
-    {
-      id: 12,
-      period: 'December',
-      revenue: 88000 + (year - 2024) * 4600,
-      expense: 66000 + (year - 2024) * 2800,
-      netProfit: 22000 + (year - 2024) * 1800,
-      margin: 25.0,
-      orders: 704 + (year - 2024) * 46,
-      growth: 6.0,
-    },
-  ]
-
-  return allMonthlyData.filter((item, index) => {
-    let include = false
-    if (year < currentYear) {
-      include = true
-    } else if (year === currentYear) {
-      include = index <= currentMonth
-    } else {
-      include = false
-    }
-    return include
-  })
+  return processOrdersData(orders.value, new Date(year, 0, 1), 12, 'monthly')
 })
 
 const analyticsData = ref([])
 
+// Helper functions for summary calculations
+const calculateTotal = (data, field) => {
+  return data.reduce((sum, item) => sum + (item[field] || 0), 0)
+}
+
 // Summary computed properties
-const totalRevenue = computed(() =>
-  analyticsData.value.reduce((sum, item) => sum + item.revenue, 0),
-)
-const totalExpense = computed(() =>
-  analyticsData.value.reduce((sum, item) => sum + item.expense, 0),
-)
-const totalNetProfit = computed(() =>
-  analyticsData.value.reduce((sum, item) => sum + item.netProfit, 0),
-)
-const totalOrders = computed(() => analyticsData.value.reduce((sum, item) => sum + item.orders, 0))
-const totalCustomers = computed(() =>
-  analyticsData.value.reduce((sum, item) => sum + (item.customers || 0), 0),
-)
-const averageOrderValue = computed(() =>
-  totalOrders.value > 0 ? Math.round(totalRevenue.value / totalOrders.value) : 0,
-)
-const averageMargin = computed(() => {
-  const margins = analyticsData.value.map((item) => item.margin)
-  return margins.length > 0 ? margins.reduce((sum, margin) => sum + margin, 0) / margins.length : 0
-})
-const overallGrowth = computed(() => {
-  const growths = analyticsData.value.map((item) => item.growth)
-  return growths.length > 0 ? growths.reduce((sum, growth) => sum + growth, 0) / growths.length : 0
+const totalRevenue = computed(() => calculateTotal(analyticsData.value, 'revenue'))
+const totalExpense = computed(() => calculateTotal(analyticsData.value, 'expense'))
+const totalNetProfit = computed(() => calculateTotal(analyticsData.value, 'netProfit'))
+const totalOrders = computed(() => calculateTotal(analyticsData.value, 'orders'))
+const totalCustomers = computed(() => calculateTotal(analyticsData.value, 'customers'))
+
+// Computed property for week range display
+const weekRange = computed(() => {
+  if (selectedView.value !== 'daily') {
+    return ''
+  }
+
+  if (analyticsData.value.length === 0) {
+    return ''
+  }
+
+  const firstDay = analyticsData.value[0]
+  const lastDay = analyticsData.value[analyticsData.value.length - 1]
+  return `${formatDate(firstDay.date)} - ${formatDate(lastDay.date)}`
 })
 
 // Utility functions
-const getColspan = () => (selectedView.value === 'daily' ? 2 : 1)
+const getColspan = () => {
+  if (selectedView.value === 'daily') {
+    return 2
+  } else {
+    return 1
+  }
+}
 
-const updateData = () =>
-  (analyticsData.value = generateDataForDate(selectedDate.value, selectedView.value))
+const isSelectedDateRow = (itemDate) => {
+  if (selectedView.value !== 'daily') {
+    return false
+  }
+  return itemDate === selectedDate.value
+}
 
-updateData()
+const updateData = async () => {
+  if (orders.value.length === 0) {
+    await loadOrders()
+  }
+  analyticsData.value = generateDataForDate(selectedDate.value, selectedView.value)
+}
+
+onMounted(() => updateData())
 
 const formatNumber = (num) => num.toLocaleString()
 const formatDate = (dateString) =>
@@ -514,28 +571,9 @@ const formatDate = (dateString) =>
     year: 'numeric',
   })
 
-const getGrowthClass = (growth) => {
-  if (growth > 0) {
-    return 'positive'
-  } else if (growth < 0) {
-    return 'negative'
-  } else {
-    return 'neutral'
-  }
-}
-
-const getGrowthIcon = (growth) => {
-  if (growth > 0) {
-    return '↗'
-  } else if (growth < 0) {
-    return '↘'
-  } else {
-    return '→'
-  }
-}
-
 const getStatusClass = (status) => {
   const lowerStatus = status?.toLowerCase()
+
   if (lowerStatus === 'excellent') {
     return 'excellent'
   } else if (lowerStatus === 'good') {
@@ -760,7 +798,7 @@ const getStatusClass = (status) => {
   border-top: 1px solid #e5e7eb;
 }
 
-.week-indicator {
+.date-indicator {
   font-size: 14px;
   font-weight: 600;
   color: #374151;
@@ -832,12 +870,20 @@ const getStatusClass = (status) => {
   background: #f7fafc;
 }
 
+.table-row.selected-date-row {
+  background: #dbeafe !important;
+  box-shadow: 0 2px 4px rgba(20, 201, 201, 0.1);
+}
+
+.table-row.selected-date-row:hover {
+  background: #dbeafe !important;
+}
+
 .revenue-cell,
 .expense-cell,
 .net-profit-cell,
 .orders-cell,
-.customers-cell,
-.aov-cell {
+.customers-cell {
   text-align: left;
   min-width: 100px;
   font-weight: 600;
@@ -850,48 +896,6 @@ const getStatusClass = (status) => {
 
 .net-profit-cell.negative {
   color: #dc2626;
-}
-
-.margin-cell {
-  text-align: left;
-  min-width: 80px;
-  font-weight: 600;
-  font-family: 'Poppins', sans-serif;
-}
-
-.margin-cell.negative {
-  color: #dc2626;
-}
-
-.growth-cell {
-  text-align: left;
-  min-width: 80px;
-}
-
-.growth-indicator {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  font-family: 'Poppins', sans-serif;
-}
-
-.growth-indicator.positive {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.growth-indicator.negative {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.growth-indicator.neutral {
-  background: #f3f4f6;
-  color: #6b7280;
 }
 
 .status-cell {
@@ -955,9 +959,6 @@ const getStatusClass = (status) => {
 .summary-row .net-profit-cell,
 .summary-row .orders-cell,
 .summary-row .customers-cell,
-.summary-row .aov-cell,
-.summary-row .margin-cell,
-.summary-row .growth-cell,
 .summary-row .status-cell {
   font-weight: 700;
   color: #111827;
@@ -972,7 +973,6 @@ const getStatusClass = (status) => {
   text-align: left;
 }
 
-.summary-row .growth-cell,
 .summary-row .status-cell {
   text-align: left;
 }
@@ -989,17 +989,8 @@ const getStatusClass = (status) => {
 .summary-row .expense-cell,
 .summary-row .net-profit-cell,
 .summary-row .orders-cell,
-.summary-row .customers-cell,
-.summary-row .aov-cell {
+.summary-row .customers-cell {
   min-width: 100px;
-}
-
-.summary-row .margin-cell {
-  min-width: 80px;
-}
-
-.summary-row .growth-cell {
-  min-width: 80px;
 }
 
 .summary-row .status-cell {
@@ -1008,8 +999,7 @@ const getStatusClass = (status) => {
 
 .summary-revenue,
 .summary-orders,
-.summary-customers,
-.summary-aov {
+.summary-customers {
   color: #059669;
 }
 
@@ -1018,10 +1008,6 @@ const getStatusClass = (status) => {
 }
 
 .summary-net-profit.negative {
-  color: #dc2626;
-}
-
-.summary-margin.negative {
   color: #dc2626;
 }
 
@@ -1068,9 +1054,6 @@ const getStatusClass = (status) => {
   .summary-row .net-profit-cell,
   .summary-row .orders-cell,
   .summary-row .customers-cell,
-  .summary-row .aov-cell,
-  .summary-row .margin-cell,
-  .summary-row .growth-cell,
   .summary-row .status-cell {
     padding: 16px;
   }

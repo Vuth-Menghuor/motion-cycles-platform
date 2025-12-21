@@ -10,20 +10,21 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckRole
 {
     /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * Check if the authenticated user has the required role
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
+        // Step 1: Check if user is authenticated
         if (!Auth::check()) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
+        // Step 2: Check if user has the required role
         if (Auth::user()->role !== $role) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // Step 3: Allow the request to continue
         return $next($request);
     }
 }

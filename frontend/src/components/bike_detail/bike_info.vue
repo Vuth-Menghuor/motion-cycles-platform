@@ -5,10 +5,10 @@
         <div>
           <h1 class="bike-title">{{ bike.title }}</h1>
 
-          <div class="brand-color-section">
-            <span class="brand-name">{{ bike.brand }}</span>
-            <span class="separator"> | </span>
-            <span class="color-info">Color: {{ bike.color }}</span>
+          <div class="item-category-brand">
+            <span class="badge">{{ getCategoryName(bike.category) }}</span>
+            <span class="badge">{{ bike.brand }}</span>
+            <span class="badge">Color: {{ bike.color }}</span>
           </div>
 
           <div class="rating-section">
@@ -35,9 +35,6 @@
               ${{ formatNumber(bike.price) }}
             </div>
           </div>
-          <div v-if="hasDiscount(bike)" class="savings">
-            You save: ${{ formatNumber(getSavings(bike)) }}
-          </div>
         </div>
       </div>
 
@@ -46,7 +43,7 @@
           <Icon icon="ic:round-shopping-cart" class="cart-icon" />
           Add to Cart
         </button>
-        <button class="buy-now-btn">
+        <button class="buy-now-btn" @click="emit('buyNow')">
           <Icon icon="mdi:flash" />
           <span>Buy Now</span>
         </button>
@@ -67,11 +64,10 @@ defineProps({
   bike: { type: Object, required: true },
   formatNumber: Function,
   getDiscountedPrice: Function,
-  getSavings: Function,
   getBrandDescription: Function,
 })
 
-const emit = defineEmits(['addToCart'])
+const emit = defineEmits(['addToCart', 'buyNow'])
 
 // Function to check if a bike has a discount
 const hasDiscount = (bike) =>
@@ -79,6 +75,30 @@ const hasDiscount = (bike) =>
   Array.isArray(bike.discount) &&
   bike.discount.length > 0 &&
   bike.discount[0].value
+
+// Get category name for display
+const getCategoryName = (category) => {
+  if (!category) {
+    return 'Unknown'
+  }
+
+  // Handle object format (from database)
+  if (typeof category === 'object' && category.name) {
+    return category.name
+  }
+
+  // Handle string format
+  if (typeof category === 'string') {
+    const categories = { mountain: 'Mountain Bike', road: 'Road Bike' }
+    if (categories[category]) {
+      return categories[category]
+    } else {
+      return category.charAt(0).toUpperCase() + category.slice(1)
+    }
+  }
+
+  return 'Unknown'
+}
 </script>
 
 <style scoped>
@@ -135,29 +155,6 @@ const hasDiscount = (bike) =>
   color: #64748b;
 }
 
-.brand-color-section {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 16px;
-  color: #64748b;
-  font-weight: 400;
-  margin-top: 8px;
-  margin-bottom: 12px;
-}
-
-.brand-name {
-  font-weight: 500;
-}
-
-.separator {
-  color: #64748b;
-}
-
-.color-info {
-  font-weight: 500;
-}
-
 .price-section {
   display: flex;
   flex-direction: column;
@@ -167,7 +164,7 @@ const hasDiscount = (bike) =>
 
 .price-details {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 16px;
 }
 
@@ -183,12 +180,6 @@ const hasDiscount = (bike) =>
   color: #94a3b8;
   text-decoration: line-through;
   margin-bottom: 4px;
-}
-
-.savings {
-  font-size: 16px;
-  color: #16a34a;
-  font-weight: 500;
 }
 
 .action-buttons {
@@ -244,6 +235,25 @@ const hasDiscount = (bike) =>
   border-bottom: 1px solid #e2e8f0;
   padding-bottom: 34px;
   margin-bottom: 14px;
+}
+
+.item-category-brand {
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid #ddd;
+  border-radius: 90px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 @media (max-width: 768px) {

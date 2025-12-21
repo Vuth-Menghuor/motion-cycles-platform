@@ -1,20 +1,14 @@
 <template>
   <div class="back-btn-container">
     <button @click="goBack" class="back-button">
-      <svg class="back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M15 19l-7-7 7-7"
-        ></path>
-      </svg>
+      <Icon icon="weui:back-filled" class="back-icon" />
       <span class="back-text">Back to {{ brandName || 'Home' }}</span>
     </button>
   </div>
 </template>
 
 <script setup>
+import { Icon } from '@iconify/vue'
 import { useRouter } from 'vue-router'
 
 defineProps({
@@ -27,52 +21,60 @@ defineProps({
 const router = useRouter()
 
 const goBack = () => {
-  if (window.history.length > 1) {
-    router.go(-1)
-  } else {
-    router.push('/')
-  }
+  router.push('/home')
 }
 </script>
 
 <style scoped>
 .back-btn-container {
-  padding: 20px 0;
-  margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  left: 0;
+  padding: 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+  border-bottom: 1px solid #d0d5dd;
+  display: flex;
+  align-items: center;
 }
 
 .back-button {
   display: flex;
-  align-items: center;
   gap: 8px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: background-color 0.2s;
+  align-items: center;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #555;
   font-family: 'Poppins', sans-serif;
+  height: 44px;
+  background-color: white;
+  border: 1px solid grey;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .back-button:hover {
-  background-color: #f3f4f6;
+  background-color: #f9f9f9;
 }
 
 .back-icon {
-  width: 20px;
-  height: 20px;
-  color: #374151;
+  font-size: 1.2rem;
 }
 
 .back-text {
   font-size: 16px;
   font-weight: 500;
-  color: #374151;
+  color: #555;
 }
 
 @media (max-width: 768px) {
   .back-btn-container {
-    padding: 16px 0;
+    padding: 16px 20px;
   }
 
   .back-text {

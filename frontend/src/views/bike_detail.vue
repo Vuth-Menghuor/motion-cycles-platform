@@ -40,6 +40,7 @@
             :getSavings="getSavings"
             :getBrandDescription="(brand) => getBrandDescription(brand, bike.description)"
             @addToCart="handleAddToCart(bike)"
+            @buyNow="handleBuyNow(bike)"
           />
           <div class="spec-card-wrapper">
             <div class="specifications-section">
@@ -51,6 +52,7 @@
               :image="bike.image"
               class="sticky-card"
               @addToCart="handleAddToCart(bike)"
+              @buyNow="handleBuyNow(bike)"
             />
           </div>
           <div class="recommend-section">
@@ -73,7 +75,7 @@
 
 <script setup>
 import { ref, watch, reactive, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import Navigation_header from '@/components/navigation_header.vue'
 import Bread_crumb from '@/components/bread_crumb.vue'
 import Bike_image_gallery from '@/components/bike_detail/bike_image_gallery.vue'
@@ -86,6 +88,7 @@ import Bike_suggestion_card from '@/components/bike_detail/bike_suggestion_card.
 import { productsApi } from '@/services/api'
 
 const route = useRoute()
+const router = useRouter()
 
 const cartStore = useCartStore()
 
@@ -99,7 +102,7 @@ const error = ref(null)
 const fetchProducts = async () => {
   try {
     const response = await productsApi.getProducts()
-    bikes.value = response.data
+    bikes.value = response.data.data || []
   } catch (err) {
     error.value = 'Failed to load products'
     console.error('Error fetching products:', err)
@@ -176,8 +179,17 @@ const handleAddToCart = (product) => {
     showToastMessage(message)
 
     // Call the correct Pinia store action
-    cartStore.addItem(product)
+    cartStore.addToCart(productId, 1)
   }
+}
+
+// Handle Buy Now logic
+const handleBuyNow = async (product) => {
+  // First add to cart
+  await handleAddToCart(product)
+
+  // Then navigate to checkout
+  router.push('/checkout/cart')
 }
 
 // Update bike rating when user submits a review

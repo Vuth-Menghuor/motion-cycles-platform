@@ -18,24 +18,22 @@
         </div>
 
         <div class="filter-row">
-          <select v-model="selectedStatus" @change="applyFilters" class="filter-select">
-            <option value="">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="processing">Processing</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-
-          <select v-model="selectedPaymentMethod" @change="applyFilters" class="filter-select">
-            <option value="">All Payment Methods</option>
-            <option value="bakong">Bakong</option>
-          </select>
-
           <select v-model="selectedCategory" @change="applyFilters" class="filter-select">
             <option value="">All Categories</option>
             <option value="mountain">Mountain Bike</option>
             <option value="road">Road Bike</option>
+          </select>
+
+          <select v-model="selectedBrand" @change="applyFilters" class="filter-select">
+            <option value="">All Brands</option>
+            <option value="Cannondale">Cannondale</option>
+            <option value="Trek">Trek</option>
+            <option value="Bianchi">Bianchi</option>
+            <option value="Giant">Giant</option>
+            <option value="Cervélo">Cervélo</option>
+            <option value="Specialized">Specialized</option>
+            <option value="Shimano">Shimano</option>
+            <option value="Colnago">Colnago</option>
           </select>
 
           <button @click="clearFilters" class="btn btn-secondary clear-filters">
@@ -44,7 +42,23 @@
         </div>
       </div>
 
-      <div v-if="filteredOrders.length === 0" class="no-orders">
+      <div v-if="isLoading" class="loading-section">
+        <div class="loading-card">
+          <Icon icon="mdi:loading" class="loading-icon" />
+          <h3>Loading orders...</h3>
+        </div>
+      </div>
+
+      <div v-else-if="error" class="error-section">
+        <div class="error-card">
+          <Icon icon="mdi:alert-circle" class="error-icon" />
+          <h3>Error Loading Orders</h3>
+          <p>{{ error }}</p>
+          <button @click="loadOrders" class="btn btn-primary">Try Again</button>
+        </div>
+      </div>
+
+      <div v-else-if="filteredOrders.length === 0" class="no-orders">
         <p>No orders found matching your criteria.</p>
       </div>
 
@@ -64,6 +78,7 @@
               <th>Customer Name</th>
               <th>Product Name</th>
               <th>Category</th>
+              <th>Brand</th>
               <th>Payment Method</th>
               <th>Total Amount</th>
               <th>Order Date</th>
@@ -115,9 +130,23 @@
                 </div>
                 <span v-else>N/A</span>
               </td>
+              <td>
+                <div v-if="order.items && order.items.length > 0">
+                  <span
+                    v-for="(item, index) in order.items.slice(0, 2)"
+                    :key="item.id"
+                    class="brand-tag"
+                  >
+                    {{ item.brand || 'N/A'
+                    }}{{ index < order.items.length - 1 && index < 1 ? ', ' : '' }}
+                  </span>
+                  <small v-if="order.items.length > 2"> +{{ order.items.length - 2 }} more </small>
+                </div>
+                <span v-else>N/A</span>
+              </td>
               <td>{{ formatPaymentMethod(order.payment_method) }}</td>
               <td>
-                <span class="price">${{ order.total_amount }}</span>
+                <span class="price">${{ calculateOrderTotal(order).toFixed(2) }}</span>
               </td>
               <td>{{ formatDate(order.created_at) }}</td>
               <td>
@@ -133,13 +162,6 @@
                     title="View Details"
                   >
                     <Icon icon="mdi:eye" />
-                  </router-link>
-                  <router-link
-                    :to="`/admin/orders/edit/${order.id}`"
-                    class="btn-action btn-edit"
-                    title="Edit Order"
-                  >
-                    <Icon icon="mdi:pencil" />
                   </router-link>
                   <button
                     @click="deleteOrder(order)"
@@ -208,6 +230,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { Icon } from '@iconify/vue'
+import { ordersApi } from '@/services/api'
 
 const ITEMS_PER_PAGE = 10
 const currentPage = ref(1)
@@ -215,64 +238,41 @@ const selectAll = ref(false)
 let searchTimeout = null
 
 const searchQuery = ref('')
-const selectedStatus = ref('')
-const selectedPaymentMethod = ref('')
 const selectedCategory = ref('')
+const selectedBrand = ref('')
+const isLoading = ref(false)
+const error = ref(null)
 
-// Sample data for generating mock orders
-const sampleData = {
-  customers: [
-    'John Doe',
-    'Jane Smith',
-    'Bob Johnson',
-    'Alice Brown',
-    'Charlie Wilson',
-    'Diana Prince',
-    'Edward Norton',
-    'Fiona Green',
-    'George Lucas',
-    'Helen Troy',
-    'Ian Malcolm',
-    'Julia Roberts',
-  ],
-  products: ['Mountain Bike Pro', 'Road Bike Elite'],
-  categories: ['mountain', 'road'],
-  statuses: ['completed', 'processing', 'pending', 'confirmed', 'cancelled'],
+// Orders data from API
+const orders = ref([])
+const totalOrders = ref(0)
+
+// Load orders from API
+const loadOrders = async () => {
+  try {
+    isLoading.value = true
+    error.value = null
+
+    const response = await ordersApi.adminListOrders()
+    if (response.data.success) {
+      // Add selected property to each order for bulk operations
+      orders.value = response.data.orders.data.map((order) => ({
+        ...order,
+        selected: false,
+      }))
+      totalOrders.value = response.data.orders.total
+    } else {
+      error.value = 'Failed to load orders'
+    }
+  } catch (err) {
+    console.error('Error loading orders:', err)
+    error.value = err.response?.data?.message || 'Failed to load orders'
+  } finally {
+    isLoading.value = false
+  }
 }
 
-// Helper functions for generating mock data
-const generateId = (prefix, num) => `${prefix}-${String(num).padStart(3, '0')}`
-const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)]
-const randomDate = () => {
-  const date = new Date()
-  date.setDate(date.getDate() - Math.floor(Math.random() * 30))
-  return date.toISOString()
-}
-
-// Generate mock orders
-const mockOrders = Array.from({ length: 12 }, (_, i) => ({
-  id: i + 1,
-  order_number: generateId('ORD', i + 1),
-  customer_name: randomItem(sampleData.customers),
-  payment_method: 'bakong',
-  total_amount: randomItem([299.99, 399.99, 699.98]),
-  created_at: randomDate(),
-  order_status: randomItem(sampleData.statuses),
-  items: [
-    {
-      id: i + 1,
-      name: randomItem(sampleData.products),
-      category: randomItem(sampleData.categories),
-      quantity: 1,
-      price: randomItem([299.99, 399.99]),
-    },
-  ],
-  selected: false,
-}))
-
-const orders = ref(mockOrders)
-
-// Filter orders based on search and filters
+// Filter orders based on search and filters (client-side filtering for now)
 const filteredOrders = computed(() => {
   let filtered = orders.value
 
@@ -283,31 +283,29 @@ const filteredOrders = computed(() => {
       (order) =>
         order.order_number.toLowerCase().includes(query) ||
         order.customer_name.toLowerCase().includes(query) ||
-        order.items.some((item) => item.name.toLowerCase().includes(query)),
+        (order.items && order.items.some((item) => item.name.toLowerCase().includes(query))),
     )
-  }
-
-  // Apply status filter
-  if (selectedStatus.value) {
-    filtered = filtered.filter((order) => order.order_status === selectedStatus.value)
-  }
-
-  // Apply payment method filter
-  if (selectedPaymentMethod.value) {
-    filtered = filtered.filter((order) => order.payment_method === selectedPaymentMethod.value)
   }
 
   // Apply category filter
   if (selectedCategory.value) {
-    filtered = filtered.filter((order) =>
-      order.items.some((item) => item.category === selectedCategory.value),
+    filtered = filtered.filter(
+      (order) =>
+        order.items && order.items.some((item) => item.category === selectedCategory.value),
+    )
+  }
+
+  // Apply brand filter
+  if (selectedBrand.value) {
+    filtered = filtered.filter(
+      (order) => order.items && order.items.some((item) => item.brand === selectedBrand.value),
     )
   }
 
   return filtered
 })
 
-// Calculate total pages
+// Calculate total pages based on filtered results
 const totalPages = computed(() => Math.ceil(filteredOrders.value.length / ITEMS_PER_PAGE))
 
 // Get orders for current page
@@ -324,6 +322,31 @@ const startItem = computed(() => (currentPage.value - 1) * ITEMS_PER_PAGE + 1)
 
 // End item number for pagination
 const endItem = computed(() => Math.min(currentPage.value * ITEMS_PER_PAGE, totalItems.value))
+
+// Calculate total amount for an order (accounting for item discounts and promo discounts)
+const calculateOrderTotal = (order) => {
+  const subtotal = parseFloat(order.subtotal || 0)
+  const shipping = parseFloat(order.shipping_amount || 0)
+  const promoDiscount = parseFloat(order.discount_amount || 0)
+
+  // Calculate item discount
+  const itemDiscount = (order.items || []).reduce((total, item) => {
+    const discount = item.discount?.[0]
+    if (!discount) return total
+
+    const pricing = parseFloat(item.price) || 0
+    let discountValue = 0
+
+    if (discount.type === 'percent') {
+      discountValue = pricing * (discount.value / 100) * item.quantity
+    } else if (discount.type === 'fixed') {
+      discountValue = discount.value * item.quantity
+    }
+    return total + discountValue
+  }, 0)
+
+  return subtotal - itemDiscount + shipping - promoDiscount
+}
 
 // Get selected orders
 const selectedOrders = computed(() => orders.value.filter((order) => order.selected))
@@ -364,6 +387,7 @@ const formatDate = (dateString) => {
 
 // Format payment method for display
 const formatPaymentMethod = (method) => {
+  if (!method) return 'N/A'
   const methods = { bakong: 'Bakong' }
   if (methods[method]) {
     return methods[method]
@@ -374,19 +398,40 @@ const formatPaymentMethod = (method) => {
 
 // Get category name for display
 const getCategoryName = (category) => {
-  const categories = { mountain: 'Mountain', road: 'Road' }
-  if (categories[category]) {
-    return categories[category]
-  } else {
-    return category.charAt(0).toUpperCase() + category.slice(1)
+  // If category is an object (from API relationship), get the name
+  if (category && typeof category === 'object' && category.name) {
+    // Map category names to display names
+    const categoryDisplayMap = {
+      Mountain: 'Mountain Bike',
+      Road: 'Road Bike',
+    }
+    return categoryDisplayMap[category.name] || category.name
   }
+
+  // If category is a string, use it directly
+  if (category && typeof category === 'string') {
+    const categoryDisplayMap = {
+      mountain: 'Mountain Bike',
+      road: 'Road Bike',
+    }
+    return categoryDisplayMap[category] || category
+  }
+
+  return 'Unknown'
 }
 
 // Delete a single order
-const deleteOrder = (order) => {
-  if (confirm(`Delete order ${order.order_number}?`)) {
+const deleteOrder = async (order) => {
+  if (!confirm(`Delete order ${order.order_number}?`)) return
+
+  try {
+    // For now, just remove from local state since we don't have a delete API endpoint
+    // In a real implementation, you'd call an API endpoint to delete the order
     orders.value = orders.value.filter((o) => o.id !== order.id)
     alert('Order deleted successfully')
+  } catch (error) {
+    console.error('Error deleting order:', error)
+    alert('Failed to delete order')
   }
 }
 
@@ -402,8 +447,6 @@ const applyFilters = () => (currentPage.value = 1)
 // Clear all filters
 const clearFilters = () => {
   searchQuery.value = ''
-  selectedStatus.value = ''
-  selectedPaymentMethod.value = ''
   selectedCategory.value = ''
   currentPage.value = 1
 }
@@ -426,19 +469,28 @@ const toggleOrderSelection = (order) => {
 }
 
 // Bulk delete selected orders
-const bulkDelete = () => {
+const bulkDelete = async () => {
   const selectedIds = selectedOrders.value.map((order) => order.order_number)
-  if (confirm(`Delete ${selectedIds.length} selected order(s)?`)) {
+  if (!confirm(`Delete ${selectedIds.length} selected order(s)?`)) return
+
+  try {
+    // For now, just remove from local state since we don't have a bulk delete API endpoint
     orders.value = orders.value.filter((order) => !order.selected)
     selectAll.value = false
     if (paginatedOrders.value.length === 0 && currentPage.value > 1) {
       currentPage.value--
     }
+    alert('Orders deleted successfully')
+  } catch (error) {
+    console.error('Error deleting orders:', error)
+    alert('Failed to delete orders')
   }
 }
 
 // Lifecycle hooks
-onMounted(() => {})
+onMounted(() => {
+  loadOrders()
+})
 
 // Watchers
 watch(
@@ -464,7 +516,7 @@ watch(currentPage, () => (selectAll.value = false))
 }
 
 .breadcrumb-item {
-  color: grey;
+  color: #666;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s;
@@ -477,7 +529,7 @@ watch(currentPage, () => (selectAll.value = false))
 
 .breadcrumb-item.active {
   color: #ff9934;
-  font-weight: 400;
+  /* font-weight: 500; */
   cursor: default;
 }
 
@@ -607,6 +659,18 @@ watch(currentPage, () => (selectAll.value = false))
   margin-bottom: 0.25rem;
 }
 
+.brand-tag {
+  display: inline-block;
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  margin-right: 0.25rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
 .no-orders {
   text-align: center;
   padding: 3rem;
@@ -705,26 +769,45 @@ watch(currentPage, () => (selectAll.value = false))
   text-transform: uppercase;
 }
 
-.status-pending {
-  background-color: #fef5e7;
-  color: #d97706;
-}
-
-.status-processing {
-  background-color: #dbeafe;
-  color: #2563eb;
-}
-
-.status-completed,
-.status-confirmed {
+.status-completed {
   background-color: #dcfce7;
   color: #166534;
 }
 
-.status-failed,
-.status-cancelled {
-  background-color: #fee2e2;
-  color: #dc2626;
+.status-pending {
+  background: #fef3c7;
+  color: #d97706;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-processing {
+  background: #dbeafe;
+  color: #2563eb;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-shipped {
+  background: #fef3c7;
+  color: #d97706;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-delivered {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .actions-column {

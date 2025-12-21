@@ -13,7 +13,7 @@
     <div class="content-title">
       <label class="section-title">Product Listing</label>
     </div>
-    <Product_card @add-to-cart="handleAddToCart" />
+    <Product_card :search-query="searchQuery" />
   </div>
 </template>
 
@@ -23,15 +23,15 @@ import Landing_page from '@/components/landing_page.vue'
 import Navigation_header from '@/components/navigation_header.vue'
 import Popular_card from '@/components/popular_card.vue'
 import Product_card from '@/components/product_card.vue'
-import { ref } from 'vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 
-// Initialize cart count
-const cartCount = ref(0)
+// Get route to read query parameters
+const route = useRoute()
+const searchQuery = computed(() => route.query.search || '')
 
-// Handle adding item to cart by incrementing count
-const handleAddToCart = () => {
-  cartCount.value++
-}
+console.log('HomeView initialized, route.query:', route.query)
+console.log('Initial searchQuery:', searchQuery.value)
 </script>
 <style scoped>
 .content-title {

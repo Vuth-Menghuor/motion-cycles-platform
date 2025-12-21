@@ -42,6 +42,15 @@
           :class="['input-icon right-icon', { 'valid-icon': isPromoValid }]"
         />
       </div>
+      <div v-if="promoError" class="promo-error">{{ promoError }}</div>
+      <div v-if="isPromoValid && promoValidationResult" class="promo-success">
+        {{ promoValidationResult.data.name }} -
+        {{
+          promoValidationResult.data.type === 'percentage'
+            ? promoValidationResult.data.value + '% off'
+            : '$' + promoValidationResult.data.value + ' off'
+        }}
+      </div>
     </div>
 
     <div class="summary-calculations">
@@ -82,14 +91,15 @@
 </template>
 
 <script setup>
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, watch, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import router from '@/router'
 import { Icon } from '@iconify/vue'
+import { discountsApi } from '@/services/api.js'
 
 // Define the props for the component
 const props = defineProps({
-  cartItems: { type: Array, required: true },
+  cartItems: { type: Array, default: () => [] },
   promoCode: { type: String, required: true },
 })
 
@@ -104,9 +114,13 @@ const emit = defineEmits([
   'update:summaryBreakdown',
 ])
 
-// Constants for promo and shipping
-const CORRECT_PROMO = 'BOOKRIDE50'
-const PROMO_DISCOUNT = 5.0
+// Reactive data for promo validation
+const isPromoValidating = ref(false)
+const promoValidationResult = ref(null)
+const promoError = ref('')
+const currentValidationCode = ref('')
+
+// Constants for shipping
 const SHIPPING_AMOUNT = 2.0
 const hiddenRoutes = ['/checkout/address', '/checkout/payment', '/checkout/purchase']
 
@@ -123,11 +137,91 @@ const deliveryDate = computed(() => {
 })
 
 // Computed property to check if promo code is valid
-const isPromoValid = computed(() => props.promoCode.trim().toUpperCase() === CORRECT_PROMO)
+const isPromoValid = computed(() => {
+  return promoValidationResult.value?.valid || false
+})
+
+// Watch for promo code changes and validate
+watch(
+  () => props.promoCode,
+  async (newCode) => {
+    if (newCode.trim().length >= 3) {
+      // Only validate codes with at least 3 characters
+      // Prevent duplicate validations
+      if (currentValidationCode.value !== newCode.trim()) {
+        currentValidationCode.value = newCode.trim()
+        await validatePromoCode(newCode.trim())
+      }
+    } else {
+      promoValidationResult.value = null
+      promoError.value = ''
+      currentValidationCode.value = ''
+      // Remove promo code from localStorage when cleared
+      if (!newCode.trim()) {
+        localStorage.removeItem('checkoutPromoCode')
+      }
+    }
+  },
+  { immediate: false },
+)
+
+// Function to validate promo code
+const validatePromoCode = async (code) => {
+  if (!code) return
+
+  try {
+    isPromoValidating.value = true
+    promoError.value = ''
+
+    // Get product IDs and category IDs from cart
+    const productIds = props.cartItems
+      .map((item) => parseInt(item.product.id))
+      .filter((id) => !isNaN(id))
+    const categoryIds = props.cartItems
+      .map((item) => item.product.category?.id)
+      .filter((id) => id != null)
+      .map((id) => parseInt(id))
+      .filter((id) => !isNaN(id))
+
+    const requestData = {
+      code: code.toUpperCase(),
+      order_amount: parseFloat(totalMRP.value) || 0,
+      product_ids: productIds,
+      category_ids: categoryIds,
+    }
+
+    console.log('Sending discount validation request for code:', code, '->', code.toUpperCase())
+    console.log('Request data:', requestData)
+    console.log('Cart items:', props.cartItems)
+    console.log('Total MRP calculation:', totalMRP.value)
+
+    const response = await discountsApi.validateCode(requestData)
+
+    promoValidationResult.value = response.data
+
+    // Save valid promo code to localStorage
+    if (response.data?.valid) {
+      localStorage.setItem('checkoutPromoCode', code)
+    }
+  } catch (err) {
+    promoValidationResult.value = null
+    promoError.value = err.response?.data?.message || 'Invalid promo code'
+    console.error('Promo validation error:', err)
+    console.error('Error response:', err.response?.data)
+
+    // Remove invalid promo code from localStorage
+    localStorage.removeItem('checkoutPromoCode')
+  } finally {
+    isPromoValidating.value = false
+    currentValidationCode.value = ''
+  }
+}
 
 // Computed property for promo icon based on validity
 const promoIcon = computed(() => {
-  if (isPromoValid.value) {
+  if (isPromoValidating.value) {
+    return 'mdi:loading'
+  } else if (isPromoValid.value) {
     return 'fluent:checkbox-checked-20-filled'
   } else {
     return 'fluent:checkbox-checked-20-regular'
@@ -135,45 +229,52 @@ const promoIcon = computed(() => {
 })
 
 // Computed property for discount amount
-const discountAmount = computed(() => (isPromoValid.value ? PROMO_DISCOUNT : 0))
+const discountAmount = computed(() => {
+  const amount = promoValidationResult.value?.data?.discount_amount
+  return typeof amount === 'number' ? amount : parseFloat(amount) || 0
+})
 
 // Computed property for item discount amount
 const itemDiscountAmount = computed(() =>
   (props.cartItems || []).reduce((total, item) => {
-    if (
-      !item.originalPrice ||
-      !item.discount ||
-      !Array.isArray(item.discount) ||
-      item.discount.length === 0
-    ) {
-      return total
-    }
-    const discount = item.discount[0]
+    const discount = item.product.discount?.[0]
+    if (!discount) return total
+
+    const pricing = parseFloat(item.product.pricing) || 0
+    let discountValue = 0
+
     if (discount.type === 'percent') {
-      const discountValue = (item.originalPrice * discount.value) / 100
-      return total + discountValue * item.quantity
+      discountValue = pricing * (discount.value / 100) * item.quantity
     } else if (discount.type === 'fixed') {
-      return total + discount.value * item.quantity
+      discountValue = discount.value * item.quantity
     }
-    return total
+    return total + discountValue
   }, 0),
 )
 
 // Computed property for total MRP (original prices before any discounts)
 const totalMRP = computed(() =>
-  (props.cartItems || []).reduce(
-    (total, item) => total + (item.originalPrice || item.price) * item.quantity,
-    0,
-  ),
+  (props.cartItems || []).reduce((total, item) => {
+    const pricing = parseFloat(item.product.pricing) || 0
+    return total + pricing * item.quantity
+  }, 0),
 )
 
-// Computed property for net price (discounted prices minus promo discount)
+// Computed property for net price (current prices minus promo discount)
 const netPrice = computed(() => {
-  const discountedTotal = (props.cartItems || []).reduce(
-    (total, item) => total + item.price * item.quantity,
-    0,
-  )
-  return Math.max(discountedTotal - discountAmount.value, 0)
+  const currentTotal = (props.cartItems || []).reduce((total, item) => {
+    let price = parseFloat(item.product.pricing) || 0
+    if (item.product.discount?.length) {
+      const discount = item.product.discount[0]
+      if (discount.type === 'percent') {
+        price = price * (1 - discount.value / 100)
+      } else if (discount.type === 'fixed') {
+        price = Math.max(0, price - discount.value)
+      }
+    }
+    return total + price * item.quantity
+  }, 0)
+  return Math.max(currentTotal - discountAmount.value, 0)
 })
 
 // Computed property for shipping amount
@@ -194,18 +295,13 @@ const summaryBreakdown = computed(() => ({
   shippingAmount: SHIPPING_AMOUNT,
   finalTotal: finalTotal.value,
   promoCode: props.promoCode,
-  promoDiscount: isPromoValid.value ? PROMO_DISCOUNT : 0,
+  promoDiscount: discountAmount.value,
 }))
-
-// Function to navigate and scroll
-const navigationAndScroll = (path) => {
-  router.push(path).then(() => setTimeout(() => window.scrollTo(0, 0), 100))
-}
 
 // Function to handle checkout
 const handleCheckout = () => {
   emit('proceedToCheckout')
-  navigationAndScroll('/checkout/address')
+  router.push('/checkout/address').then(() => window.scrollTo(0, 0))
 }
 
 // Watch for changes in finalTotal
@@ -303,6 +399,19 @@ onMounted(() => {
   margin-bottom: 8px;
   font-size: 14px;
   color: #23272f;
+}
+
+.promo-error {
+  color: #e53e3e;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.promo-success {
+  color: #38a169;
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
 }
 
 /* Promo Input */

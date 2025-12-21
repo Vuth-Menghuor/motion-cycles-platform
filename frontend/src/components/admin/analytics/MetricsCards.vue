@@ -45,7 +45,7 @@
         </div>
         <div class="metric-info">
           <div class="insight-value">{{ activeCustomers.toLocaleString() }}</div>
-          <div class="insight-label">Active Customers</div>
+          <div class="insight-label">Total Customers</div>
         </div>
       </div>
     </div>
@@ -67,7 +67,6 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 
-// Define props for the component
 defineProps({
   totalRevenue: { type: Number, default: 0 },
   netProfit: { type: Number, default: 0 },
@@ -76,7 +75,6 @@ defineProps({
   totalExpenses: { type: Number, default: 0 },
 })
 
-// Format number function
 const formatNumber = (num) => {
   if (num >= 1000000) {
     return (num / 1000000).toFixed(1) + 'M'

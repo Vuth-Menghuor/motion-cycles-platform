@@ -79,10 +79,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
-import { storeToRefs } from 'pinia'
 
 import Address_form from '@/components/checkout/address/address_form.vue'
 import Address_card from '@/components/checkout/address/address_card.vue'
@@ -93,15 +92,33 @@ import { Icon } from '@iconify/vue'
 import Confirm_dialog from '@/components/checkout/address/confirm_dialog.vue'
 
 const router = useRouter()
+const route = useRoute()
 const cartStore = useCartStore()
-const { cartItems } = storeToRefs(cartStore)
+const cartItems = computed(() => cartStore.items)
 
-const promoCode = ref('BOOKRIDE50')
+const promoCode = ref('')
 const showAddressForm = ref(false)
 const editingAddress = ref(null)
 const selectedAddressId = ref(1)
 const showConfirm = ref(false)
 const addressToRemove = ref(null)
+
+// Watch for route changes to clear promo code when leaving checkout
+watch(
+  () => route.path,
+  (newPath) => {
+    const checkoutRoutes = [
+      '/checkout/cart',
+      '/checkout/address',
+      '/checkout/payment',
+      '/checkout/purchase',
+    ]
+    if (!checkoutRoutes.includes(newPath)) {
+      promoCode.value = ''
+      localStorage.removeItem('checkoutPromoCode')
+    }
+  },
+)
 
 const addresses = ref([
   {
@@ -153,6 +170,14 @@ const addresses = ref([
     isDefault: false,
   },
 ])
+
+// Load promo code from localStorage on mount
+onMounted(() => {
+  const savedPromoCode = localStorage.getItem('checkoutPromoCode')
+  if (savedPromoCode) {
+    promoCode.value = savedPromoCode
+  }
+})
 
 const askRemoveAddress = (addressId) => {
   addressToRemove.value = addressId
@@ -218,6 +243,21 @@ const returnToCart = () => {
 
 const continueToPayment = () => {
   if (selectedAddressId.value) {
+    // Save selected address to localStorage
+    const selectedAddress = addresses.value.find((addr) => addr.id === selectedAddressId.value)
+    if (selectedAddress) {
+      // Transform address data to match order tracking expectations
+      const transformedAddress = {
+        full_name: selectedAddress.name,
+        street_address: selectedAddress.streetAddress,
+        city: selectedAddress.city,
+        state: selectedAddress.province,
+        postal_code: '', // Not available in current structure
+        country: selectedAddress.country,
+        phone: selectedAddress.phone,
+      }
+      localStorage.setItem('selectedShippingAddress', JSON.stringify(transformedAddress))
+    }
     navigationAndScroll('/checkout/payment')
   }
 }

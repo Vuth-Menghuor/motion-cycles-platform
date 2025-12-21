@@ -5,12 +5,13 @@ export const useCartStore = defineStore('cart', {
   state: () => ({
     items: [],
     loading: false,
-    count: 0
+    count: 0,
   }),
 
   getters: {
     totalItems: (state) => state.items.reduce((total, item) => total + item.quantity, 0),
-    totalPrice: (state) => state.items.reduce((total, item) => total + (item.product.pricing * item.quantity), 0)
+    totalPrice: (state) =>
+      state.items.reduce((total, item) => total + item.product.pricing * item.quantity, 0),
   },
 
   actions: {
@@ -30,42 +31,36 @@ export const useCartStore = defineStore('cart', {
     async addToCart(productId, quantity = 1) {
       try {
         const response = await cartApi.addToCart(productId, quantity)
-        // Update local state
-        const existingItem = this.items.find(item => item.product_id === productId)
-        if (existingItem) {
-          existingItem.quantity = response.data.quantity
-        } else {
-          this.items.push(response.data)
-        }
+        this.updateLocalCart(response.data)
         this.updateCount()
-        return response.data
+        this.fetchCartCount()
       } catch (error) {
         console.error('Error adding to cart:', error)
         throw error
       }
     },
 
-    async updateCartItem(cartId, quantity) {
+    async updateCartItem(cartItemId, quantity) {
       try {
-        const response = await cartApi.updateCartItem(cartId, quantity)
-        // Update local state
-        const item = this.items.find(item => item.id === cartId)
+        await cartApi.updateCartItem(cartItemId, quantity)
+        const item = this.items.find((item) => item.id === cartItemId)
         if (item) {
           item.quantity = quantity
         }
-        return response.data
+        this.updateCount()
+        this.fetchCartCount()
       } catch (error) {
         console.error('Error updating cart item:', error)
         throw error
       }
     },
 
-    async removeFromCart(cartId) {
+    async removeFromCart(cartItemId) {
       try {
-        await cartApi.removeFromCart(cartId)
-        // Update local state
-        this.items = this.items.filter(item => item.id !== cartId)
+        await cartApi.removeFromCart(cartItemId)
+        this.items = this.items.filter((item) => item.id !== cartItemId)
         this.updateCount()
+        this.fetchCartCount()
       } catch (error) {
         console.error('Error removing from cart:', error)
         throw error
@@ -85,6 +80,29 @@ export const useCartStore = defineStore('cart', {
 
     updateCount() {
       this.count = this.totalItems
-    }
-  }
+    },
+
+    async fetchCartCount() {
+      try {
+        const response = await cartApi.getCartCount()
+        this.count = response.data.count
+      } catch (error) {
+        // If user is not authenticated, set count to 0
+        if (error.response?.status === 401) {
+          this.count = 0
+        } else {
+          console.error('Error fetching cart count:', error)
+        }
+      }
+    },
+
+    updateLocalCart(newItem) {
+      const existingItem = this.items.find((item) => item.product_id === newItem.product_id)
+      if (existingItem) {
+        existingItem.quantity = newItem.quantity
+      } else {
+        this.items.push(newItem)
+      }
+    },
+  },
 })

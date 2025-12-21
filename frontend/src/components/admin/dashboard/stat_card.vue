@@ -7,22 +7,37 @@
       <div class="stat-main">
         <div class="stat-title-value">
           <span class="stat-title">{{ shortTitle }}</span>
-          <span class="stat-value">{{ formattedValue }}</span>
+          <span class="stat-value">{{ prefix }}{{ formattedValue }}</span>
         </div>
       </div>
     </div>
 
     <div class="stat-actions">
       <div class="action-group">
-        <button v-if="actions.includes('add')" class="action-icon" title="Add">
+        <button
+          v-if="actions.includes('add')"
+          class="action-icon"
+          title="Add"
+          @click="handleActionClick('add')"
+        >
           <Icon :icon="addIcon" class="action" />
           <span class="action-text">New</span>
         </button>
-        <button v-if="actions.includes('edit')" class="action-icon" title="Edit">
+        <button
+          v-if="actions.includes('edit')"
+          class="action-icon"
+          title="Edit"
+          @click="handleActionClick('edit')"
+        >
           <Icon :icon="editIcon" class="action" />
           <span class="action-text">Edit</span>
         </button>
-        <button v-if="actions.includes('view')" class="action-icon" title="View">
+        <button
+          v-if="actions.includes('view')"
+          class="action-icon"
+          title="View"
+          @click="handleActionClick('view')"
+        >
           <Icon :icon="viewIcon" class="action" />
           <span class="action-text">View</span>
         </button>
@@ -40,7 +55,8 @@
 import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
 
-// Define the props for the component
+const emit = defineEmits(['action-click'])
+
 const props = defineProps({
   title: { type: String, required: true },
   value: { type: Number, required: true },
@@ -62,17 +78,15 @@ const props = defineProps({
   viewIcon: { type: String, default: 'mdi:eye' },
 })
 
-// Computed property to format the value with commas
+const handleActionClick = (action) => {
+  emit('action-click', { action, title: props.title })
+}
+
 const formattedValue = computed(() => props.value.toLocaleString())
 
-// Computed property to create a short title for display
 const shortTitle = computed(() => {
-  let title = props.title.replace(/^Total\s+/i, '')
-  if (title.length > 10) {
-    return title.substring(0, 10) + '...'
-  } else {
-    return title
-  }
+  const title = props.title.replace(/^Total\s+/i, '')
+  return title.length > 10 ? title.substring(0, 10) + '...' : title
 })
 </script>
 
@@ -80,7 +94,7 @@ const shortTitle = computed(() => {
 .stat-card {
   background-color: #3399cc;
   color: #fff;
-  border-radius: 0px;
+  border-radius: 2px;
   padding: 20px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   position: relative;
@@ -90,7 +104,6 @@ const shortTitle = computed(() => {
   gap: 15px;
   min-height: 180px;
   font-family: 'Poppins', sans-serif;
-  border-radius: 2px;
 }
 
 .stat-card::before {

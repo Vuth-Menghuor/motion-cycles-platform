@@ -34,6 +34,23 @@
       </div>
     </div>
 
+    <!-- Category Filter -->
+    <div class="filter-section">
+      <h4>Category</h4>
+      <div class="filter-options">
+        <label class="filter-option">
+          <input type="radio" value="" v-model="selectedCategory" />
+          <span class="checkmark"></span>
+          All Categories
+        </label>
+        <label v-for="category in categories" :key="category.id" class="filter-option">
+          <input type="radio" :value="category.id" v-model="selectedCategory" />
+          <span class="checkmark"></span>
+          {{ category.name }}
+        </label>
+      </div>
+    </div>
+
     <!-- Color Filter -->
     <div class="filter-section">
       <h4>Color</h4>
@@ -81,6 +98,8 @@ const props = defineProps({
   selectedColors: { type: Array, default: () => [] },
   selectedBrands: { type: Array, default: () => [] },
   selectedDiscountStatuses: { type: Array, default: () => [] },
+  categories: { type: Array, default: () => [] },
+  selectedCategory: { type: String, default: '' },
 })
 
 // Define emits for updating filters
@@ -89,7 +108,9 @@ const emit = defineEmits([
   'update:selectedColors',
   'update:selectedBrands',
   'update:selectedDiscountStatuses',
+  'update:selectedCategory',
   'clear-filters',
+  'filters-changed',
 ])
 
 // Price range options
@@ -122,26 +143,58 @@ const availableBrands = computed(() => {
 // Computed for selected price range with getter/setter
 const selectedPriceRange = computed({
   get: () => props.selectedPriceRange,
-  set: (v) => emit('update:selectedPriceRange', v),
+  set: (v) => {
+    emit('update:selectedPriceRange', v)
+    emitFiltersChanged()
+  },
 })
 
 // Computed for selected colors with getter/setter
 const selectedColors = computed({
   get: () => props.selectedColors,
-  set: (v) => emit('update:selectedColors', v),
+  set: (v) => {
+    emit('update:selectedColors', v)
+    emitFiltersChanged()
+  },
 })
 
 // Computed for selected brands with getter/setter
 const selectedBrands = computed({
   get: () => props.selectedBrands,
-  set: (v) => emit('update:selectedBrands', v),
+  set: (v) => {
+    emit('update:selectedBrands', v)
+    emitFiltersChanged()
+  },
 })
 
 // Computed for selected discount statuses with getter/setter
 const selectedDiscountStatuses = computed({
   get: () => props.selectedDiscountStatuses,
-  set: (v) => emit('update:selectedDiscountStatuses', v),
+  set: (v) => {
+    emit('update:selectedDiscountStatuses', v)
+    emitFiltersChanged()
+  },
 })
+
+// Computed for selected category with getter/setter
+const selectedCategory = computed({
+  get: () => props.selectedCategory,
+  set: (v) => {
+    emit('update:selectedCategory', v)
+    emitFiltersChanged()
+  },
+})
+
+// Function to emit filter changes
+const emitFiltersChanged = () => {
+  emit('filters-changed', {
+    priceRange: selectedPriceRange.value,
+    colors: selectedColors.value,
+    brands: selectedBrands.value,
+    discountStatuses: selectedDiscountStatuses.value,
+    category: selectedCategory.value,
+  })
+}
 
 // Function to clear all filters
 const clearAllFilters = () => {
@@ -149,7 +202,9 @@ const clearAllFilters = () => {
   emit('update:selectedColors', [])
   emit('update:selectedBrands', [])
   emit('update:selectedDiscountStatuses', [])
+  emit('update:selectedCategory', '')
   emit('clear-filters')
+  emitFiltersChanged()
 }
 
 // Function to toggle an item in an array filter
@@ -165,16 +220,22 @@ const toggleFilter = (array, value) => {
 }
 
 // Function to toggle color filter
-const toggleColorFilter = (color) =>
+const toggleColorFilter = (color) => {
   emit('update:selectedColors', toggleFilter(props.selectedColors, color))
+  emitFiltersChanged()
+}
 
 // Function to toggle brand filter
-const toggleBrandFilter = (brand) =>
+const toggleBrandFilter = (brand) => {
   emit('update:selectedBrands', toggleFilter(props.selectedBrands, brand))
+  emitFiltersChanged()
+}
 
 // Function to toggle discount filter
-const toggleDiscountFilter = (status) =>
+const toggleDiscountFilter = (status) => {
   emit('update:selectedDiscountStatuses', toggleFilter(props.selectedDiscountStatuses, status))
+  emitFiltersChanged()
+}
 
 // Expose price ranges for parent component
 defineExpose({ priceRanges })

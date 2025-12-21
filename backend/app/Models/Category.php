@@ -9,12 +9,15 @@ class Category extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description'];
+    // Fields that can be mass assigned
+    protected $fillable = [
+        'name',        // Category name
+        'description'  // Category description
+    ];
 
-    // A category can have many products
-    public function products() 
+    // Category has many Products (one category can contain multiple products)
+    public function products()
     {
         return $this->hasMany(Product::class);
     }
-
 }

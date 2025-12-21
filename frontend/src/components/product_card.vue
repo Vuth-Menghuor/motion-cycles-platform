@@ -11,20 +11,22 @@
     <div class="content-wrapper">
       <bike_filter
         ref="bike_filters"
-        :bikes="bikes"
+        :bikes="allBikesForFilters"
         :show-filters="showFilters"
         v-model:selected-price-range="selectedPriceRange"
         v-model:selected-colors="selectedColors"
         v-model:selected-brands="selectedBrands"
         v-model:selected-discount-statuses="selectedDiscountStatuses"
+        :categories="categories"
+        v-model:selected-category="selectedCategory"
         @clear-filters="handleClearFilters"
+        @filters-changed="handleFiltersChanged"
       />
 
       <div class="products-section">
         <div class="products-header">
           <h2>
-            {{ props.brand ? props.brand + ' Bikes' : 'All Bikes' }} ({{ filteredBikes.length }}
-            results)
+            {{ getResultsTitle() }}
           </h2>
         </div>
 
@@ -36,12 +38,7 @@
         </div>
         <div v-else>
           <div class="bikes-container">
-            <div
-              v-for="bike in filteredBikes"
-              :key="bike.id"
-              class="product-card"
-              :data-id="bike.id"
-            >
+            <div v-for="bike in bikes" :key="bike.id" class="product-card" :data-id="bike.id">
               <div class="card-header">
                 <div
                   class="sale-badge"
@@ -50,6 +47,9 @@
                 >
                   <Icon :icon="bike.badge.icon" class="sale-icon" />
                   <span>{{ bike.badge.text }}</span>
+                </div>
+                <div class="quality-badge" v-if="bike.quality && bike.quality !== 'Standard'">
+                  <span>{{ bike.quality }}</span>
                 </div>
                 <button
                   class="favorite-btn"
@@ -72,10 +72,13 @@
 
               <div class="price-info">
                 <div class="price-container">
-                  <label class="product-price">${{ formatNumber(getDiscountedPrice(bike)) }}</label>
-                  <div v-if="hasDiscount(bike)" class="discount-info">
-                    <span class="original-price">${{ formatNumber(bike.price) }}</span>
-                    <span class="savings">You save: ${{ formatNumber(getSavings(bike)) }}</span>
+                  <div class="price-row">
+                    <label class="product-price"
+                      >${{ formatNumber(getDiscountedPrice(bike)) }}</label
+                    >
+                    <span v-if="hasDiscount(bike)" class="original-price"
+                      >${{ formatNumber(bike.price) }}</span
+                    >
                   </div>
                 </div>
               </div>
@@ -85,10 +88,10 @@
                 <div v-if="bike.highlight" class="product-highlight">
                   <span>{{ bike.highlight }}</span>
                 </div>
-                <div class="subtitle-color">
-                  <span class="product-brand-info">{{ bike.brand }}</span>
-                  <span class="separator"> | </span>
-                  <span class="product-color">Color: {{ bike.color }}</span>
+                <div class="item-category-brand">
+                  <span class="badge">{{ getCategoryName(bike) }}</span>
+                  <span class="badge">{{ bike.brand }}</span>
+                  <span class="badge">Color: {{ bike.color }}</span>
                 </div>
               </div>
 
@@ -102,13 +105,14 @@
                     v-for="star in stars"
                     :key="star"
                     class="star"
-                    :class="{ filled: star <= Math.floor(bike.rating || 0) }"
+                    :class="{ filled: star <= Math.floor(getBikeRating(bike.id) || 0) }"
                   >
                     ★
                   </span>
                 </div>
                 <span class="rating-text"
-                  >({{ bike.rating }}) {{ formatNumber(bike.reviewCount) }}</span
+                  >({{ getBikeRating(bike.id) }})
+                  {{ formatNumber(getBikeReviewCount(bike.id)) }}</span
                 >
               </div>
 
@@ -144,52 +148,124 @@
 
 <script setup>
 import { Icon } from '@iconify/vue'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import bike_filter from './bike_filter.vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useFavoritesStore } from '@/stores/favorites'
-import { productsApi } from '@/services/api'
+import { useReviewsStore } from '@/stores/reviews'
+import { productsApi, categoriesApi } from '@/services/api'
 
 const router = useRouter()
 const cartStore = useCartStore()
 const favoritesStore = useFavoritesStore()
+const reviewsStore = useReviewsStore()
 
 const props = defineProps({
   brand: { type: String, default: '' },
+  searchQuery: { type: String, default: '' },
 })
 
 const stars = computed(() => Array.from({ length: 5 }, (_, i) => i + 1))
 
 const formatNumber = (number) => number.toLocaleString()
 
-// Computed property to get bikes with updated ratings from reviews store
-const bikesWithLiveRatings = computed(() => {
-  return bikes.value
-})
+console.log('ProductCard component initialized with props:', props)
 
 // Reactive state
 const bikes = ref([])
+const allBikes = ref([]) // Store all bikes for filter options
+const allBikesForFilters = ref([]) // Store complete list for filter component
 const loading = ref(true)
 const error = ref(null)
 const showToast = ref(false)
 const toastMessage = ref('')
 const itemQuantities = ref({})
+const categories = ref([])
+
+// Search and filter state
+const searchQuery = ref(props.searchQuery)
+const currentPage = ref(1)
+const totalPages = ref(1)
+const perPage = ref(20)
 
 // Filter state
 const selectedPriceRange = ref('')
 const selectedColors = ref([])
 const selectedBrands = ref([])
 const selectedDiscountStatuses = ref([])
+const selectedCategory = ref('')
 const showFilters = ref(false)
 const bike_filters = ref(null)
 
-// Fetch products
-const fetchProducts = async () => {
+// Debounce timer for filter changes
+let debounceTimer = null
+
+// Fetch products with filters
+const fetchProducts = async (params = {}) => {
   try {
     loading.value = true
-    const response = await productsApi.getProducts()
-    bikes.value = response.data
+    error.value = null
+
+    // Build API parameters
+    const apiParams = {
+      per_page: perPage.value,
+      page: currentPage.value,
+      ...params,
+    }
+
+    // Add search if present
+    if (searchQuery.value.trim()) {
+      apiParams.search = searchQuery.value.trim()
+    }
+
+    // Add category filter
+    if (selectedCategory.value) {
+      apiParams.category_id = selectedCategory.value
+    }
+
+    // Add brand filter
+    if (selectedBrands.value.length > 0) {
+      apiParams.brand = selectedBrands.value.join(',')
+    }
+
+    // Add color filter
+    if (selectedColors.value.length > 0) {
+      apiParams.color = selectedColors.value.join(',')
+    }
+
+    // Add price range filter
+    if (selectedPriceRange.value && bike_filters.value) {
+      const range = bike_filters.value.priceRanges.find((r) => r.label === selectedPriceRange.value)
+      if (range) {
+        apiParams.min_price = range.min
+        apiParams.max_price = range.max
+      }
+    }
+
+    // Add discount filter
+    if (selectedDiscountStatuses.value.length > 0) {
+      const hasDiscounted = selectedDiscountStatuses.value.includes('discounted')
+      const hasRegular = selectedDiscountStatuses.value.includes('regular')
+
+      if (hasDiscounted && !hasRegular) {
+        // Only discounted selected
+        apiParams.has_discount = 'true'
+      } else if (hasRegular && !hasDiscounted) {
+        // Only regular selected
+        apiParams.has_discount = 'false'
+      }
+      // If both selected or neither selected, don't send the parameter (show all products)
+    }
+
+    const response = await productsApi.getProducts(apiParams)
+    bikes.value = response.data.data || []
+    allBikes.value = bikes.value // Store for client-side filtering
+
+    // Update pagination info
+    currentPage.value = response.data.current_page || 1
+    totalPages.value = response.data.last_page || 1
+
     // Handle long data URLs
     bikes.value.forEach((bike) => {
       if (
@@ -201,12 +277,53 @@ const fetchProducts = async () => {
         bike.image = ''
       }
     })
+
+    // Fetch reviews for all products to ensure ratings are up to date
+    const reviewPromises = bikes.value.map((bike) => reviewsStore.fetchProductReviews(bike.id))
+    await Promise.all(reviewPromises)
   } catch (err) {
     error.value = 'Failed to load products'
     console.error('Error fetching products:', err)
   } finally {
     loading.value = false
   }
+}
+
+// Fetch all products for filter options (without filters)
+const fetchAllProductsForFilters = async () => {
+  try {
+    const response = await productsApi.getProducts({ per_page: 1000 }) // Get many products for filter options
+    allBikesForFilters.value = response.data.data || []
+  } catch (err) {
+    console.error('Error fetching all products for filters:', err)
+  }
+}
+
+// Fetch categories
+const fetchCategories = async () => {
+  try {
+    const response = await categoriesApi.getCategories()
+    categories.value = response.data
+  } catch (err) {
+    console.error('Error fetching categories:', err)
+  }
+}
+
+const getResultsTitle = () => {
+  let title = 'All Bikes'
+  const resultCount = bikes.value.length
+
+  if (searchQuery.value.trim()) {
+    title = `Search results for "${searchQuery.value}"`
+  } else if (selectedCategory.value) {
+    // Find the category name from the categories array
+    const category = categories.value.find((cat) => cat.id == selectedCategory.value)
+    title = category ? `${category.name} Bikes` : 'Filtered Bikes'
+  } else if (props.brand) {
+    title = `${props.brand} Bikes`
+  }
+
+  return `${title} (${resultCount} results)`
 }
 
 // Toast notification
@@ -220,75 +337,44 @@ const showToastMessage = (message) => {
 }
 
 // Cart functionality
-const handleAddToCart = (bikeId) => {
-  const bike = bikesWithLiveRatings.value.find((b) => b.id === bikeId)
+const handleAddToCart = async (bikeId) => {
+  const bike = bikes.value.find((b) => b.id === bikeId)
   if (bike) {
-    itemQuantities.value[bikeId] = (itemQuantities.value[bikeId] || 0) + 1
-    const quantityString = 'x' + itemQuantities.value[bikeId].toString().padStart(2, '0')
-    const message = `${bike.title} added to cart! ${quantityString} 🛒`
-    showToastMessage(message)
-    cartStore.addItem(bike)
+    try {
+      // Use the correct method name and parameters
+      await cartStore.addToCart(bike.id, 1)
+
+      // Update local quantity counter
+      itemQuantities.value[bikeId] = (itemQuantities.value[bikeId] || 0) + 1
+      const quantityString = 'x' + itemQuantities.value[bikeId].toString().padStart(2, '0')
+      const message = `${bike.title} added to cart! ${quantityString} 🛒`
+      showToastMessage(message)
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+      showToastMessage('Failed to add to cart. Please try again.')
+    }
   }
 }
 
-// Filtering
+// Since we're using server-side filtering, filteredBikes is just the bikes array
 const filteredBikes = computed(() => {
-  return bikesWithLiveRatings.value.filter((bike) => {
-    // Filter by brand if specified in props
-    if (props.brand) {
-      if (bike.brand?.toLowerCase() !== props.brand.toLowerCase()) {
-        return false
-      }
-    }
-
-    // Filter by price range
-    if (selectedPriceRange.value && bike_filters.value) {
-      const discountedPrice = getDiscountedPrice(bike)
-      const range = bike_filters.value.priceRanges.find((r) => r.label === selectedPriceRange.value)
-      if (range) {
-        if (discountedPrice < range.min || discountedPrice > range.max) {
-          return false
-        }
-      }
-    }
-
-    // Filter by discount status
-    if (selectedDiscountStatuses.value.length > 0) {
-      const bikeHasDiscount = hasDiscount(bike)
-      const shouldShowDiscounted = selectedDiscountStatuses.value.includes('discounted')
-      const shouldShowRegular = selectedDiscountStatuses.value.includes('regular')
-
-      if (bikeHasDiscount) {
-        if (!shouldShowDiscounted) {
-          return false
-        }
-      } else {
-        if (!shouldShowRegular) {
-          return false
-        }
-      }
-    }
-
-    // Filter by selected colors
-    if (selectedColors.value.length > 0) {
-      if (!selectedColors.value.includes(bike.color)) {
-        return false
-      }
-    }
-
-    // Filter by selected brands
-    if (selectedBrands.value.length > 0) {
-      if (!selectedBrands.value.includes(bike.brand)) {
-        return false
-      }
-    }
-
-    return true
-  })
+  return bikes.value
 })
 
 // Favorites
-const toggleFavorite = (bike) => favoritesStore.toggleFavorite(bike)
+const toggleFavorite = async (bike) => {
+  try {
+    await favoritesStore.toggleFavorite(bike.id)
+  } catch (error) {
+    // If not authenticated, show login prompt
+    if (error.message.includes('Please log in')) {
+      showToastMessage('Please log in to add favorites')
+    } else {
+      console.error('Error toggling favorite:', error)
+      showToastMessage('Failed to update favorite')
+    }
+  }
+}
 const isFavorited = (bikeId) => favoritesStore.isFavorited(bikeId)
 
 // Discount utilities
@@ -332,18 +418,6 @@ const getDiscountedPrice = (bike) => {
   }
 }
 
-const getSavings = (bike) => {
-  if (!hasDiscount(bike)) {
-    return 0
-  }
-  const discount = bike.discount[0]
-  if (discount.type === 'percent') {
-    return (bike.price * discount.value) / 100
-  } else {
-    return discount.value
-  }
-}
-
 // Brand description
 const getBrandDescription = (brand, productDescription) => {
   if (productDescription) return productDescription
@@ -366,6 +440,32 @@ const getBrandDescription = (brand, productDescription) => {
   return descriptions[brand] || 'A leading bicycle manufacturer known for quality and innovation.'
 }
 
+// Get live rating from reviews store
+const getBikeRating = (bikeId) => {
+  return reviewsStore.getProductAverageRating(bikeId)
+}
+
+// Get live review count from reviews store
+const getBikeReviewCount = (bikeId) => {
+  return reviewsStore.getProductReviewCount(bikeId)
+}
+
+// Get category name - handle different data formats
+const getCategoryName = (bike) => {
+  // If category is already a string (from form data), use it directly
+  if (bike.category && typeof bike.category === 'string') {
+    return bike.category
+  }
+  // If category is an object (from API relationship), get the name
+  if (bike.category && typeof bike.category === 'object' && bike.category.name) {
+    return bike.category.name
+  }
+  // Otherwise, map from category_id
+  if (!bike.category_id) return 'Uncategorized'
+  const category = categories.value.find((cat) => cat.id == bike.category_id)
+  return category ? category.name : 'Uncategorized'
+}
+
 // Navigation
 const viewBikeDetails = (bikeId) => router.push(`/bike/${bikeId}`).then(() => window.scrollTo(0, 0))
 
@@ -374,10 +474,46 @@ const handleClearFilters = () => {
   selectedColors.value = []
   selectedBrands.value = []
   selectedDiscountStatuses.value = []
+  selectedCategory.value = ''
+  currentPage.value = 1
+  fetchProducts()
+}
+
+const handleFiltersChanged = () => {
+  // Debounce filter changes to avoid too many API calls
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    currentPage.value = 1
+    fetchProducts()
+  }, 300)
 }
 
 // Initialize
 fetchProducts()
+fetchCategories()
+fetchAllProductsForFilters()
+
+// Load favorites when component mounts
+onMounted(async () => {
+  try {
+    await favoritesStore.fetchFavorites()
+  } catch (error) {
+    // Silently handle authentication errors - favorites just won't be loaded
+    if (error.response?.status !== 401) {
+      console.error('Failed to fetch favorites:', error)
+    }
+  }
+})
+
+// Watch for changes to searchQuery prop
+watch(
+  () => props.searchQuery,
+  (newQuery) => {
+    searchQuery.value = newQuery
+    currentPage.value = 1
+    fetchProducts()
+  },
+)
 </script>
 
 <style scoped>
@@ -471,7 +607,11 @@ fetchProducts()
 }
 .products-header {
   margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+
 .loading-state,
 .error-state {
   text-align: center;
@@ -526,7 +666,18 @@ fetchProducts()
   color: grey;
 }
 
-.product-color {
+.product-details {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: grey;
+  font-weight: 400;
+  margin-top: 4px;
+}
+
+.product-category,
+.product-quality {
   font-weight: 500;
 }
 
@@ -543,7 +694,7 @@ fetchProducts()
 }
 .rating-section {
   display: flex;
-  align-items: start;
+  align-items: center;
   gap: 6px;
   padding: 10px 24px 10px 24px;
 }
@@ -635,15 +786,21 @@ fetchProducts()
   font-weight: 600;
 }
 
-.sale-badge {
-  position: relative;
-  left: -26px;
+.quality-badge {
+  position: absolute;
+  top: 3px;
+  left: -20px;
   color: white;
+  background-color: #f53f3f;
+  font-family: 'Poppins', sans-serif;
   padding: 6px 12px 6px 14px;
   display: flex;
   align-items: center;
   clip-path: polygon(0 0, 95% 0, 100% 20%, 100% 80%, 95% 100%, 0 100%, 0% 80%, 0% 20%);
   gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  z-index: 10;
 }
 
 .product-card {
@@ -662,7 +819,7 @@ fetchProducts()
   left: 20px;
   right: 16px;
   display: flex;
-  justify-content: space-between; /* push badge left, heart right */
+  justify-content: flex-end;
   align-items: center;
   z-index: 5;
 }
@@ -714,17 +871,10 @@ fetchProducts()
   gap: 4px;
 }
 
-.discount-info {
+.price-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
-}
-
-.savings {
-  font-size: 14px;
-  color: #16a34a;
-  font-weight: 500;
 }
 
 .favorite-btn {
@@ -757,7 +907,7 @@ fetchProducts()
 }
 
 .product-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #333;
   margin: 0 0 4px 0;
@@ -859,6 +1009,26 @@ fetchProducts()
 .quick-buy-btn:hover {
   background: #b2ebf2;
   transform: translateY(-1px);
+}
+
+.item-category-brand {
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  margin: 2px;
+  border: 1px solid #ddd;
+  border-radius: 90px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 8px 0;
 }
 
 /* Responsive Design */

@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@iconify/vue": "^5.0.0",
-    "axios": "^1.12.2",
-    "qrcode.vue": "^3.6.0"
-  }
-}

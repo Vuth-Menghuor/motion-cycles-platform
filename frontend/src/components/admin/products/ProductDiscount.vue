@@ -1,72 +1,48 @@
 <template>
   <div class="form-section">
-    <h2 class="section-title">Discount Code</h2>
+    <h2 class="section-title">Product Sale Pricing</h2>
+    <p class="section-description">
+      Set a direct sale price for this product. This discount applies only to this specific product
+      and is always active.
+    </p>
 
     <div class="form-group">
-      <label>Discount Code</label>
-      <input
-        type="text"
-        v-model="localProduct.discountCode"
-        placeholder="Enter discount code (optional)"
+      <label>Discount Type</label>
+      <select
+        v-model="localProduct.discountType"
         :disabled="disabled"
-        :class="{ 'prefilled-field': prefilledFields?.discountCode }"
+        :class="{ 'prefilled-field': prefilledFields?.discountType }"
+      >
+        <option value="">No Sale</option>
+        <option value="Percentage">Percentage Off</option>
+        <option value="Fixed Amount">Fixed Amount Off</option>
+      </select>
+    </div>
+
+    <div v-if="localProduct.discountType" class="form-group">
+      <label>Discount Value</label>
+      <input
+        type="number"
+        v-model.number="localProduct.discountValue"
+        :placeholder="
+          localProduct.discountType === 'Percentage'
+            ? 'Enter percentage (e.g., 10 for 10% off)'
+            : 'Enter amount (e.g., 50 for $50 off)'
+        "
+        :disabled="disabled"
+        :class="{ 'prefilled-field': prefilledFields?.discountValue }"
+        min="0"
+        :max="localProduct.discountType === 'Percentage' ? 100 : undefined"
+        step="0.01"
       />
     </div>
 
-    <div v-if="localProduct.discountCode" class="discount-details">
-      <div class="form-group">
-        <label>Discount Type</label>
-        <select
-          v-model="localProduct.discountType"
-          :disabled="disabled"
-          :class="{ 'prefilled-field': prefilledFields?.discountType }"
-        >
-          <option value="">Select Type</option>
-          <option value="Percentage">Percentage</option>
-          <option value="Fixed Amount">Fixed Amount</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Discount Value</label>
-        <input
-          type="text"
-          v-model="localProduct.discountValue"
-          :placeholder="
-            localProduct.discountType === 'Percentage'
-              ? 'Enter percentage (e.g., 10)'
-              : 'Enter amount (e.g., 50)'
-          "
-          :disabled="disabled"
-          :class="{ 'prefilled-field': prefilledFields?.discountValue }"
-        />
-      </div>
-    </div>
-
-    <div v-if="localProduct.discountCode" class="validity-section">
-      <h3 class="validity-title">Discount Validity Period</h3>
-
-      <div class="form-group">
-        <label>Start Date</label>
-        <input
-          type="date"
-          v-model="localProduct.discountStartDate"
-          :min="today"
-          :disabled="disabled"
-          :class="{ 'prefilled-field': prefilledFields?.discountStartDate }"
-        />
-      </div>
-
-      <div class="form-group">
-        <label>Expire Date</label>
-        <input
-          type="date"
-          v-model="localProduct.discountExpireDate"
-          :min="localProduct.discountStartDate || today"
-          :disabled="disabled"
-          :class="{ 'prefilled-field': prefilledFields?.discountExpireDate }"
-        />
-      </div>
+    <div v-if="localProduct.discountType && localProduct.discountValue" class="sale-preview">
+      <strong>Sale Preview:</strong>
+      <span v-if="localProduct.discountType === 'Percentage'">
+        {{ localProduct.discountValue }}% off the original price
+      </span>
+      <span v-else> ${{ localProduct.discountValue }} off the original price </span>
     </div>
   </div>
 </template>
@@ -95,11 +71,6 @@ const localProduct = computed({
   get: () => props.product,
   set: (value) => emit('update:product', value),
 })
-
-const today = computed(() => {
-  const date = new Date()
-  return date.toISOString().split('T')[0]
-})
 </script>
 
 <style scoped>
@@ -118,6 +89,14 @@ const today = computed(() => {
   margin-bottom: 20px;
   color: #1a202c;
   padding: 20px 20px 0 20px;
+}
+
+.section-description {
+  color: #718096;
+  font-size: 14px;
+  margin-bottom: 20px;
+  padding: 0 20px;
+  line-height: 1.5;
 }
 
 .form-group {
@@ -177,6 +156,17 @@ select:disabled {
   background-color: #f0fff4 !important;
   border-color: #48bb78 !important;
   color: #22543d !important;
+}
+
+.sale-preview {
+  background: #f0fff4;
+  border: 1px solid #c6f6d5;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin: 16px 20px 0 20px;
+  color: #22543d;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .validity-section {

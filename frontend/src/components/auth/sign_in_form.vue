@@ -77,11 +77,8 @@ import { Icon } from '@iconify/vue'
 import Guest_button from './guest_button.vue'
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRoute, useRouter } from 'vue-router'
 
-// Get router and route instances
-const router = useRouter()
-const route = useRoute()
+// Get auth store instance
 const authStore = useAuthStore()
 
 // Reactive data for form inputs and state
@@ -101,8 +98,7 @@ const login = async () => {
   try {
     // Attempt to login using the auth store
     await authStore.login(email.value, password.value)
-    // Redirect to the intended page or home
-    router.push(route.query.redirect || '/home')
+    // Redirection is now handled by the auth store based on user role
   } catch (e) {
     // Handle different error statuses
     const status = e.response?.status

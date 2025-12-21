@@ -114,6 +114,22 @@ const goToHome = () => navigate('/home')
 
 // Function to go to favorites page
 const goToFav = () => navigate('/favorites')
+
+// Function to go to products page (home page where products are displayed)
+const goToProducts = () => navigate('/home')
+
+// Settings functions (placeholders for future implementation)
+const goToAppearance = () => {
+  alert('Appearance settings will be available soon!')
+  closeSidebar()
+}
+
+const goToNotification = () => {
+  alert('Notification settings will be available soon!')
+  closeSidebar()
+}
+
+const goToHelp = () => navigate('/help')
 </script>
 
 <style scoped>

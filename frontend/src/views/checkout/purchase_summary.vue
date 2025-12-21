@@ -58,27 +58,22 @@
         <h2 class="invoice-title">Purchase Summary</h2>
         <div class="invoice-info">
           <p><strong>Bill To:</strong> {{ formData?.buyerName || recipient }}</p>
+          <p><strong>Email:</strong> {{ userEmail || 'N/A' }}</p>
           <p><strong>Phone:</strong> {{ formData?.buyerPhone || 'N/A' }}</p>
           <p><strong>Date:</strong> {{ transactionDate }}</p>
-          <p><strong>Order #:</strong> {{ orderData?.invoiceNumber || `ORD-${Date.now()}` }}</p>
+          <p><strong>Order #:</strong> {{ orderData?.invoiceNumber || generateShortOrderId() }}</p>
         </div>
       </div>
       <div v-for="item in cartItems" :key="item.id" class="order-item">
-        <img :src="item.image" :alt="item.name || item.title" class="order-item-image" />
+        <img :src="item.product.image" :alt="item.product.name" class="order-item-image" />
         <div class="order-item-details">
-          <p class="order-item-name">{{ item.name || item.title }}</p>
-          <div class="brand-color-row">
-            <p class="order-item-brand">{{ item.brand }}</p>
-            <span class="separator">|</span>
-            <p class="order-item-color">Color: {{ item.color }}</p>
+          <p class="order-item-name">{{ item.product.name }}</p>
+          <div class="item-category-brand">
+            <span class="badge">{{ getCategoryName(item.product) }}</span>
+            <span class="badge">{{ item.product.brand }}</span>
+            <span class="badge">Color: {{ item.product.color }}</span>
           </div>
           <p class="order-item-quantity">Quantity: {{ item.quantity }}</p>
-          <div class="order-item-price-container">
-            <span v-if="hasDiscount(item)" class="original-price"
-              >${{ formatPrice(item.originalPrice || item.price) }}</span
-            >
-            <span class="current-price">${{ formatPrice(item.price) }}</span>
-          </div>
         </div>
       </div>
 
@@ -90,6 +85,10 @@
         <div class="summary-row">
           <span>Payment Method</span>
           <span>{{ paymentMethod }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>${{ totalMRP.toFixed(2) }}</span>
         </div>
         <div class="summary-row" v-if="discountAmount > 0">
           <span>Discount</span>
@@ -147,6 +146,16 @@ const storedSummaryBreakdown = ref(null)
 const isLoading = ref(true)
 const hasError = ref(false)
 
+// Get user email from localStorage
+const userEmail = computed(() => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user'))
+    return user?.email || null
+  } catch {
+    return null
+  }
+})
+
 // Load order data on component mount
 onMounted(() => {
   // Try to get order data from localStorage (check both possible keys for backward compatibility)
@@ -165,6 +174,9 @@ onMounted(() => {
       storedSummaryBreakdown.value = parsedData.summaryBreakdown || null
       isLoading.value = false
 
+      // Save order to admin orders list immediately after successful load
+      saveOrderToAdminList()
+
       // Clean up old data after successful load
       localStorage.removeItem('orderDetails') // Remove old key if it exists
     } catch (error) {
@@ -179,38 +191,72 @@ onMounted(() => {
   }
 })
 
+// Function to generate a short order ID
+const generateShortOrderId = () => {
+  // Use last 6 digits of timestamp for shorter ID
+  const timestamp = Date.now().toString()
+  const shortId = timestamp.slice(-6)
+  return `ORD-${shortId}`
+}
+
 // Constants
 const CORRECT_PROMO = 'BOOKRIDE50'
 const PROMO_DISCOUNT = 5.0
 const SHIPPING_AMOUNT = 2.0
 
-const formatPrice = (price) => {
-  return price.toLocaleString()
+// Function to get category name for display
+const getCategoryName = (product) => {
+  if (!product) {
+    return 'Unknown'
+  }
+
+  // If category is an object (from API relationship), get the name
+  if (product.category && typeof product.category === 'object' && product.category.name) {
+    // Map category names to display names
+    const categoryDisplayMap = {
+      Mountain: 'Mountain Bike',
+      Road: 'Road Bike',
+    }
+    return categoryDisplayMap[product.category.name] || product.category.name
+  }
+
+  // If category is a string, use it directly
+  if (product.category && typeof product.category === 'string') {
+    const categoryDisplayMap = {
+      mountain: 'Mountain Bike',
+      road: 'Road Bike',
+    }
+    return categoryDisplayMap[product.category] || product.category
+  }
+
+  return 'Unknown'
 }
 
 // Helper functions for discount calculation (same as cart_item_card)
 const hasDiscount = (item) => {
   return (
-    item.discount &&
-    Array.isArray(item.discount) &&
-    item.discount.length > 0 &&
-    (item.discount[0].type === 'percent' || item.discount[0].type === 'fixed')
+    item.product.discount &&
+    Array.isArray(item.product.discount) &&
+    item.product.discount.length > 0 &&
+    (item.product.discount[0].type === 'percent' || item.product.discount[0].type === 'fixed')
   )
 }
 
 const getDiscountedPrice = (item) => {
+  const pricing = parseFloat(item.product.pricing) || 0
+
   if (!hasDiscount(item)) {
-    return item.price
+    return pricing
   }
 
-  const discount = item.discount[0] // Take the first discount
+  const discount = item.product.discount[0] // Take the first discount
   if (discount.type === 'percent') {
-    return item.price - (item.price * discount.value) / 100
+    return pricing - (pricing * discount.value) / 100
   } else if (discount.type === 'fixed') {
-    return item.price - discount.value
+    return pricing - discount.value
   }
 
-  return item.price
+  return pricing
 }
 
 // Computed properties - use stored breakdown if available, otherwise calculate
@@ -222,7 +268,7 @@ const totalMRP = computed(() => {
 
   // Fallback calculation
   return cartItems.value.reduce((total, item) => {
-    return total + (item.originalPrice || item.price) * item.quantity
+    return total + item.product.pricing * item.quantity
   }, 0)
 })
 
@@ -230,8 +276,8 @@ const itemDiscountAmount = computed(() => {
   return cartItems.value.reduce((total, item) => {
     if (!hasDiscount(item)) return total
 
-    const originalPrice = item.originalPrice || item.price
-    const discountedPrice = item.price
+    const originalPrice = item.product.pricing
+    const discountedPrice = getDiscountedPrice(item)
     const itemDiscount = (originalPrice - discountedPrice) * item.quantity
 
     return total + itemDiscount
@@ -253,12 +299,7 @@ const promoDiscountAmount = computed(() => {
 })
 
 const discountAmount = computed(() => {
-  // Use stored breakdown if available
-  if (storedSummaryBreakdown.value?.discountAmount !== undefined) {
-    return storedSummaryBreakdown.value.discountAmount
-  }
-
-  // Fallback calculation
+  // Always calculate total discount (item discounts + promo discount)
   return itemDiscountAmount.value + promoDiscountAmount.value
 })
 
@@ -362,10 +403,11 @@ const downloadInvoice = () => {
   doc.text('Bill To:', 20, 65)
   doc.setFont('helvetica', 'normal')
   doc.text(formData.value?.buyerName || props.recipient, 20, 72)
-  doc.text(`Phone: ${formData.value?.buyerPhone || 'N/A'}`, 20, 78)
+  doc.text(`Email: ${userEmail.value || 'N/A'}`, 20, 78)
+  doc.text(`Phone: ${formData.value?.buyerPhone || 'N/A'}`, 20, 84)
 
   // Items Table Header
-  let yPosition = 95
+  let yPosition = 105
   doc.setFillColor(...primaryColor)
   doc.rect(20, yPosition - 5, 170, 8, 'F')
 
@@ -383,7 +425,7 @@ const downloadInvoice = () => {
   doc.setFont('helvetica', 'normal')
 
   cartItems.value.forEach((item) => {
-    const itemName = item.name || item.title
+    const itemName = item.product.name
     const quantity = item.quantity
     const unitPrice = getDiscountedPrice(item)
     const total = unitPrice * quantity
@@ -392,15 +434,15 @@ const downloadInvoice = () => {
     const truncatedName = itemName.length > 30 ? itemName.substring(0, 27) + '...' : itemName
     doc.text(truncatedName, 25, yPosition)
 
-    // Brand and color
-    if (item.brand || item.color) {
-      const brandColor = `${item.brand || ''}${item.color ? ` | ${item.color}` : ''}`
-      doc.setFontSize(8)
-      doc.setTextColor(...lightGray)
-      doc.text(brandColor, 25, yPosition + 4)
-      doc.setFontSize(9)
-      doc.setTextColor(...textColor)
-    }
+    // Brand and color - removed as per user request
+    // if (item.product.brand || item.product.color) {
+    //   const brandColor = `${item.product.brand || ''}${item.product.color ? ` | ${item.product.color}` : ''}`
+    //   doc.setFontSize(8)
+    //   doc.setTextColor(...lightGray)
+    //   doc.text(brandColor, 25, yPosition + 4)
+    //   doc.setFontSize(9)
+    //   doc.setTextColor(...textColor)
+    // }
 
     // Quantity, Unit Price, Total
     doc.text(quantity.toString(), 125, yPosition)
@@ -479,8 +521,71 @@ const continueShopping = () => {
   // Clear all order data from localStorage
   localStorage.removeItem('lastOrderData')
   localStorage.removeItem('orderDetails') // Clean up any old data
+  localStorage.removeItem('checkoutPromoCode') // Clear saved promo code
   // Navigate to home page
   router.push('/home')
+}
+
+// Save completed order to admin orders storage
+const saveOrderToAdminList = () => {
+  try {
+    // Get existing admin orders or initialize empty array
+    const existingOrders = JSON.parse(localStorage.getItem('adminOrders') || '[]')
+
+    // Create admin order format
+    const adminOrder = {
+      id: Date.now(), // Use timestamp as ID
+      order_number: orderData.value?.invoiceNumber || generateShortOrderId(),
+      customer_name: formData.value?.buyerName || 'Unknown Customer',
+      customer_email: userEmail.value || formData.value?.buyerEmail || 'N/A',
+      customer_phone: formData.value?.buyerPhone || 'N/A',
+      payment_method: actualPaymentMethod.value || 'bakong',
+      payment_status: 'completed', // Payment was successful since user reached summary page
+      subtotal: totalMRP.value, // Save subtotal (total of all items before discount)
+      shipping_amount: shippingCharge.value, // Add shipping amount
+      discount_amount: discountAmount.value, // Add discount amount
+      total_amount: totalPrice.value, // Keep total for backward compatibility
+      created_at: orderData.value?.timestamp || new Date().toISOString(),
+      order_status: 'completed',
+      items: cartItems.value.map((item) => {
+        // Helper function to get category name
+        const getCategoryValue = (product) => {
+          // If category is an object (from API relationship), get the name
+          if (product.category && typeof product.category === 'object' && product.category.name) {
+            return product.category.name
+          }
+          // If category is a string, use it directly
+          if (product.category && typeof product.category === 'string') {
+            return product.category
+          }
+          return 'Uncategorized'
+        }
+
+        return {
+          id: item.id,
+          name: item.product.name,
+          image: item.product.image, // Save product image URL
+          category: getCategoryValue(item.product), // Save as string
+          brand: item.product.brand || 'N/A',
+          color: item.product.color || 'N/A', // Save product color
+          original_price: item.product.pricing, // Save original price
+          quantity: item.quantity,
+          price: getDiscountedPrice(item), // Save discounted price
+        }
+      }),
+      selected: false,
+    }
+
+    // Add to existing orders
+    existingOrders.push(adminOrder)
+
+    // Save back to localStorage
+    localStorage.setItem('adminOrders', JSON.stringify(existingOrders))
+
+    console.log('✅ Order saved to admin list:', adminOrder)
+  } catch (error) {
+    console.error('❌ Error saving order to admin list:', error)
+  }
 }
 </script>
 
@@ -557,18 +662,24 @@ const continueShopping = () => {
   font-weight: 600;
   color: #333;
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .order-item-brand {
   color: #666;
-  font-size: 12px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.order-item-category {
+  color: #666;
+  font-size: 14px;
   margin: 0;
 }
 
 .order-item-color {
   color: #666;
-  font-size: 12px;
+  font-size: 14px;
   margin: 0;
 }
 
@@ -577,6 +688,25 @@ const continueShopping = () => {
   font-size: 12px;
   margin: 0;
   padding: 24px 0 8px 0;
+}
+
+.price-total-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.order-item-price {
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.order-item-total {
+  color: #10b981;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .order-item-price-container {
@@ -769,6 +899,25 @@ hr {
   margin-bottom: 2rem;
 }
 
+.item-category-brand {
+  color: #64748b;
+  font-size: 14px;
+  display: flex;
+  gap: 8px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid #ddd;
+  border-radius: 90px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -787,6 +936,10 @@ hr {
 
   .order-item-details {
     text-align: center;
+  }
+
+  .price-total-row {
+    justify-content: center;
   }
 }
 </style>

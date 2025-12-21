@@ -1,28 +1,17 @@
 <template>
   <div class="feedback-card" :class="{ selected: feedback.selected }" @click="handleCardClick">
-    <div class="card-header">
-      <div class="card-checkbox">
-        <input
-          type="checkbox"
-          :checked="feedback.selected"
-          @change.stop="$emit('toggle-select', feedback.id)"
-          class="checkbox"
-        />
-      </div>
-
-      <div class="card-info">
-        <div class="feedback-date">{{ formatDate(feedback.date) }}</div>
-      </div>
-    </div>
-
     <div class="card-content">
-      <div class="customer-info">
-        <div class="customer-avatar">
-          {{ getInitials(feedback.customerName) }}
+      <div class="top-row">
+        <div class="customer-info">
+          <div class="customer-avatar">
+            {{ getInitials(feedback.customerName) }}
+          </div>
+          <div class="customer-name">
+            {{ feedback.customerName }}
+          </div>
         </div>
-        <div class="customer-name">
-          {{ feedback.customerName }}
-        </div>
+
+        <div class="feedback-date">{{ formatDate(feedback.date) }}</div>
       </div>
 
       <div class="rating-section">
@@ -65,14 +54,6 @@
 
     <div class="card-actions">
       <template v-if="!isEditing">
-        <button
-          @click="$emit('view', feedback.id)"
-          class="btn-action btn-view"
-          title="View Feedback"
-        >
-          <Icon icon="mdi:eye" />
-          View
-        </button>
         <button @click="startEdit" class="btn-action btn-update" title="Update Feedback">
           <Icon icon="mdi:pencil" />
           Update
@@ -119,7 +100,7 @@ const props = defineProps({
 })
 
 // Emits
-const emit = defineEmits(['view', 'respond', 'delete', 'toggle-select', 'update-review'])
+const emit = defineEmits(['delete', 'toggle-select', 'update-review'])
 
 // Reactive state for editing
 const isEditing = ref(false)
@@ -146,8 +127,8 @@ const getInitials = (name) => {
 }
 
 const handleCardClick = (event) => {
-  // Don't toggle if clicking on buttons or checkbox
-  if (event.target.closest('.card-actions') || event.target.closest('.card-checkbox')) {
+  // Don't toggle if clicking on buttons
+  if (event.target.closest('.card-actions')) {
     return
   }
   emit('toggle-select', props.feedback.id)
@@ -198,56 +179,27 @@ const saveEdit = async () => {
   transition: all 0.2s ease;
 }
 
-.feedback-card:hover {
-  border-color: #cbd5e0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .feedback-card.selected {
   border-color: #4299e1;
   box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background-color: #f7fafc;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.card-checkbox {
-  flex-shrink: 0;
-}
-
-.card-info {
-  flex: 1;
-  margin-left: 12px;
-}
-
-.feedback-id {
-  font-family: 'Monaco', 'Menlo', monospace;
-  font-weight: 600;
-  color: #2b6cb0;
-  font-size: 14px;
-}
-
-.feedback-date {
-  font-size: 12px;
-  color: #718096;
-  margin-top: 2px;
-}
-
 .card-content {
-  padding: 20px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .customer-info {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -264,14 +216,26 @@ const saveEdit = async () => {
   font-weight: 600;
 }
 
-.customer-name svg,
-.product-name svg {
-  color: #718096;
+.customer-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.feedback-date {
+  font-size: 12px;
+  color: #6b7280;
   flex-shrink: 0;
 }
 
 .rating-section {
-  margin-bottom: 16px;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.comment-section {
+  margin-top: 12px;
+  width: 100%;
 }
 
 .rating-stars {
@@ -297,19 +261,14 @@ const saveEdit = async () => {
   font-weight: 500;
 }
 
-.comment-section {
-  margin-bottom: 16px;
-}
-
 .comment-text {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.5;
-  color: #2d3748;
-  font-style: italic;
-  background-color: #f7fafc;
-  padding: 12px 16px;
+  color: #374151;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
   border-radius: 4px;
-  border-left: 4px solid #4299e1;
+  padding: 8px 12px;
 }
 
 .card-actions {
@@ -336,24 +295,9 @@ const saveEdit = async () => {
   text-decoration: none;
 }
 
-.btn-view {
-  background-color: #4299e1;
-  color: white;
-}
-
-.btn-view:hover {
-  background-color: #3182ce;
-  transform: translateY(-1px);
-}
-
 .btn-update {
   background-color: #38a169;
   color: white;
-}
-
-.btn-update:hover {
-  background-color: #2f855a;
-  transform: translateY(-1px);
 }
 
 .btn-delete {
@@ -361,29 +305,14 @@ const saveEdit = async () => {
   color: white;
 }
 
-.btn-delete:hover {
-  background-color: #c53030;
-  transform: translateY(-1px);
-}
-
 .btn-cancel {
   background-color: #718096;
   color: white;
 }
 
-.btn-cancel:hover {
-  background-color: #4a5568;
-  transform: translateY(-1px);
-}
-
 .btn-save {
   background-color: #38a169;
   color: white;
-}
-
-.btn-save:hover:not(:disabled) {
-  background-color: #2f855a;
-  transform: translateY(-1px);
 }
 
 .btn-save:disabled {
@@ -468,19 +397,15 @@ const saveEdit = async () => {
 }
 
 @media (max-width: 768px) {
-  .card-header {
-    padding: 12px 16px;
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
-
-  .card-info {
-    margin-left: 0;
-  }
-
   .card-content {
     padding: 16px;
+    gap: 10px;
+  }
+
+  .top-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
   .card-actions {
@@ -495,12 +420,15 @@ const saveEdit = async () => {
 }
 
 @media (max-width: 480px) {
-  .card-header {
-    padding: 10px 12px;
-  }
-
   .card-content {
     padding: 12px;
+    gap: 8px;
+  }
+
+  .top-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
   }
 
   .card-actions {
@@ -508,8 +436,8 @@ const saveEdit = async () => {
   }
 
   .comment-text {
-    font-size: 14px;
-    padding: 10px 12px;
+    font-size: 13px;
+    padding: 6px 10px;
   }
 
   .rating-stars .star {
@@ -519,6 +447,10 @@ const saveEdit = async () => {
   .customer-name,
   .product-name {
     font-size: 13px;
+  }
+
+  .feedback-date {
+    font-size: 10px;
   }
 }
 </style>

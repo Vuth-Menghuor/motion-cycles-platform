@@ -19,12 +19,22 @@
             v-model="selectedProductId"
             @blur="loadProduct"
             @keyup.enter="loadProduct"
-            placeholder="e.g. P0000I"
+            placeholder="e.g. P0000I or 1"
             class="product-input"
+            :disabled="loading"
           />
-          <button @click="loadProduct" class="load-btn" :disabled="!selectedProductId.trim()">
-            Load Product
+          <button
+            @click="loadProduct"
+            class="load-btn"
+            :disabled="!selectedProductId.trim() || loading"
+          >
+            <span v-if="loading">Loading...</span>
+            <span v-else>Load Product</span>
           </button>
+        </div>
+        <div v-if="error && !loading" class="error-message">
+          <Icon icon="mdi:alert-circle" />
+          {{ error }}
         </div>
       </div>
     </div>
@@ -57,7 +67,7 @@
 
       <div>
         <div class="form-column">
-          <ProductImage :disabled="isFormDisabled" />
+          <ProductImage v-model="productImages" />
           <ProductPrice
             :product="product"
             @update:product="product = $event"
@@ -87,7 +97,8 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { productsApi, categoriesApi } from '@/services/api.js'
 import ProductInfo from '@/components/admin/products/ProductInfo.vue'
 import ProductDescription from '@/components/admin/products/ProductDescription.vue'
 import ProductQuality from '@/components/admin/products/ProductQuality.vue'
@@ -97,6 +108,7 @@ import ProductPrice from '@/components/admin/products/ProductPrice.vue'
 import ProductSpecs from '@/components/admin/products/ProductSpecs.vue'
 
 const route = useRoute()
+const router = useRouter()
 
 const props = defineProps({
   id: {
@@ -105,15 +117,65 @@ const props = defineProps({
   },
 })
 
-const API_DELAY = 500
-
 // Reactive data
 const selectedProductId = ref('')
 const isProductLoaded = ref(false)
+const loading = ref(false)
+const updating = ref(false)
+const error = ref('')
+const categories = ref([])
 
-if (props.id) {
-  selectedProductId.value = props.id
-}
+// Form data
+const product = ref({
+  id: '',
+  name: '',
+  brand: '',
+  category: '',
+  category_id: '',
+  quantity: '',
+  highlight: '',
+  description: '',
+  quality: '',
+  price: '',
+  discountCode: '',
+  discountStartDate: '',
+  discountExpireDate: '',
+  color: '',
+  image: '',
+  additional_images: [],
+})
+
+// Combined images for ProductImage component (main + additional)
+const productImages = computed({
+  get: () => {
+    const images = []
+    if (product.value.image) {
+      images.push(product.value.image)
+    }
+    if (product.value.additional_images && product.value.additional_images.length > 0) {
+      images.push(...product.value.additional_images)
+    }
+    return images
+  },
+  set: (value) => {
+    if (value && value.length > 0) {
+      product.value.image = value[0]
+      product.value.additional_images = value.slice(1)
+    } else {
+      product.value.image = ''
+      product.value.additional_images = []
+    }
+  },
+})
+
+const specs = ref({
+  range: '',
+  hubMotor: '',
+  payload: '',
+  controller: '',
+  weight: '',
+  display: '',
+})
 
 // Computed properties
 const isFormDisabled = computed(() => !isProductLoaded.value)
@@ -154,127 +216,18 @@ const prefilledFields = computed(() => {
   return fields
 })
 
-// Form data
-const product = ref({
-  id: '',
-  name: '',
-  brand: '',
-  category: '',
-  quantity: '',
-  highlight: '',
-  description: '',
-  quality: '',
-  price: '',
-  discountCode: '',
-  discountStartDate: '',
-  discountExpireDate: '',
-  color: '',
-})
-
-const specs = ref({
-  range: '',
-  hubMotor: '',
-  payload: '',
-  controller: '',
-  weight: '',
-  display: '',
-})
-
-// Mock data for demo
-const MOCK_PRODUCTS = {
-  P0000I: {
-    id: 'P0000I',
-    name: 'Electric Bike Model A',
-    brand: 'Cannondale',
-    category: 'Road Bike',
-    quantity: '25',
-    highlight: 'High-performance electric bike',
-    description:
-      'This is a detailed description of the Electric Bike Model A with advanced features and specifications.',
-    quality: 'High',
-    price: '2999',
-    discountCode: 'ELECTRIC25',
-    discountStartDate: '2025-10-01',
-    discountExpireDate: '2025-12-31',
-    color: 'Black',
-  },
-  P0001I: {
-    id: 'P0001I',
-    name: 'Mountain Bike Pro',
-    brand: 'Trek',
-    category: 'Mountain Bike',
-    quantity: '15',
-    highlight: 'Professional mountain biking experience',
-    description:
-      'Designed for extreme terrains and professional riders, this mountain bike offers superior performance.',
-    quality: 'Premium',
-    price: '1899',
-    discountCode: 'MOUNTAIN15',
-    discountStartDate: '2025-10-15',
-    discountExpireDate: '2025-11-15',
-    color: 'Red',
-  },
-  P0002I: {
-    id: 'P0002I',
-    name: 'City Cruiser',
-    brand: 'Giant',
-    category: 'Road Bike',
-    quantity: '30',
-    highlight: 'Comfortable urban commuting',
-    description: 'Perfect for city commuting with comfortable seating and reliable performance.',
-    quality: 'Standard',
-    price: '899',
-    discountCode: 'CITY10',
-    discountStartDate: '2025-09-01',
-    discountExpireDate: '2025-10-31',
-    color: 'Blue',
-  },
-}
-
-const MOCK_SPECS = {
-  P0000I: {
-    range: '100km',
-    hubMotor: '750W',
-    payload: '150kg',
-    controller: 'LCD Display',
-    weight: '25kg',
-    display: 'Digital',
-  },
-  P0001I: {
-    range: 'N/A',
-    hubMotor: 'N/A',
-    payload: '120kg',
-    controller: 'Manual',
-    weight: '18kg',
-    display: 'Analog',
-  },
-  P0002I: {
-    range: 'N/A',
-    hubMotor: 'N/A',
-    payload: '100kg',
-    controller: 'Basic',
-    weight: '15kg',
-    display: 'None',
-  },
-}
-
-// Utility functions
-const convertDateFormat = (dateString) => {
-  if (!dateString || dateString === 'N/A') {
-    return ''
-  } else {
-    const parts = dateString.split('/')
-    if (parts.length === 3) {
-      const [month, day, year] = parts
-      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
-    } else {
-      return dateString
-    }
+// Load categories for dropdown
+const loadCategories = async () => {
+  try {
+    const response = await categoriesApi.getCategories()
+    categories.value = response.data
+  } catch (err) {
+    console.error('Error loading categories:', err)
   }
 }
 
-// Product management methods
-const loadProduct = () => {
+// Load product data from API
+const loadProduct = async () => {
   const productId = selectedProductId.value.trim()
 
   if (!productId) {
@@ -282,21 +235,162 @@ const loadProduct = () => {
     return
   }
 
-  if (MOCK_PRODUCTS[productId]) {
-    setTimeout(() => {
-      product.value = { ...MOCK_PRODUCTS[productId] }
-      specs.value = { ...MOCK_SPECS[productId] }
-      isProductLoaded.value = true
-    }, API_DELAY)
-  } else {
-    alert(`Product with ID "${productId}" not found. Please check the ID and try again.`)
-    selectedProductId.value = ''
+  // Basic validation - product ID should be numeric or in format P0000I
+  const isValidId = /^\d+$/.test(productId) || /^P\d+I$/.test(productId)
+  if (!isValidId) {
+    error.value =
+      'Invalid product ID format. Please enter a numeric ID (e.g., 1) or ID in format P0000I (e.g., P0001I)'
     resetForm()
+    return
+  }
+
+  try {
+    loading.value = true
+    error.value = ''
+
+    const response = await productsApi.getProduct(productId)
+
+    // Transform API data to match form structure
+    product.value = {
+      id: response.data.id,
+      name: response.data.title || '',
+      brand: response.data.brand || '',
+      category: response.data.category?.name || '',
+      category_id: response.data.category?.id || '',
+      quantity: response.data.quantity?.toString() || '',
+      highlight: '', // Not in API
+      description: response.data.description || '',
+      quality: response.data.quality || '',
+      price: response.data.price?.toString() || '',
+      discountCode: '', // Will be set from discount data below
+      discountType: '', // Will be set from discount data below
+      discountValue: '', // Will be set from discount data below
+      discountStartDate: '', // Will be set from discount data below
+      discountExpireDate: '', // Will be set from discount data below
+      color: response.data.color || '',
+      image: response.data.image || '',
+      additional_images: Array.isArray(response.data.additionalImages)
+        ? response.data.additionalImages
+            .map((img) => (typeof img === 'string' ? img : img.url))
+            .filter((url) => url)
+        : [],
+    }
+
+    // Load discount data if available
+    if (
+      response.data.discount &&
+      Array.isArray(response.data.discount) &&
+      response.data.discount.length > 0
+    ) {
+      const discountData = response.data.discount[0] // Take first discount
+
+      // Set discount code (could be in 'code' or 'badge' field)
+      product.value.discountCode = discountData.code || discountData.badge || ''
+
+      // Set discount type
+      product.value.discountType = discountData.type === 'percent' ? 'Percentage' : 'Fixed Amount'
+
+      // Set discount value
+      product.value.discountValue = discountData.value?.toString() || ''
+
+      // Set discount dates
+      if (discountData.start_date) {
+        product.value.discountStartDate = discountData.start_date
+      }
+      if (discountData.expire_date) {
+        product.value.discountExpireDate = discountData.expire_date
+      }
+    }
+
+    // Load specs if available (assuming specs are stored in the database)
+    specs.value = {
+      range: response.data.specs?.range || '',
+      hubMotor: response.data.specs?.hubMotor || '',
+      payload: response.data.specs?.payload || '',
+      controller: response.data.specs?.controller || '',
+      weight: response.data.specs?.weight || '',
+      display: response.data.specs?.display || '',
+    }
+
+    isProductLoaded.value = true
+  } catch (err) {
+    const statusCode = err.response?.status
+    if (statusCode === 404) {
+      error.value = `Product with ID "${productId}" not found. Please check the ID and try again.`
+    } else if (statusCode === 500) {
+      error.value = 'Server error occurred. Please try again later.'
+    } else {
+      error.value = `Failed to load product: ${err.response?.data?.message || err.message}`
+    }
+    console.error('Error loading product:', err)
+    resetForm()
+  } finally {
+    loading.value = false
   }
 }
 
-const updateProduct = () => {
-  alert('Product updated successfully!')
+// Update product via API
+const updateProduct = async () => {
+  try {
+    updating.value = true
+    error.value = ''
+
+    // Prepare data for API
+    const updateData = {
+      name: product.value.name,
+      description: product.value.description,
+      pricing: parseFloat(product.value.price) || 0,
+      category_id: product.value.category_id,
+      brand: product.value.brand,
+      color: product.value.color,
+      quality: product.value.quality,
+      quantity: parseInt(product.value.quantity) || 0,
+      image: product.value.image,
+      additional_images: product.value.additional_images,
+      specs: specs.value,
+    }
+
+    // Handle discount data - use discount fields
+    if (product.value.discountType && product.value.discountValue) {
+      let discountTypeValue = 'fixed'
+      if (product.value.discountType.toLowerCase().includes('percent')) {
+        discountTypeValue = 'percent'
+      }
+
+      const discountData = {
+        type: discountTypeValue,
+        value: parseFloat(product.value.discountValue) || 0,
+        badge: product.value.discountCode || 'Sale', // Use discount code as badge text, fallback to 'Sale'
+      }
+
+      // Add start and expire dates if provided
+      if (product.value.discountStartDate) {
+        discountData.start_date = product.value.discountStartDate
+      }
+      if (product.value.discountExpireDate) {
+        discountData.expire_date = product.value.discountExpireDate
+      }
+
+      updateData.discount = [discountData]
+
+      // Add badge if there's a discount
+      updateData.badge = [product.value.discountCode || 'Sale']
+    } else {
+      // No discount provided, set to null
+      updateData.discount = null
+      updateData.badge = null
+    }
+
+    await productsApi.updateProduct(product.value.id, updateData)
+
+    alert('Product updated successfully!')
+    router.push('/admin/products')
+  } catch (err) {
+    error.value = `Failed to update product: ${err.response?.data?.message || err.message}`
+    console.error('Error updating product:', err)
+  } finally {
+    updating.value = false
+  }
 }
 
 const discardForm = () => {
@@ -311,6 +405,7 @@ const resetForm = () => {
     name: '',
     brand: '',
     category: '',
+    category_id: '',
     quantity: '',
     highlight: '',
     description: '',
@@ -320,6 +415,8 @@ const resetForm = () => {
     discountStartDate: '',
     discountExpireDate: '',
     color: '',
+    image: '',
+    additional_images: [],
   }
   specs.value = {
     range: '',
@@ -330,6 +427,7 @@ const resetForm = () => {
     display: '',
   }
   isProductLoaded.value = false
+  error.value = ''
 }
 
 // Watchers
@@ -353,12 +451,16 @@ watch(
 )
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
+  // Load categories for dropdowns
+  await loadCategories()
+
   if (props.id) {
+    selectedProductId.value = props.id
     loadProduct()
   }
 
-  // Prefill form from query parameters
+  // Prefill form from query parameters (for advanced use cases)
   const {
     productName,
     brand,
@@ -389,7 +491,7 @@ onMounted(() => {
     product.value.brand = brand
   }
   if (category) {
-    product.value.category = category
+    product.value.category_id = category
   }
   if (quantity) {
     product.value.quantity = quantity
@@ -419,12 +521,10 @@ onMounted(() => {
     product.value.discountValue = discountValue
   }
   if (discountStartDate && discountStartDate !== 'N/A') {
-    const convertedStartDate = convertDateFormat(discountStartDate)
-    product.value.discountStartDate = convertedStartDate
+    product.value.discountStartDate = discountStartDate
   }
   if (discountEndDate && discountEndDate !== 'N/A') {
-    const convertedEndDate = convertDateFormat(discountEndDate)
-    product.value.discountExpireDate = convertedEndDate
+    product.value.discountExpireDate = discountEndDate
   }
 
   if (range) {
@@ -556,6 +656,16 @@ onMounted(() => {
   background-color: #cbd5e0;
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+.error-message {
+  color: #e53e3e;
+  font-size: 14px;
+  margin-top: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .form-container {

@@ -27,12 +27,16 @@
             type="search"
             placeholder="Search Bicycle"
             class="search-input"
+            v-model="searchQuery"
             :style="{
               borderColor: colors.searchBorder || '',
               backgroundColor: colors.searchBg || '',
             }"
           />
-          <button class="search-button">
+          <button v-if="searchQuery" class="clear-search-btn" @click="clearSearch">
+            <Icon icon="mdi:close" />
+          </button>
+          <button class="search-button" @click="handleSearch">
             <Icon icon="ri:search-line" class="search-icon" />
           </button>
         </div>
@@ -49,6 +53,19 @@
               :style="{ color: colors.cartIcon }"
             />
             <span class="cart-badge" v-if="count > 0">{{ count }}</span>
+          </button>
+
+          <button
+            class="orders-button action-button"
+            @click="goToOrders"
+            :style="{ borderColor: colors.userBorderBtn }"
+          >
+            <Icon
+              icon="mdi:clipboard-list"
+              class="orders-icon action-icon"
+              :style="{ color: colors.userIcon }"
+            />
+            <span class="orders-badge" v-if="ordersCount > 0">{{ ordersCount }}</span>
           </button>
 
           <button
@@ -109,6 +126,8 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Navigation_sidebar from './sidebar/navigation_sidebar.vue'
 import { useCartStore } from '@/stores/cart'
+import { useAuthStore } from '@/stores/auth'
+import { useOrdersStore } from '@/stores/orders'
 import { storeToRefs } from 'pinia'
 import router from '@/router'
 
@@ -139,10 +158,18 @@ const props = defineProps({
 const cartStore = useCartStore()
 const { count } = storeToRefs(cartStore)
 
+// Get auth store
+const authStore = useAuthStore()
+
+// Get orders store and count
+const ordersStore = useOrdersStore()
+const { ordersCount } = storeToRefs(ordersStore)
+
 // Reactive data for sidebar state
 const isSidebarOpen = ref(false)
 const headerRef = ref(null)
 const menuIconRef = ref(null)
+const searchQuery = ref('')
 
 // Function to toggle sidebar
 const toggleSidebar = () => {
@@ -154,6 +181,21 @@ const closeSidebar = () => {
   isSidebarOpen.value = false
 }
 
+// Function to handle search
+const handleSearch = () => {
+  if (searchQuery.value.trim()) {
+    navigate(`/home?search=${encodeURIComponent(searchQuery.value.trim())}`)
+  } else {
+    navigate('/home')
+  }
+}
+
+// Function to clear search
+const clearSearch = () => {
+  searchQuery.value = ''
+  navigate('/home')
+}
+
 // Function to navigate to a path
 const navigate = (path) => {
   router.push(path).then(() => window.scrollTo(0, 0))
@@ -161,6 +203,7 @@ const navigate = (path) => {
 
 // Navigation functions
 const goToCart = () => navigate('/checkout/cart')
+const goToOrders = () => navigate('/orders')
 const goToHome = () => navigate('/home')
 const goToAuth = () => navigate('/authentication/sign_in')
 const goToBrand = (brandName) => navigate(`/brands/${brandName}`)
@@ -172,6 +215,12 @@ const handleClickOutside = (event) => {
 
 // Lifecycle hook for mounting
 onMounted(() => {
+  // Fetch cart count on component mount only if user is logged in
+  if (authStore.isLoggedIn()) {
+    cartStore.fetchCartCount()
+    ordersStore.fetchUserOrders()
+  }
+
   if (props.disableAnimation) return // Skip animations if disabled
 
   // Scroll trigger for header
@@ -283,7 +332,7 @@ onUnmounted(() => {
   width: 100%;
   height: 36px;
   padding: 0.5rem 1rem;
-  padding-right: 3rem;
+  padding-right: 5rem;
   border-radius: 25px;
   border: 1px solid rgba(255, 255, 255, 0.3);
   font-family: 'Poppins', sans-serif;
@@ -293,6 +342,17 @@ onUnmounted(() => {
   transition: all 0.3s ease;
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
+}
+
+/* Hide browser's default search cancel button */
+.search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-input::-moz-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .search-input:focus {
@@ -315,6 +375,25 @@ onUnmounted(() => {
 
 .search-button:hover {
   color: #333;
+}
+
+.clear-search-btn {
+  position: absolute;
+  top: 54%;
+  right: 3rem;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.3s ease;
+  padding: 4px;
+  border-radius: 50%;
+}
+
+.clear-search-btn:hover {
+  color: #333;
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .search-icon {
@@ -370,6 +449,33 @@ onUnmounted(() => {
   font-size: 0.64rem;
   font-weight: 600;
   animation: pulse 2s infinite;
+}
+
+/* Orders specific styles */
+.orders-button {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.orders-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #ef4444;
+  color: white;
+  width: 18px;
+  height: 18px;
+  border-radius: 30%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.64rem;
+  font-weight: 600;
+  animation: pulse 2s infinite;
+}
+
+.orders-icon {
+  color: white;
 }
 
 /* ================================

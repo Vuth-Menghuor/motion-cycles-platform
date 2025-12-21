@@ -88,7 +88,7 @@ export default {
   animation: slideUp 0.6s ease-out;
 }
 
-@keyframes slideUp {
+/* @keyframes slideUp {
   from {
     opacity: 0;
     transform: translateY(30px);
@@ -97,7 +97,7 @@ export default {
     opacity: 1;
     transform: translateY(0);
   }
-}
+} */
 
 .error-code {
   font-size: 80px;
