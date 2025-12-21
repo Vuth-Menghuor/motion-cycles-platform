@@ -1,5 +1,10 @@
 import axios from 'axios'
-import { getFilteredProducts, mockCategories, getMockReviewsForProduct } from './mockData.js'
+import {
+  getFilteredProducts,
+  mockProducts,
+  mockCategories,
+  getMockReviewsForProduct,
+} from './mockData.js'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
@@ -7,11 +12,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 const shouldUseMockData = () => {
   // Use mock data by default for development/demo
   // Only use real API if explicitly set to a non-localhost URL
-  const useRealApi = API_BASE_URL &&
-                     !API_BASE_URL.includes('localhost') &&
-                     !API_BASE_URL.includes('127.0.0.1') &&
-                     API_BASE_URL !== 'http://localhost:8000' &&
-                     API_BASE_URL !== 'http://localhost:8100'
+  const useRealApi =
+    API_BASE_URL &&
+    !API_BASE_URL.includes('localhost') &&
+    !API_BASE_URL.includes('127.0.0.1') &&
+    API_BASE_URL !== 'http://localhost:8000' &&
+    API_BASE_URL !== 'http://localhost:8100'
 
   console.log('API_BASE_URL:', API_BASE_URL)
   console.log('shouldUseMockData (inverted logic):', !useRealApi)
@@ -124,7 +130,20 @@ export const productsApi = {
   },
 
   // Get product by ID (public)
-  getProduct: (id) => api.get(`/products/${id}`),
+  getProduct: async (id) => {
+    // Use mock data if API is not available
+    if (shouldUseMockData()) {
+      console.log('Using mock data for single product')
+      const product = mockProducts.find((p) => p.id === parseInt(id))
+      if (product) {
+        return { data: product }
+      } else {
+        throw new Error('Product not found')
+      }
+    }
+
+    return api.get(`/products/${id}`)
+  },
 
   // Get products by category (public)
   getProductsByCategory: (categoryId) => api.get(`/public/products?category_id=${categoryId}`),
@@ -147,7 +166,7 @@ export const categoriesApi = {
     if (shouldUseMockData()) {
       console.log('Using mock data for categories')
       return {
-        data: mockCategories
+        data: mockCategories,
       }
     }
 
@@ -158,7 +177,7 @@ export const categoriesApi = {
       console.warn('Categories API call failed, using mock data:', error.message)
       // Return mock data as fallback
       return {
-        data: mockCategories
+        data: mockCategories,
       }
     }
   },
@@ -184,7 +203,7 @@ export const reviewsApi = {
     if (shouldUseMockData()) {
       console.log('Using mock data for reviews')
       return {
-        data: getMockReviewsForProduct(productId)
+        data: getMockReviewsForProduct(productId),
       }
     }
 
@@ -195,7 +214,7 @@ export const reviewsApi = {
       console.warn('Reviews API call failed, using mock data:', error.message)
       // Return mock data as fallback
       return {
-        data: getMockReviewsForProduct(productId)
+        data: getMockReviewsForProduct(productId),
       }
     }
   },

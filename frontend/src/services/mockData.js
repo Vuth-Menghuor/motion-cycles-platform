@@ -15,8 +15,8 @@ export const mockProducts = [
       name: "Mountain Bikes",
       slug: "mountain-bikes"
     },
-    image: "/images/bikes/bianchi-t-tronik.jpg",
-    images: ["/images/bikes/bianchi-t-tronik.jpg"],
+    image: "/images/mount_1.png",
+    images: ["/images/mount_1.png"],
     stock_quantity: 15,
     is_active: true,
     average_rating: 4.5,
@@ -47,8 +47,8 @@ export const mockProducts = [
       name: "Mountain Bikes",
       slug: "mountain-bikes"
     },
-    image: "/images/bikes/trek-slash.jpg",
-    images: ["/images/bikes/trek-slash.jpg"],
+    image: "/images/mount_2.png",
+    images: ["/images/mount_2.png"],
     stock_quantity: 8,
     is_active: true,
     average_rating: 4.7,
@@ -79,8 +79,8 @@ export const mockProducts = [
       name: "Mountain Bikes",
       slug: "mountain-bikes"
     },
-    image: "/images/bikes/specialized-epic.jpg",
-    images: ["/images/bikes/specialized-epic.jpg"],
+    image: "/images/mount_1.png",
+    images: ["/images/mount_1.png"],
     stock_quantity: 12,
     is_active: true,
     average_rating: 4.3,
@@ -111,8 +111,8 @@ export const mockProducts = [
       name: "Mountain Bikes",
       slug: "mountain-bikes"
     },
-    image: "/images/bikes/cannondale-scalpel.jpg",
-    images: ["/images/bikes/cannondale-scalpel.jpg"],
+    image: "/images/mount_2.png",
+    images: ["/images/mount_2.png"],
     stock_quantity: 6,
     is_active: true,
     average_rating: 4.6,
@@ -143,8 +143,8 @@ export const mockProducts = [
       name: "Mountain Bikes",
       slug: "mountain-bikes"
     },
-    image: "/images/bikes/giant-trance.jpg",
-    images: ["/images/bikes/giant-trance.jpg"],
+    image: "/images/mount_1.png",
+    images: ["/images/mount_1.png"],
     stock_quantity: 9,
     is_active: true,
     average_rating: 4.4,
@@ -175,8 +175,8 @@ export const mockProducts = [
       name: "Electric Bikes",
       slug: "electric-bikes"
     },
-    image: "/images/bikes/santa-cruz-hightower.jpg",
-    images: ["/images/bikes/santa-cruz-hightower.jpg"],
+    image: "/images/road_1.png",
+    images: ["/images/road_1.png"],
     stock_quantity: 4,
     is_active: true,
     average_rating: 4.8,
@@ -208,8 +208,8 @@ export const mockProducts = [
       name: "Electric Bikes",
       slug: "electric-bikes"
     },
-    image: "/images/bikes/rad-power-radcity.jpg",
-    images: ["/images/bikes/rad-power-radcity.jpg"],
+    image: "/images/road_2.png",
+    images: ["/images/road_2.png"],
     stock_quantity: 18,
     is_active: true,
     average_rating: 4.2,
@@ -241,8 +241,8 @@ export const mockProducts = [
       name: "Electric Bikes",
       slug: "electric-bikes"
     },
-    image: "/images/bikes/trek-allant.jpg",
-    images: ["/images/bikes/trek-allant.jpg"],
+    image: "/images/road_3.png",
+    images: ["/images/road_3.png"],
     stock_quantity: 11,
     is_active: true,
     average_rating: 4.5,
@@ -267,7 +267,7 @@ export const mockCategories = [
     name: "Mountain Bikes",
     slug: "mountain-bikes",
     description: "Bikes designed for off-road cycling and mountain trails",
-    image: "/images/categories/mountain-bikes.jpg",
+    image: "/images/mount_1.png",
     is_active: true,
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z"
@@ -277,7 +277,7 @@ export const mockCategories = [
     name: "Electric Bikes",
     slug: "electric-bikes",
     description: "Electric-assisted bikes with motor and battery power",
-    image: "/images/categories/electric-bikes.jpg",
+    image: "/images/road_1.png",
     is_active: true,
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z"
@@ -287,7 +287,7 @@ export const mockCategories = [
     name: "Road Bikes",
     slug: "road-bikes",
     description: "High-performance bikes designed for paved roads and racing",
-    image: "/images/categories/road-bikes.jpg",
+    image: "/images/road_2.png",
     is_active: true,
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z"
@@ -297,7 +297,7 @@ export const mockCategories = [
     name: "Hybrid Bikes",
     slug: "hybrid-bikes",
     description: "Versatile bikes that combine features of road and mountain bikes",
-    image: "/images/categories/hybrid-bikes.jpg",
+    image: "/images/road_3.png",
     is_active: true,
     created_at: "2024-01-01T00:00:00Z",
     updated_at: "2024-01-01T00:00:00Z"
