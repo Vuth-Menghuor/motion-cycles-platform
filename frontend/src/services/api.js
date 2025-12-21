@@ -3,6 +3,16 @@ import { getFilteredProducts, mockCategories } from './mockData.js'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
+// Check if we should use mock data (when API is not available)
+const shouldUseMockData = () => {
+  // Use mock data if API_BASE_URL is localhost (development) or empty
+  return !API_BASE_URL ||
+         API_BASE_URL.includes('localhost') ||
+         API_BASE_URL.includes('127.0.0.1') ||
+         API_BASE_URL === 'http://localhost:8000' ||
+         API_BASE_URL === 'http://localhost:8100'
+}
+
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
   headers: {
@@ -28,6 +38,14 @@ api.interceptors.request.use(
 export const productsApi = {
   // Get all products (public) with advanced filtering
   getProducts: async (params = {}) => {
+    // Use mock data if API is not available
+    if (shouldUseMockData()) {
+      console.log('Using mock data for products')
+      return {
+        data: getFilteredProducts(params),
+      }
+    }
+
     try {
       const queryParams = new URLSearchParams()
 
@@ -119,6 +137,14 @@ export const productsApi = {
 export const categoriesApi = {
   // Get all categories (public)
   getCategories: async () => {
+    // Use mock data if API is not available
+    if (shouldUseMockData()) {
+      console.log('Using mock data for categories')
+      return {
+        data: mockCategories
+      }
+    }
+
     try {
       const response = await api.get('/public/categories')
       return response
