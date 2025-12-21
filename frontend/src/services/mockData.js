@@ -304,6 +304,64 @@ export const mockCategories = [
   }
 ]
 
+// Helper function to get mock reviews for a product
+export const getMockReviewsForProduct = (productId) => {
+  const mockReviews = {
+    1: [
+      {
+        id: 1,
+        product_id: 1,
+        user_id: 1,
+        user: { name: "John Doe", email: "john@example.com" },
+        rating: 5,
+        title: "Excellent mountain bike!",
+        comment: "This Bianchi bike is fantastic for trail riding. Great suspension and build quality.",
+        created_at: "2024-01-20T10:00:00Z",
+        updated_at: "2024-01-20T10:00:00Z"
+      },
+      {
+        id: 2,
+        product_id: 1,
+        user_id: 2,
+        user: { name: "Jane Smith", email: "jane@example.com" },
+        rating: 4,
+        title: "Good value",
+        comment: "Solid bike for the price. Handles rough terrain well.",
+        created_at: "2024-01-25T10:00:00Z",
+        updated_at: "2024-01-25T10:00:00Z"
+      }
+    ],
+    2: [
+      {
+        id: 3,
+        product_id: 2,
+        user_id: 3,
+        user: { name: "Mike Johnson", email: "mike@example.com" },
+        rating: 5,
+        title: "Best trail bike I've owned",
+        comment: "The Trek Slash is incredible. So much fun to ride!",
+        created_at: "2024-02-01T10:00:00Z",
+        updated_at: "2024-02-01T10:00:00Z"
+      }
+    ],
+    3: [
+      {
+        id: 4,
+        product_id: 3,
+        user_id: 4,
+        user: { name: "Sarah Wilson", email: "sarah@example.com" },
+        rating: 4,
+        title: "Great hardtail",
+        comment: "Lightweight and responsive. Perfect for XC racing.",
+        created_at: "2024-02-05T10:00:00Z",
+        updated_at: "2024-02-05T10:00:00Z"
+      }
+    ]
+  }
+
+  return mockReviews[productId] || []
+}
+
 // Helper function to filter and paginate mock products
 export const getFilteredProducts = (params = {}) => {
   let filteredProducts = [...mockProducts]

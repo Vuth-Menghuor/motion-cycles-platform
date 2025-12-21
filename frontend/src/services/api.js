@@ -1,21 +1,22 @@
 import axios from 'axios'
-import { getFilteredProducts, mockCategories } from './mockData.js'
+import { getFilteredProducts, mockCategories, getMockReviewsForProduct } from './mockData.js'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
 // Check if we should use mock data (when API is not available)
 const shouldUseMockData = () => {
-  // Use mock data if API_BASE_URL is localhost (development) or empty
-  const useMock = !API_BASE_URL ||
-         API_BASE_URL.includes('localhost') ||
-         API_BASE_URL.includes('127.0.0.1') ||
-         API_BASE_URL === 'http://localhost:8000' ||
-         API_BASE_URL === 'http://localhost:8100'
+  // Use mock data by default for development/demo
+  // Only use real API if explicitly set to a non-localhost URL
+  const useRealApi = API_BASE_URL &&
+                     !API_BASE_URL.includes('localhost') &&
+                     !API_BASE_URL.includes('127.0.0.1') &&
+                     API_BASE_URL !== 'http://localhost:8000' &&
+                     API_BASE_URL !== 'http://localhost:8100'
 
   console.log('API_BASE_URL:', API_BASE_URL)
-  console.log('shouldUseMockData:', useMock)
+  console.log('shouldUseMockData (inverted logic):', !useRealApi)
 
-  return useMock
+  return !useRealApi // Use mock data unless we have a real API URL
 }
 
 const api = axios.create({
@@ -178,7 +179,26 @@ export const categoriesApi = {
 // Reviews API
 export const reviewsApi = {
   // Get reviews for a product (public)
-  getProductReviews: (productId) => api.get(`/products/${productId}/reviews`),
+  getProductReviews: async (productId) => {
+    // Use mock data if API is not available
+    if (shouldUseMockData()) {
+      console.log('Using mock data for reviews')
+      return {
+        data: getMockReviewsForProduct(productId)
+      }
+    }
+
+    try {
+      const response = await api.get(`/products/${productId}/reviews`)
+      return response
+    } catch (error) {
+      console.warn('Reviews API call failed, using mock data:', error.message)
+      // Return mock data as fallback
+      return {
+        data: getMockReviewsForProduct(productId)
+      }
+    }
+  },
 
   // Submit a review for a product (authenticated user)
   submitReview: (productId, reviewData) => api.post(`/products/${productId}/reviews`, reviewData),
