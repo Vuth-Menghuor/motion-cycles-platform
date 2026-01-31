@@ -31,91 +31,26 @@ api.interceptors.request.use(
 export const productsApi = {
   // Get all products (public) with advanced filtering
   getProducts: async (params = {}) => {
-    const queryParams = new URLSearchParams()
+    // For demo purposes, always use mock data to ensure reliability
+    console.log('Using mock products data for demo')
 
-    // Search parameter
-    if (params.search) {
-      queryParams.append('search', params.search)
-    }
+    // Apply basic pagination
+    const perPage = params.per_page ? parseInt(params.per_page) : 12
+    const page = params.page ? parseInt(params.page) : 1
+    const startIndex = (page - 1) * perPage
+    const paginatedProducts = mockProducts.slice(startIndex, startIndex + perPage)
 
-    // Category filter
-    if (params.category_id) {
-      queryParams.append('category_id', params.category_id)
-    }
+    // Simulate API delay
+    await delay(300)
 
-    // Brand filter
-    if (params.brand) {
-      queryParams.append('brand', params.brand)
-    }
-
-    // Color filter
-    if (params.color) {
-      queryParams.append('color', params.color)
-    }
-
-    // Price range filters
-    if (params.min_price !== undefined && params.min_price !== null) {
-      queryParams.append('min_price', params.min_price)
-    }
-    if (params.max_price !== undefined && params.max_price !== null) {
-      queryParams.append('max_price', params.max_price)
-    }
-
-    // Rating filter
-    if (params.min_rating !== undefined && params.min_rating !== null) {
-      queryParams.append('min_rating', params.min_rating)
-    }
-
-    // Discount filter
-    if (params.has_discount !== undefined) {
-      queryParams.append('has_discount', params.has_discount)
-    }
-
-    // Sorting
-    if (params.sort_by) {
-      queryParams.append('sort_by', params.sort_by)
-    }
-    if (params.sort_order) {
-      queryParams.append('sort_order', params.sort_order)
-    }
-
-    // Pagination
-    if (params.per_page) {
-      queryParams.append('per_page', params.per_page)
-    }
-    if (params.page) {
-      queryParams.append('page', params.page)
-    }
-
-    const queryString = queryParams.toString()
-    const url = queryString ? `/public/products?${queryString}` : '/public/products'
-
-    // Always try API call first, fall back to mock data if it fails
-    try {
-      const response = await api.get(url)
-      return response
-    } catch (error) {
-      console.warn('API not available, using mock data:', error.message)
-
-      // For now, return all mock products without complex filtering
-      // This ensures the frontend works reliably
-      const perPage = params.per_page ? parseInt(params.per_page) : 12
-      const page = params.page ? parseInt(params.page) : 1
-      const startIndex = (page - 1) * perPage
-      const paginatedProducts = mockProducts.slice(startIndex, startIndex + perPage)
-
-      // Simulate API delay
-      await delay(300)
-
-      // Return mock response in API format
-      return {
-        data: {
-          data: paginatedProducts,
-          current_page: page,
-          last_page: Math.ceil(mockProducts.length / perPage),
-          per_page: perPage,
-          total: mockProducts.length
-        }
+    // Return mock response in API format
+    return {
+      data: {
+        data: paginatedProducts,
+        current_page: page,
+        last_page: Math.ceil(mockProducts.length / perPage),
+        per_page: perPage,
+        total: mockProducts.length
       }
     }
   },
@@ -140,15 +75,10 @@ export const productsApi = {
 export const categoriesApi = {
   // Get all categories (public)
   getCategories: async () => {
-    try {
-      const response = await api.get('/public/categories')
-      return response
-    } catch (error) {
-      console.warn('Categories API not available, using mock data:', error.message)
-      await delay(200)
-      return {
-        data: mockCategories
-      }
+    console.log('Using mock categories data for demo')
+    await delay(200)
+    return {
+      data: mockCategories
     }
   },
 
