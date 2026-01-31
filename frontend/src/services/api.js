@@ -32,7 +32,7 @@ export const productsApi = {
   // Get all products (public) with advanced filtering
   getProducts: async (params = {}) => {
     // For demo purposes, always use mock data to ensure reliability
-    console.log('Using mock products data for demo')
+    console.log('Using mock products data for demo - v2')
 
     // Apply basic pagination
     const perPage = params.per_page ? parseInt(params.per_page) : 12
