@@ -1,10 +1,6 @@
 import axios from 'axios'
-import { mockProducts, mockCategories, createMockResponse, delay } from './mockData.js'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
-
-// Enable mock mode for development/demo when API is not available
-const USE_MOCK_DATA = !API_BASE_URL || API_BASE_URL.includes('localhost:8100') || import.meta.env.DEV || import.meta.env.PROD // Always enable in production for demo
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -30,29 +26,67 @@ api.interceptors.request.use(
 // Products API
 export const productsApi = {
   // Get all products (public) with advanced filtering
-  getProducts: async (params = {}) => {
-    // For demo purposes, always use mock data to ensure reliability
-    console.log('Using mock products data for demo - v2')
+  getProducts: (params = {}) => {
+    const queryParams = new URLSearchParams()
 
-    // Apply basic pagination
-    const perPage = params.per_page ? parseInt(params.per_page) : 12
-    const page = params.page ? parseInt(params.page) : 1
-    const startIndex = (page - 1) * perPage
-    const paginatedProducts = mockProducts.slice(startIndex, startIndex + perPage)
-
-    // Simulate API delay
-    await delay(300)
-
-    // Return mock response in API format
-    return {
-      data: {
-        data: paginatedProducts,
-        current_page: page,
-        last_page: Math.ceil(mockProducts.length / perPage),
-        per_page: perPage,
-        total: mockProducts.length
-      }
+    // Search parameter
+    if (params.search) {
+      queryParams.append('search', params.search)
     }
+
+    // Category filter
+    if (params.category_id) {
+      queryParams.append('category_id', params.category_id)
+    }
+
+    // Brand filter
+    if (params.brand) {
+      queryParams.append('brand', params.brand)
+    }
+
+    // Color filter
+    if (params.color) {
+      queryParams.append('color', params.color)
+    }
+
+    // Price range filters
+    if (params.min_price !== undefined && params.min_price !== null) {
+      queryParams.append('min_price', params.min_price)
+    }
+    if (params.max_price !== undefined && params.max_price !== null) {
+      queryParams.append('max_price', params.max_price)
+    }
+
+    // Rating filter
+    if (params.min_rating !== undefined && params.min_rating !== null) {
+      queryParams.append('min_rating', params.min_rating)
+    }
+
+    // Discount filter
+    if (params.has_discount !== undefined) {
+      queryParams.append('has_discount', params.has_discount)
+    }
+
+    // Sorting
+    if (params.sort_by) {
+      queryParams.append('sort_by', params.sort_by)
+    }
+    if (params.sort_order) {
+      queryParams.append('sort_order', params.sort_order)
+    }
+
+    // Pagination
+    if (params.per_page) {
+      queryParams.append('per_page', params.per_page)
+    }
+    if (params.page) {
+      queryParams.append('page', params.page)
+    }
+
+    const queryString = queryParams.toString()
+    const url = queryString ? `/public/products?${queryString}` : '/public/products'
+
+    return api.get(url)
   },
 
   // Get product by ID (public)
@@ -74,13 +108,7 @@ export const productsApi = {
 // Categories API
 export const categoriesApi = {
   // Get all categories (public)
-  getCategories: async () => {
-    console.log('Using mock categories data for demo')
-    await delay(200)
-    return {
-      data: mockCategories
-    }
-  },
+  getCategories: () => api.get('/public/categories'),
 
   // Get category by ID (public)
   getCategory: (id) => api.get(`/public/categories/${id}`),
@@ -98,35 +126,7 @@ export const categoriesApi = {
 // Reviews API
 export const reviewsApi = {
   // Get reviews for a product (public)
-  getProductReviews: async (productId) => {
-    console.log('Using mock reviews data for demo')
-    await delay(200)
-    // Return mock reviews for the product
-    const mockReviews = [
-      {
-        id: 1,
-        user_name: 'John Doe',
-        rating: 5,
-        comment: 'Excellent bike! Great performance and handling.',
-        created_at: '2024-01-15T10:00:00Z'
-      },
-      {
-        id: 2,
-        user_name: 'Jane Smith',
-        rating: 4,
-        comment: 'Very satisfied with the purchase. Good value for money.',
-        created_at: '2024-01-12T14:30:00Z'
-      },
-      {
-        id: 3,
-        user_name: 'Mike Johnson',
-        rating: 5,
-        comment: 'Amazing ride! Would recommend to anyone.',
-        created_at: '2024-01-10T09:15:00Z'
-      }
-    ]
-    return { data: mockReviews }
-  },
+  getProductReviews: (productId) => api.get(`/products/${productId}/reviews`),
 
   // Submit a review for a product (authenticated user)
   submitReview: (productId, reviewData) => api.post(`/products/${productId}/reviews`, reviewData),

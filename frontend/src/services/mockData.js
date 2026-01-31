@@ -1,342 +1,337 @@
-// Mock data for development and demo purposes
+// Mock data for products in the Motion Cycles Platform
+// This data can be used for frontend development and testing
+
+export const mockCategories = [
+  {
+    id: 1,
+    name: "Sports Bikes",
+    description: "High-performance motorcycles designed for speed and agility"
+  },
+  {
+    id: 2,
+    name: "Cruiser Bikes",
+    description: "Comfortable motorcycles for long-distance cruising"
+  },
+  {
+    id: 3,
+    name: "Adventure Bikes",
+    description: "Off-road capable motorcycles for adventure riding"
+  },
+  {
+    id: 4,
+    name: "Electric Bikes",
+    description: "Eco-friendly electric motorcycles"
+  },
+  {
+    id: 5,
+    name: "Scooters",
+    description: "Lightweight and fuel-efficient scooters"
+  }
+];
+
 export const mockProducts = [
   {
     id: 1,
-    name: "Honda CBR 600RR",
-    description: "High-performance sport bike with advanced aerodynamics and powerful engine.",
-    price: 12999.99,
-    original_price: 13999.99,
-    discount_percentage: 7,
-    brand: "Honda",
-    category: "Sport Bikes",
-    category_id: 1,
-    color: "Red",
-    engine_capacity: "600cc",
-    fuel_type: "Petrol",
-    mileage: "25 kmpl",
-    top_speed: "260 km/h",
-    weight: "186 kg",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-    images: [
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500"
+    title: "Yamaha R1",
+    subtitle: "Ultimate supersport motorcycle with cutting-edge technology",
+    price: 18500.00,
+    brand: "Yamaha",
+    color: "Blue",
+    quality: "Premium",
+    rating: 4.8,
+    reviewCount: 156,
+    badge: ["New", "Best Seller"],
+    discount: [
+      {
+        type: "percentage",
+        value: 10,
+        description: "10% off for first-time buyers"
+      }
     ],
-    stock_quantity: 5,
-    is_available: true,
-    rating: 4.5,
-    review_count: 23,
-    badge: {
-      text: "Best Seller",
-      icon: "mdi:fire",
-      gradient: "linear-gradient(135deg, #ff6b35, #f7931e)"
+    specs: {
+      engine: "998cc inline-4",
+      power: "200 hp",
+      torque: "113 Nm",
+      weight: "199 kg",
+      topSpeed: "299 km/h"
     },
-    specifications: {
-      engine: "599cc inline-4",
-      power: "118 hp",
-      torque: "66 Nm",
-      transmission: "6-speed manual",
-      fuel_capacity: "18L"
-    },
+    image: "/images/products/yamaha-r1-main.jpg",
+    additionalImages: [
+      "/images/products/yamaha-r1-1.jpg",
+      "/images/products/yamaha-r1-2.jpg",
+      "/images/products/yamaha-r1-3.jpg"
+    ],
+    category: mockCategories[0],
+    description: "The Yamaha R1 is a masterpiece of engineering, featuring advanced electronics, aerodynamic design, and unmatched performance. Perfect for track days and spirited road riding.",
+    quantity: 5,
     created_at: "2024-01-15T10:00:00Z",
     updated_at: "2024-01-20T14:30:00Z"
   },
   {
     id: 2,
-    name: "Yamaha R1",
-    description: "Flagship superbike with cutting-edge technology and racing heritage.",
-    price: 18999.99,
-    original_price: 19999.99,
-    discount_percentage: 5,
-    brand: "Yamaha",
-    category: "Sport Bikes",
-    category_id: 1,
-    color: "Blue",
-    engine_capacity: "1000cc",
-    fuel_type: "Petrol",
-    mileage: "20 kmpl",
-    top_speed: "299 km/h",
-    weight: "199 kg",
-    image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-    images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500"
+    title: "Harley-Davidson Fat Boy",
+    subtitle: "Iconic cruiser with powerful V-twin engine",
+    price: 19500.00,
+    brand: "Harley-Davidson",
+    color: "Black",
+    quality: "Premium",
+    rating: 4.6,
+    reviewCount: 203,
+    badge: ["Classic", "Popular"],
+    discount: [],
+    specs: {
+      engine: "1746cc V-twin",
+      power: "90 hp",
+      torque: "155 Nm",
+      weight: "304 kg",
+      topSpeed: "180 km/h"
+    },
+    image: "/images/products/harley-fatboy-main.jpg",
+    additionalImages: [
+      "/images/products/harley-fatboy-1.jpg",
+      "/images/products/harley-fatboy-2.jpg"
     ],
-    stock_quantity: 3,
-    is_available: true,
-    rating: 4.7,
-    review_count: 45,
-    badge: {
-      text: "Premium",
-      icon: "mdi:crown",
-      gradient: "linear-gradient(135deg, #ffd700, #ffb347)"
-    },
-    specifications: {
-      engine: "998cc inline-4",
-      power: "197 hp",
-      torque: "112 Nm",
-      transmission: "6-speed manual",
-      fuel_capacity: "17L"
-    },
+    category: mockCategories[1],
+    description: "The Harley-Davidson Fat Boy combines classic styling with modern performance. Its Milwaukee-Eight engine delivers smooth power for an unforgettable riding experience.",
+    quantity: 3,
     created_at: "2024-01-10T09:00:00Z",
-    updated_at: "2024-01-18T11:15:00Z"
+    updated_at: "2024-01-18T16:45:00Z"
   },
   {
     id: 3,
-    name: "Kawasaki Ninja ZX-10R",
-    description: "Ultimate sportbike designed for track and street performance.",
-    price: 16999.99,
-    brand: "Kawasaki",
-    category: "Sport Bikes",
-    category_id: 1,
-    color: "Green",
-    engine_capacity: "1000cc",
-    fuel_type: "Petrol",
-    mileage: "18 kmpl",
-    top_speed: "299 km/h",
-    weight: "205 kg",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-    images: [
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500"
+    title: "BMW R 1250 GS Adventure",
+    subtitle: "Ultimate adventure motorcycle for global exploration",
+    price: 22500.00,
+    brand: "BMW",
+    color: "White",
+    quality: "Premium",
+    rating: 4.9,
+    reviewCount: 89,
+    badge: ["Adventure", "Touring"],
+    discount: [
+      {
+        type: "fixed",
+        value: 500,
+        description: "Save $500 on accessories package"
+      }
     ],
-    stock_quantity: 7,
-    is_available: true,
-    rating: 4.6,
-    review_count: 38,
-    badge: {
-      text: "New Arrival",
-      icon: "mdi:star",
-      gradient: "linear-gradient(135deg, #667eea, #764ba2)"
+    specs: {
+      engine: "1254cc boxer twin",
+      power: "136 hp",
+      torque: "143 Nm",
+      weight: "268 kg",
+      topSpeed: "200 km/h"
     },
-    specifications: {
-      engine: "998cc inline-4",
-      power: "203 hp",
-      torque: "114 Nm",
-      transmission: "6-speed manual",
-      fuel_capacity: "17L"
-    },
-    created_at: "2024-01-25T08:30:00Z",
-    updated_at: "2024-01-25T08:30:00Z"
+    image: "/images/products/bmw-gs-adventure-main.jpg",
+    additionalImages: [
+      "/images/products/bmw-gs-adventure-1.jpg",
+      "/images/products/bmw-gs-adventure-2.jpg",
+      "/images/products/bmw-gs-adventure-3.jpg"
+    ],
+    category: mockCategories[2],
+    description: "Built for the world's most demanding adventures, the BMW R 1250 GS Adventure features enhanced suspension, larger fuel tank, and comprehensive electronics for any terrain.",
+    quantity: 7,
+    created_at: "2024-01-12T11:30:00Z",
+    updated_at: "2024-01-22T13:15:00Z"
   },
   {
     id: 4,
-    name: "BMW S 1000 RR",
-    description: "German engineering meets Japanese performance in this ultimate superbike.",
-    price: 22999.99,
-    original_price: 24999.99,
-    discount_percentage: 8,
-    brand: "BMW",
-    category: "Sport Bikes",
-    category_id: 1,
-    color: "Black",
-    engine_capacity: "1000cc",
-    fuel_type: "Petrol",
-    mileage: "16 kmpl",
-    top_speed: "303 km/h",
-    weight: "197 kg",
-    image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-    images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500"
+    title: "Zero S ZF14.4",
+    subtitle: "High-performance electric motorcycle",
+    price: 19500.00,
+    brand: "Zero Motorcycles",
+    color: "Red",
+    quality: "Premium",
+    rating: 4.4,
+    reviewCount: 67,
+    badge: ["Electric", "Eco-Friendly"],
+    discount: [
+      {
+        type: "percentage",
+        value: 15,
+        description: "15% off with government rebate"
+      }
     ],
-    stock_quantity: 2,
-    is_available: true,
-    rating: 4.8,
-    review_count: 67,
-    badge: {
-      text: "Top Rated",
-      icon: "mdi:trophy",
-      gradient: "linear-gradient(135deg, #ff9a9e, #fecfef)"
+    specs: {
+      motor: "ZF14.4 brushless",
+      power: "110 hp",
+      torque: "190 Nm",
+      range: "257 km",
+      topSpeed: "201 km/h"
     },
-    specifications: {
-      engine: "999cc inline-4",
-      power: "205 hp",
-      torque: "113 Nm",
-      transmission: "6-speed manual",
-      fuel_capacity: "16.5L"
-    },
-    created_at: "2024-01-05T12:00:00Z",
-    updated_at: "2024-01-22T16:45:00Z"
+    image: "/images/products/zero-s-main.jpg",
+    additionalImages: [
+      "/images/products/zero-s-1.jpg",
+      "/images/products/zero-s-2.jpg"
+    ],
+    category: mockCategories[3],
+    description: "The Zero S electric motorcycle delivers instant torque and zero-emission performance. With advanced battery technology and regenerative braking, it's the future of motorcycling.",
+    quantity: 4,
+    created_at: "2024-01-08T14:20:00Z",
+    updated_at: "2024-01-19T10:00:00Z"
   },
   {
     id: 5,
-    name: "Ducati Panigale V4",
-    description: "Italian masterpiece combining style, performance, and innovation.",
-    price: 25999.99,
-    brand: "Ducati",
-    category: "Sport Bikes",
-    category_id: 1,
-    color: "Red",
-    engine_capacity: "1103cc",
-    fuel_type: "Petrol",
-    mileage: "14 kmpl",
-    top_speed: "306 km/h",
-    weight: "198 kg",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-    images: [
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500"
+    title: "Honda PCX 160",
+    subtitle: "Reliable and efficient automatic scooter",
+    price: 4500.00,
+    brand: "Honda",
+    color: "White",
+    quality: "Standard",
+    rating: 4.2,
+    reviewCount: 312,
+    badge: ["Best Seller", "Fuel Efficient"],
+    discount: [],
+    specs: {
+      engine: "156.9cc single-cylinder",
+      power: "15.8 hp",
+      torque: "14.7 Nm",
+      weight: "131 kg",
+      fuelEconomy: "45 km/l"
+    },
+    image: "/images/products/honda-pcx-main.jpg",
+    additionalImages: [
+      "/images/products/honda-pcx-1.jpg",
+      "/images/products/honda-pcx-2.jpg"
     ],
-    stock_quantity: 4,
-    is_available: true,
-    rating: 4.9,
-    review_count: 89,
-    badge: {
-      text: "Luxury",
-      icon: "mdi:diamond",
-      gradient: "linear-gradient(135deg, #a8edea, #fed6e3)"
-    },
-    specifications: {
-      engine: "1103cc V4",
-      power: "214 hp",
-      torque: "124 Nm",
-      transmission: "6-speed manual",
-      fuel_capacity: "16L"
-    },
-    created_at: "2024-01-08T14:20:00Z",
-    updated_at: "2024-01-19T09:10:00Z"
+    category: mockCategories[4],
+    description: "The Honda PCX 160 offers comfortable riding, excellent fuel economy, and Honda's legendary reliability. Perfect for daily commuting in urban environments.",
+    quantity: 12,
+    created_at: "2024-01-05T08:45:00Z",
+    updated_at: "2024-01-17T12:30:00Z"
   },
   {
     id: 6,
-    name: "Suzuki GSX-R750",
-    description: "Legendary middleweight sportbike with proven performance.",
-    price: 11999.99,
-    original_price: 12999.99,
-    discount_percentage: 8,
-    brand: "Suzuki",
-    category: "Sport Bikes",
-    category_id: 1,
-    color: "Blue",
-    engine_capacity: "750cc",
-    fuel_type: "Petrol",
-    mileage: "22 kmpl",
-    top_speed: "245 km/h",
-    weight: "190 kg",
-    image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-    images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500"
+    title: "Kawasaki Ninja ZX-10R",
+    subtitle: "Champion-winning superbike with race-proven technology",
+    price: 17500.00,
+    brand: "Kawasaki",
+    color: "Green",
+    quality: "Premium",
+    rating: 4.7,
+    reviewCount: 134,
+    badge: ["Racing", "Performance"],
+    discount: [
+      {
+        type: "percentage",
+        value: 5,
+        description: "5% off for track day packages"
+      }
     ],
-    stock_quantity: 6,
-    is_available: true,
-    rating: 4.4,
-    review_count: 31,
-    specifications: {
-      engine: "750cc inline-4",
-      power: "148 hp",
-      torque: "86 Nm",
-      transmission: "6-speed manual",
-      fuel_capacity: "17L"
+    specs: {
+      engine: "998cc inline-4",
+      power: "203 hp",
+      torque: "114 Nm",
+      weight: "206 kg",
+      topSpeed: "299 km/h"
     },
-    created_at: "2024-01-12T11:30:00Z",
-    updated_at: "2024-01-21T13:25:00Z"
+    image: "/images/products/kawasaki-ninja-main.jpg",
+    additionalImages: [
+      "/images/products/kawasaki-ninja-1.jpg",
+      "/images/products/kawasaki-ninja-2.jpg",
+      "/images/products/kawasaki-ninja-3.jpg"
+    ],
+    category: mockCategories[0],
+    description: "The Kawasaki Ninja ZX-10R is a multiple World Superbike champion, featuring advanced aerodynamics, electronics, and engine performance that rivals the best in the world.",
+    quantity: 6,
+    created_at: "2024-01-14T13:00:00Z",
+    updated_at: "2024-01-21T15:45:00Z"
   },
   {
     id: 7,
-    name: "Harley-Davidson Street Glide",
-    description: "Iconic cruiser with premium comfort and classic Harley style.",
-    price: 29999.99,
-    brand: "Harley-Davidson",
-    category: "Cruisers",
-    category_id: 2,
-    color: "Black",
-    engine_capacity: "1746cc",
-    fuel_type: "Petrol",
-    mileage: "15 kmpl",
-    top_speed: "180 km/h",
-    weight: "379 kg",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-    images: [
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500",
-      "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500"
+    title: "Ducati Multistrada V4",
+    subtitle: "Versatile adventure bike with superbike DNA",
+    price: 24500.00,
+    brand: "Ducati",
+    color: "Red",
+    quality: "Premium",
+    rating: 4.8,
+    reviewCount: 98,
+    badge: ["Adventure", "Versatile"],
+    discount: [],
+    specs: {
+      engine: "1158cc V4",
+      power: "170 hp",
+      torque: "125 Nm",
+      weight: "240 kg",
+      topSpeed: "250 km/h"
+    },
+    image: "/images/products/ducati-multistrada-main.jpg",
+    additionalImages: [
+      "/images/products/ducati-multistrada-1.jpg",
+      "/images/products/ducati-multistrada-2.jpg"
     ],
-    stock_quantity: 3,
-    is_available: true,
-    rating: 4.3,
-    review_count: 52,
-    badge: {
-      text: "Classic",
-      icon: "mdi:motorcycle",
-      gradient: "linear-gradient(135deg, #434343, #000000)"
-    },
-    specifications: {
-      engine: "1746cc V-Twin",
-      power: "96 hp",
-      torque: "155 Nm",
-      transmission: "6-speed manual",
-      fuel_capacity: "22.7L"
-    },
-    created_at: "2024-01-03T10:15:00Z",
-    updated_at: "2024-01-17T15:40:00Z"
+    category: mockCategories[2],
+    description: "The Ducati Multistrada V4 combines the performance of a superbike with the versatility of an adventure motorcycle. Four riding modes adapt to any terrain or condition.",
+    quantity: 3,
+    created_at: "2024-01-11T10:15:00Z",
+    updated_at: "2024-01-23T11:20:00Z"
   },
   {
     id: 8,
-    name: "Triumph Bonneville T120",
-    description: "Modern classic with retro styling and contemporary performance.",
-    price: 13999.99,
-    original_price: 14999.99,
-    discount_percentage: 7,
-    brand: "Triumph",
-    category: "Cruisers",
-    category_id: 2,
-    color: "Silver",
-    engine_capacity: "1200cc",
-    fuel_type: "Petrol",
-    mileage: "21 kmpl",
-    top_speed: "190 km/h",
-    weight: "236 kg",
-    image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-    images: [
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500",
-      "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500"
+    title: "Vespa Primavera 150",
+    subtitle: "Iconic Italian scooter with retro styling",
+    price: 5800.00,
+    brand: "Vespa",
+    color: "Yellow",
+    quality: "Premium",
+    rating: 4.3,
+    reviewCount: 187,
+    badge: ["Retro", "Stylish"],
+    discount: [
+      {
+        type: "fixed",
+        value: 200,
+        description: "Save $200 on customization"
+      }
     ],
-    stock_quantity: 8,
-    is_available: true,
-    rating: 4.5,
-    review_count: 28,
-    specifications: {
-      engine: "1200cc parallel-twin",
-      power: "79 hp",
-      torque: "105 Nm",
-      transmission: "6-speed manual",
-      fuel_capacity: "14.5L"
+    specs: {
+      engine: "155cc single-cylinder",
+      power: "13 hp",
+      torque: "12 Nm",
+      weight: "114 kg",
+      fuelEconomy: "40 km/l"
     },
-    created_at: "2024-01-14T13:45:00Z",
-    updated_at: "2024-01-23T10:20:00Z"
+    image: "/images/products/vespa-primavera-main.jpg",
+    additionalImages: [
+      "/images/products/vespa-primavera-1.jpg",
+      "/images/products/vespa-primavera-2.jpg"
+    ],
+    category: mockCategories[4],
+    description: "The Vespa Primavera combines timeless Italian design with modern technology. Its automatic transmission and comfortable riding position make it perfect for city exploration.",
+    quantity: 8,
+    created_at: "2024-01-07T12:00:00Z",
+    updated_at: "2024-01-16T14:10:00Z"
   }
-]
+];
 
-export const mockCategories = [
-  {
-    id: 1,
-    name: "Sport Bikes",
-    description: "High-performance motorcycles designed for speed and agility",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=300",
-    product_count: 6
-  },
-  {
-    id: 2,
-    name: "Cruisers",
-    description: "Comfortable motorcycles for long-distance touring",
-    image: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=300",
-    product_count: 2
-  }
-]
+// Helper functions for working with mock data
+export const getProductById = (id) => {
+  return mockProducts.find(product => product.id === parseInt(id));
+};
 
-// Mock API response structure
-export const createMockResponse = (data, meta = {}) => ({
-  data,
-  ...meta,
-  success: true
-})
+export const getProductsByCategory = (categoryId) => {
+  return mockProducts.filter(product => product.category.id === parseInt(categoryId));
+};
 
-// Simulate API delay
-export const delay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms))
+export const getProductsByBrand = (brand) => {
+  return mockProducts.filter(product => product.brand.toLowerCase() === brand.toLowerCase());
+};
+
+export const searchProducts = (query) => {
+  const searchTerm = query.toLowerCase();
+  return mockProducts.filter(product =>
+    product.title.toLowerCase().includes(searchTerm) ||
+    product.subtitle.toLowerCase().includes(searchTerm) ||
+    product.brand.toLowerCase().includes(searchTerm) ||
+    product.description.toLowerCase().includes(searchTerm)
+  );
+};
+
+export const getFeaturedProducts = () => {
+  return mockProducts.filter(product => product.badge.includes("Best Seller"));
+};
+
+export const getDiscountedProducts = () => {
+  return mockProducts.filter(product => product.discount.length > 0);
+};
