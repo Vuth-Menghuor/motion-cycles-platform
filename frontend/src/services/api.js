@@ -1,6 +1,10 @@
 import axios from 'axios'
+import { mockProducts, mockCategories, createMockResponse, delay } from './mockData.js'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+
+// Enable mock mode for development/demo when API is not available
+const USE_MOCK_DATA = !API_BASE_URL || API_BASE_URL.includes('localhost:8100') || import.meta.env.DEV
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -26,7 +30,7 @@ api.interceptors.request.use(
 // Products API
 export const productsApi = {
   // Get all products (public) with advanced filtering
-  getProducts: (params = {}) => {
+  getProducts: async (params = {}) => {
     const queryParams = new URLSearchParams()
 
     // Search parameter
@@ -86,7 +90,119 @@ export const productsApi = {
     const queryString = queryParams.toString()
     const url = queryString ? `/public/products?${queryString}` : '/public/products'
 
-    return api.get(url)
+    // Try API call first, fall back to mock data if it fails
+    try {
+      const response = await api.get(url)
+      return response
+    } catch (error) {
+      console.warn('API not available, using mock data:', error.message)
+
+      // Filter mock products based on params
+      let filteredProducts = [...mockProducts]
+
+      // Apply search filter
+      if (params.search) {
+        const searchTerm = params.search.toLowerCase()
+        filteredProducts = filteredProducts.filter(product =>
+          product.name.toLowerCase().includes(searchTerm) ||
+          product.brand.toLowerCase().includes(searchTerm) ||
+          product.description.toLowerCase().includes(searchTerm)
+        )
+      }
+
+      // Apply category filter
+      if (params.category_id) {
+        filteredProducts = filteredProducts.filter(product =>
+          product.category_id === parseInt(params.category_id)
+        )
+      }
+
+      // Apply brand filter
+      if (params.brand) {
+        filteredProducts = filteredProducts.filter(product =>
+          product.brand.toLowerCase() === params.brand.toLowerCase()
+        )
+      }
+
+      // Apply color filter
+      if (params.color) {
+        filteredProducts = filteredProducts.filter(product =>
+          product.color.toLowerCase() === params.color.toLowerCase()
+        )
+      }
+
+      // Apply price filters
+      if (params.min_price !== undefined && params.min_price !== null) {
+        filteredProducts = filteredProducts.filter(product =>
+          product.pricing >= parseFloat(params.min_price)
+        )
+      }
+      if (params.max_price !== undefined && params.max_price !== null) {
+        filteredProducts = filteredProducts.filter(product =>
+          product.pricing <= parseFloat(params.max_price)
+        )
+      }
+
+      // Apply rating filter
+      if (params.min_rating !== undefined && params.min_rating !== null) {
+        filteredProducts = filteredProducts.filter(product =>
+          product.rating >= parseFloat(params.min_rating)
+        )
+      }
+
+      // Apply discount filter
+      if (params.has_discount !== undefined) {
+        const hasDiscount = params.has_discount === 'true'
+        filteredProducts = filteredProducts.filter(product =>
+          hasDiscount ? product.discount_percentage > 0 : product.discount_percentage === 0 || !product.discount_percentage
+        )
+      }
+
+      // Apply sorting
+      if (params.sort_by) {
+        filteredProducts.sort((a, b) => {
+          let aValue = a[params.sort_by]
+          let bValue = b[params.sort_by]
+
+          if (params.sort_by === 'pricing') {
+            aValue = a.pricing
+            bValue = b.pricing
+          } else if (params.sort_by === 'rating') {
+            aValue = a.rating || 0
+            bValue = b.rating || 0
+          } else if (params.sort_by === 'name') {
+            aValue = a.name.toLowerCase()
+            bValue = b.name.toLowerCase()
+          }
+
+          if (params.sort_order === 'desc') {
+            return aValue < bValue ? 1 : -1
+          } else {
+            return aValue > bValue ? 1 : -1
+          }
+        })
+      }
+
+      // Apply pagination
+      const perPage = params.per_page ? parseInt(params.per_page) : 12
+      const page = params.page ? parseInt(params.page) : 1
+      const startIndex = (page - 1) * perPage
+      const paginatedProducts = filteredProducts.slice(startIndex, startIndex + perPage)
+
+      // Simulate API delay
+      await delay(300)
+
+      // Return mock response in API format
+      return {
+        data: {
+          data: paginatedProducts,
+          current_page: page,
+          last_page: Math.ceil(filteredProducts.length / perPage),
+          per_page: perPage,
+          total: filteredProducts.length
+        }
+      }
+    }
   },
 
   // Get product by ID (public)
@@ -108,7 +224,18 @@ export const productsApi = {
 // Categories API
 export const categoriesApi = {
   // Get all categories (public)
-  getCategories: () => api.get('/public/categories'),
+  getCategories: async () => {
+    try {
+      const response = await api.get('/public/categories')
+      return response
+    } catch (error) {
+      console.warn('Categories API not available, using mock data:', error.message)
+      await delay(200)
+      return {
+        data: mockCategories
+      }
+    }
+  },
 
   // Get category by ID (public)
   getCategory: (id) => api.get(`/public/categories/${id}`),
