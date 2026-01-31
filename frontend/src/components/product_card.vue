@@ -77,7 +77,7 @@
                       >${{ formatNumber(getDiscountedPrice(bike)) }}</label
                     >
                     <span v-if="hasDiscount(bike)" class="original-price"
-                      >${{ formatNumber(bike.price) }}</span
+                      >${{ formatNumber(bike.pricing) }}</span
                     >
                   </div>
                 </div>
