@@ -4,7 +4,7 @@ import { mockProducts, mockCategories, createMockResponse, delay } from './mockD
 const API_BASE_URL = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
 
 // Enable mock mode for development/demo when API is not available
-const USE_MOCK_DATA = !API_BASE_URL || API_BASE_URL.includes('localhost:8100') || import.meta.env.DEV
+const USE_MOCK_DATA = !API_BASE_URL || API_BASE_URL.includes('localhost:8100') || import.meta.env.DEV || import.meta.env.PROD // Always enable in production for demo
 
 const api = axios.create({
   baseURL: `${API_BASE_URL}/api`,
@@ -90,7 +90,7 @@ export const productsApi = {
     const queryString = queryParams.toString()
     const url = queryString ? `/public/products?${queryString}` : '/public/products'
 
-    // Try API call first, fall back to mock data if it fails
+    // Always try API call first, fall back to mock data if it fails
     try {
       const response = await api.get(url)
       return response
