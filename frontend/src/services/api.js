@@ -97,97 +97,12 @@ export const productsApi = {
     } catch (error) {
       console.warn('API not available, using mock data:', error.message)
 
-      // Filter mock products based on params
-      let filteredProducts = [...mockProducts]
-
-      // Apply search filter
-      if (params.search) {
-        const searchTerm = params.search.toLowerCase()
-        filteredProducts = filteredProducts.filter(product =>
-          product.name.toLowerCase().includes(searchTerm) ||
-          product.brand.toLowerCase().includes(searchTerm) ||
-          product.description.toLowerCase().includes(searchTerm)
-        )
-      }
-
-      // Apply category filter
-      if (params.category_id) {
-        filteredProducts = filteredProducts.filter(product =>
-          product.category_id === parseInt(params.category_id)
-        )
-      }
-
-      // Apply brand filter
-      if (params.brand) {
-        filteredProducts = filteredProducts.filter(product =>
-          product.brand.toLowerCase() === params.brand.toLowerCase()
-        )
-      }
-
-      // Apply color filter
-      if (params.color) {
-        filteredProducts = filteredProducts.filter(product =>
-          product.color.toLowerCase() === params.color.toLowerCase()
-        )
-      }
-
-      // Apply price filters
-      if (params.min_price !== undefined && params.min_price !== null) {
-        filteredProducts = filteredProducts.filter(product =>
-          product.pricing >= parseFloat(params.min_price)
-        )
-      }
-      if (params.max_price !== undefined && params.max_price !== null) {
-        filteredProducts = filteredProducts.filter(product =>
-          product.pricing <= parseFloat(params.max_price)
-        )
-      }
-
-      // Apply rating filter
-      if (params.min_rating !== undefined && params.min_rating !== null) {
-        filteredProducts = filteredProducts.filter(product =>
-          product.rating >= parseFloat(params.min_rating)
-        )
-      }
-
-      // Apply discount filter
-      if (params.has_discount !== undefined) {
-        const hasDiscount = params.has_discount === 'true'
-        filteredProducts = filteredProducts.filter(product =>
-          hasDiscount ? product.discount_percentage > 0 : product.discount_percentage === 0 || !product.discount_percentage
-        )
-      }
-
-      // Apply sorting
-      if (params.sort_by) {
-        filteredProducts.sort((a, b) => {
-          let aValue = a[params.sort_by]
-          let bValue = b[params.sort_by]
-
-          if (params.sort_by === 'pricing') {
-            aValue = a.pricing
-            bValue = b.pricing
-          } else if (params.sort_by === 'rating') {
-            aValue = a.rating || 0
-            bValue = b.rating || 0
-          } else if (params.sort_by === 'name') {
-            aValue = a.name.toLowerCase()
-            bValue = b.name.toLowerCase()
-          }
-
-          if (params.sort_order === 'desc') {
-            return aValue < bValue ? 1 : -1
-          } else {
-            return aValue > bValue ? 1 : -1
-          }
-        })
-      }
-
-      // Apply pagination
+      // For now, return all mock products without complex filtering
+      // This ensures the frontend works reliably
       const perPage = params.per_page ? parseInt(params.per_page) : 12
       const page = params.page ? parseInt(params.page) : 1
       const startIndex = (page - 1) * perPage
-      const paginatedProducts = filteredProducts.slice(startIndex, startIndex + perPage)
+      const paginatedProducts = mockProducts.slice(startIndex, startIndex + perPage)
 
       // Simulate API delay
       await delay(300)
@@ -197,9 +112,9 @@ export const productsApi = {
         data: {
           data: paginatedProducts,
           current_page: page,
-          last_page: Math.ceil(filteredProducts.length / perPage),
+          last_page: Math.ceil(mockProducts.length / perPage),
           per_page: perPage,
-          total: filteredProducts.length
+          total: mockProducts.length
         }
       }
     }
