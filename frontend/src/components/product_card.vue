@@ -28,6 +28,10 @@
           <h2>
             {{ getResultsTitle() }}
           </h2>
+          <div class="static-mode-indicator" v-if="isStaticMode">
+            <span class="static-badge">🔄 Static Mode</span>
+            <small>Backend not available - using demo data</small>
+          </div>
         </div>
 
         <div v-if="loading" class="loading-state">
@@ -39,15 +43,15 @@
         <div v-else>
           <div class="bikes-container">
             <div v-for="bike in bikes" :key="bike.id" class="product-card" :data-id="bike.id">
+              <div
+                class="sale-badge"
+                :class="bike.badge?.className"
+                v-if="bike.badge && bike.badge.text"
+              >
+                <Icon :icon="bike.badge.icon" class="sale-icon" />
+                <span>{{ bike.badge.text }}</span>
+              </div>
               <div class="card-header">
-                <div
-                  class="sale-badge"
-                  :style="{ background: bike.badge?.gradient }"
-                  v-if="bike.badge && bike.badge.text"
-                >
-                  <Icon :icon="bike.badge.icon" class="sale-icon" />
-                  <span>{{ bike.badge.text }}</span>
-                </div>
                 <div class="quality-badge" v-if="bike.quality && bike.quality !== 'Standard'">
                   <span>{{ bike.quality }}</span>
                 </div>
@@ -182,6 +186,7 @@ const showToast = ref(false)
 const toastMessage = ref('')
 const itemQuantities = ref({})
 const categories = ref([])
+const isStaticMode = ref(false) // Track if we're using static data
 
 // Search and filter state
 const searchQuery = ref(props.searchQuery)
@@ -200,6 +205,18 @@ const bike_filters = ref(null)
 
 // Debounce timer for filter changes
 let debounceTimer = null
+
+// Check if backend is available
+const checkBackendAvailability = async () => {
+  try {
+    // Try a simple API call to check if backend is available
+    await categoriesApi.getCategories()
+    isStaticMode.value = false
+  } catch (err) {
+    // If it fails, we're in static mode
+    isStaticMode.value = true
+  }
+}
 
 // Fetch products with filters
 const fetchProducts = async (params = {}) => {
@@ -495,6 +512,9 @@ fetchAllProductsForFilters()
 
 // Load favorites when component mounts
 onMounted(async () => {
+  // Check if backend is available
+  await checkBackendAvailability()
+
   try {
     await favoritesStore.fetchFavorites()
   } catch (error) {
@@ -1047,5 +1067,26 @@ watch(
     width: 100%;
     justify-content: center;
   }
+}
+
+.static-mode-indicator {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.static-badge {
+  background: linear-gradient(135deg, #ff6b6b, #ff5252);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+.static-mode-indicator small {
+  color: #666;
+  font-size: 11px;
 }
 </style>
