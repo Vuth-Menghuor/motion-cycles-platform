@@ -25,7 +25,7 @@
             <span class="action-label">My Profile</span>
           </div>
           <div class="action-item">
-            <button class="action-btn" title="Logout">
+            <button class="action-btn" title="Logout" @click="handleLogout">
               <Icon icon="material-symbols:logout" class="action" />
             </button>
             <span class="action-label">Logout</span>
@@ -308,6 +308,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import adminAvatar from '@/assets/images/admin/admin_avatar.png'
 import { Icon } from '@iconify/vue'
+import { useAuthStore } from '@/stores/auth'
 
 // ===========================================
 // CONFIGURATION CONSTANTS
@@ -398,6 +399,7 @@ const ROUTE_TO_TAB_MAP = {
 // Router and route instances for navigation
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
 
 // UI state management variables
 // Search query for the search bar
@@ -528,6 +530,14 @@ const updateActiveNavigation = (path) => {
  */
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
+}
+
+/**
+ * Clears the authenticated session and returns the user to the sign-in page.
+ */
+const handleLogout = () => {
+  authStore.logout()
+  router.push('/authentication/sign_in')
 }
 
 /**
