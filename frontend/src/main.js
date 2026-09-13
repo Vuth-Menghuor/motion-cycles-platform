@@ -6,7 +6,7 @@ import router from './router'
 import axios from 'axios'
 
 // Configure axios base URL for API calls
-axios.defaults.baseURL = 'http://localhost:8100'
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE || 'http://localhost:8100'
 
 // Create Vue application instance
 const app = createApp(App)

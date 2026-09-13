@@ -1,10 +1,4 @@
-import axios from 'axios'
-
-// Create API instance with base URL and timeout
-const api = axios.create({
-  baseURL: 'http://localhost:8100/api',
-  timeout: 15000,
-})
+import api from './api'
 
 /**
  * Order Management Service
