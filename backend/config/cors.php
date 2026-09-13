@@ -3,12 +3,13 @@
 return [
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
     'allowed_methods' => ['*'],
-    'allowed_origins' => [
+    'allowed_origins' => array_filter([
         'http://localhost:3000',
         'http://localhost:5173',
         'http://localhost:8080',
         'http://localhost:4173',
-    ],
+        env('FRONTEND_URL'),
+    ]),
     'allowed_origins_patterns' => [],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
