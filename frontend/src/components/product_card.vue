@@ -770,10 +770,9 @@ watch(
 }
 
 .bikes-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
-  flex-wrap: wrap;
-  justify-content: start;
 }
 .sale-icon {
   font-size: 22px;
@@ -824,8 +823,7 @@ watch(
 }
 
 .product-card {
-  flex: 1 1 300px;
-  max-width: 460px;
+  width: 100%;
   min-width: 0;
   background-color: white;
   border: 1px solid #dee2e6;
@@ -1054,6 +1052,12 @@ watch(
 }
 
 /* Responsive Design */
+@media (max-width: 1200px) {
+  .bikes-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
   .filter-toggle-container {
     display: block;
@@ -1076,12 +1080,12 @@ watch(
   }
 
   .bikes-container {
-    justify-content: center;
+    grid-template-columns: 1fr;
   }
 
   .product-card {
-    width: min(100%, 460px);
-    flex-basis: 100%;
+    max-width: 460px;
+    justify-self: center;
   }
 
   .products-header {

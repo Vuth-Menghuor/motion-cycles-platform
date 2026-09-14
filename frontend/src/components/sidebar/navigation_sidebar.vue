@@ -359,17 +359,19 @@ const goToHelp = () => navigate('/help')
 /* Responsive */
 @media (max-width: 768px) {
   .app-sidebar {
-    width: min(320px, calc(100vw - 32px));
+    width: min(280px, calc(100vw - 40px));
     max-width: none;
   }
 
-  .app-sidebar__header { padding: 1.25rem; }
-  .app-sidebar__menu-link { padding: 0.7rem 1.25rem; }
-  .app-sidebar__section-title { margin-left: 1.25rem; }
+  .app-sidebar__header { padding: 1rem; }
+  .app-sidebar__nav { padding: 0.75rem 0; }
+  .app-sidebar__section { margin-bottom: 1.5rem; }
+  .app-sidebar__menu-link { padding: 0.625rem 1rem; }
+  .app-sidebar__section-title { margin-left: 1rem; }
+  .app-sidebar__footer { padding: 0.75rem; }
 }
 
 @media (max-width: 360px) {
-  .app-sidebar { width: calc(100vw - 20px); }
   .app-sidebar__footer { padding: 0.75rem; }
   .app-sidebar__user { gap: 0.5rem; }
 }
