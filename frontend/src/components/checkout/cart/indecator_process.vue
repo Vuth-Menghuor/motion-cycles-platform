@@ -116,4 +116,12 @@ const currentStep = computed(() => Number(route.meta.step) || 1)
 .step.active span {
   color: #00bcd4;
 }
+
+@media (max-width: 480px) {
+  .cart-header { padding-bottom: 26px; }
+  .step-icon { width: 38px; height: 38px; }
+  .step:not(:last-child)::after { top: 18px; }
+  .step span { font-size: 11px; margin-top: 7px; }
+  .icon { font-size: 16px; }
+}
 </style>

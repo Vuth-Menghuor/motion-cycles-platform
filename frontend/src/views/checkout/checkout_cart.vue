@@ -29,7 +29,11 @@
           @decrease-quantity="decreaseQuantity"
           @remove-item="removeItem"
         />
-        <Bike_suggestion_card :products="allBikes" @add-to-cart="addToCart" />
+        <Bike_suggestion_card
+          :products="allBikes"
+          @add-to-cart="addToCart"
+          class="desktop-suggestions"
+        />
       </div>
       <Checkout_summary
         :cart-items="safeCartItems"
@@ -39,6 +43,11 @@
         class="checkout-summary-sticky"
       />
     </div>
+    <Bike_suggestion_card
+      :products="allBikes"
+      @add-to-cart="addToCart"
+      class="mobile-suggestions"
+    />
   </div>
 </template>
 
@@ -146,6 +155,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: 1fr 390px;
   gap: 30px;
+  min-width: 0;
 }
 
 .cart-items-section {
@@ -154,6 +164,7 @@ onMounted(() => {
   max-width: 879px;
   border-right: 1px solid #d9d9d9;
   padding-right: 50px;
+  min-width: 0;
 }
 .checkout-summary-sticky {
   position: sticky;
@@ -161,9 +172,36 @@ onMounted(() => {
   align-self: flex-start;
   height: fit-content;
 }
+.mobile-suggestions { display: none; }
 @media (max-width: 768px) {
+  .cart-container {
+    margin-top: 14rem;
+    padding: 16px;
+  }
+
   .cart-content {
     grid-template-columns: 1fr;
+    gap: 32px;
   }
+
+  .cart-items-section {
+    max-width: none;
+    border-right: 0;
+    padding-right: 0;
+    width: 100%;
+  }
+
+  .checkout-summary-sticky {
+    position: static;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .desktop-suggestions { display: none; }
+  .mobile-suggestions { display: block; }
+}
+
+@media (max-width: 480px) {
+  .cart-container { margin-top: 14rem; padding: 12px; }
 }
 </style>

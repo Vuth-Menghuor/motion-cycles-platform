@@ -310,6 +310,40 @@ onUnmounted(() => stopSlideshow())
   transition: opacity 0.5s ease;
 }
 
+@media (max-width: 768px) {
+  .header-slideshow { height: max(680px, 100svh); }
+
+  .hero-content {
+    height: 100%;
+    margin: 0 32px;
+    padding-bottom: 32px;
+    box-sizing: border-box;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 28px;
+  }
+
+  .hero-text { width: min(100%, 590px); }
+  .hero-title { width: auto; font-size: clamp(1.75rem, 5vw, 2.25rem); }
+  .hero-subtitle { width: auto; max-width: 590px; line-height: 1.7; }
+  .pagination-content { width: 100%; align-items: flex-start; }
+  .pagination-nav { width: 100%; justify-content: space-between; }
+  .pagination-text { max-width: 100%; white-space: normal; line-height: 1.5; }
+}
+
+@media (max-width: 480px) {
+  .header-slideshow { height: max(620px, 100svh); }
+  .hero-content { margin: 0 18px; padding-bottom: 22px; gap: 20px; }
+  .hero-title { margin-bottom: 10px; }
+  .hero-subtitle { font-size: 13px; line-height: 1.55; }
+  .dot { width: 24px; }
+  .pagination-nav { gap: 12px; }
+  .pagination-arrows { gap: 8px; }
+  .arrow-btn { width: 36px; height: 36px; }
+  .pagination-text { font-size: 11px; padding-top: 12px; }
+}
+
 /* Pulse Animation */
 @keyframes pulse {
   0% {

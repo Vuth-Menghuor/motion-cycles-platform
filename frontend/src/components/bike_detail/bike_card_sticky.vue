@@ -260,4 +260,13 @@ const getCategoryName = (bike) => {
   font-size: 12px;
   font-weight: 500;
 }
+
+@media (max-width: 768px) {
+  .bike-summary { width: 100%; margin-bottom: 0; }
+}
+
+@media (max-width: 480px) {
+  .bike-summary-actions { flex-direction: column; }
+  .bike-summary-add-to-cart, .bike-summary-buy-now { justify-content: center; }
+}
 </style>

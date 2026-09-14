@@ -54,4 +54,25 @@ console.log('Initial searchQuery:', searchQuery.value)
   font-family: 'Poppins', sans-serif;
   font-size: 1.8rem;
 }
+
+@media (max-width: 768px) {
+  .content-title {
+    margin: 38px 24px 16px;
+  }
+
+  .section-title,
+  .brand-list-title {
+    font-size: 1.5rem;
+  }
+
+  .brand-list-title {
+    margin: 38px 0 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-title {
+    margin: 30px 16px 12px;
+  }
+}
 </style>

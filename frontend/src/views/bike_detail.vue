@@ -369,6 +369,11 @@ const getBrandDescription = (brand, productDescription) => {
     gap: 32px;
   }
 
+  .bike-detail-container { margin-top: 12rem; }
+  .bike-detail { padding: 16px; }
+  .spec-card-wrapper { flex-direction: column; gap: 24px; }
+  .sticky-card { position: static; width: 100%; box-sizing: border-box; margin-bottom: 0; }
+
   .bike-title {
     font-size: 24px;
   }
@@ -380,5 +385,12 @@ const getBrandDescription = (brand, productDescription) => {
   .action-buttons {
     flex-direction: column;
   }
+}
+
+@media (max-width: 480px) {
+  .bike-detail-container { margin-top: 11rem; }
+  .bike-detail { padding: 12px; }
+  .detail-content { gap: 24px; }
+  .toast-popup { width: calc(100% - 32px); box-sizing: border-box; }
 }
 </style>

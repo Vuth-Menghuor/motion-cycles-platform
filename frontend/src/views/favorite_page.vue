@@ -413,4 +413,33 @@ const getDiscountedPrice = (product) => {
   font-weight: 500;
   margin: 8px 0;
 }
+
+@media (max-width: 768px) {
+  .favorites-page {
+    margin-top: 14rem;
+    padding: 16px;
+  }
+
+  .info-section { gap: 16px; }
+  .bike-image { width: 34%; }
+  .btn { padding: 10px 18px; }
+}
+
+@media (max-width: 480px) {
+  .favorites-page { padding: 12px; }
+  .favorites-page h2 { font-size: 1.4rem; margin-bottom: 16px; }
+  .favorites-saved { padding-bottom: 16px; }
+  .favorite-card { padding: 14px; }
+  .info-section { flex-direction: column; gap: 12px; }
+  .bike-image { width: 100%; height: 200px; object-fit: contain; background: #f8fafc; }
+  .bike-info { padding: 0; width: 100%; }
+  .bike-info h3 { font-size: 16px; overflow-wrap: anywhere; }
+  .item-category-brand { flex-wrap: wrap; gap: 5px; }
+  .badge { margin: 2px 0; padding: 3px 9px; }
+  .card-actions { width: 100%; padding: 0; }
+  .card-actions .btn { flex: 1; padding: 11px 10px; }
+  .promotion-price { top: 12rem; }
+  .no-favorites { min-height: 300px; height: auto; padding: 24px 16px; box-sizing: border-box; }
+  .no-favorites p br { display: none; }
+}
 </style>

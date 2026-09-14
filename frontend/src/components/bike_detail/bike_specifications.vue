@@ -172,4 +172,15 @@ const specifications = computed(() => {
   text-align: left;
   flex: 1;
 }
+
+@media (max-width: 768px) {
+  .specifications-card { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .tab-navigation { overflow-x: auto; }
+  .tab-button { min-width: 105px; }
+  .specification-row { flex-direction: column; gap: 6px; padding: 12px 0; }
+  .spec-label { width: auto; }
+}
 </style>

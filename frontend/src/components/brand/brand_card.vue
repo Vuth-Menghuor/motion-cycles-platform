@@ -36,4 +36,8 @@ const goToBrand = (id, brandName) => {
   max-width: 100%;
   height: auto;
 }
+
+@media (max-width: 480px) {
+  .brand-card { width: 160px; height: 42px; padding: 18px; }
+}
 </style>

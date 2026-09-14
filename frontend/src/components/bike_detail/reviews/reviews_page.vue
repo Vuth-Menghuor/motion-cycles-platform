@@ -93,4 +93,8 @@ onMounted(async () => {
   color: #111827;
   margin: 24px 0 8px 0;
 }
+
+@media (max-width: 480px) {
+  .review-title { font-size: 21px; margin-top: 20px; }
+}
 </style>

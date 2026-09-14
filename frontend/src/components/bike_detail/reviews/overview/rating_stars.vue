@@ -42,13 +42,12 @@ const percentage = computed(() => (props.total ? Math.round((props.count / props
 
 .progress-bar {
   flex: 1;
+  min-width: 0;
   height: 10px;
   background: #f1f5f9;
   border-radius: 6px;
   overflow: hidden;
   position: relative;
-  flex: none;
-  width: 100%;
 }
 
 .progress-fill {

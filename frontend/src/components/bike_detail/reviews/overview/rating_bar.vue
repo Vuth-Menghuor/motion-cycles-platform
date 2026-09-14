@@ -189,7 +189,20 @@ const progressPercentage = computed(() => (averageRating.value / 5) * 100)
 
   .rating-content {
     flex-direction: column;
-    gap: 32px;
+    align-items: stretch;
+    padding-right: 0;
+    gap: 24px;
+  }
+
+  .rating-distribution {
+    padding: 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .overall-badge {
+    flex-direction: row;
+    justify-content: center;
   }
 
   .circular-progress {

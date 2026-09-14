@@ -74,11 +74,13 @@ const goBack = () => {
 
 @media (max-width: 768px) {
   .back-btn-container {
-    padding: 16px 20px;
+    padding: 12px 16px;
   }
 
   .back-text {
     font-size: 14px;
   }
+
+  .back-button { height: 40px; padding: 8px 14px; }
 }
 </style>

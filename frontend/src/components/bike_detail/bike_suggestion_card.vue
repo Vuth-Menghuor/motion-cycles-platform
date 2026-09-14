@@ -249,6 +249,8 @@ const getCategoryName = (bike) => {
   padding-bottom: 10px;
   scrollbar-width: thin;
   scrollbar-color: #cbd5e0 transparent;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 
 .bikes-grid::-webkit-scrollbar {
@@ -278,6 +280,7 @@ const getCategoryName = (bike) => {
   transition: all 0.3s ease;
   flex: 0 0 400px;
   height: fit-content;
+  scroll-snap-align: start;
 }
 
 .card-header {
@@ -527,5 +530,27 @@ const getCategoryName = (bike) => {
   color: #333;
   font-size: 12px;
   font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .suggestions-container { padding: 28px 0; }
+  .suggestions-header { margin-bottom: 24px; }
+  .suggestions-header h2 { font-size: 23px; }
+  .suggestions-header p { font-size: 14px; }
+  .product-card { flex-basis: min(82vw, 340px); }
+  .bikes-grid { gap: 16px; padding-right: 12px; }
+  .product-image-container { height: 170px; }
+  .price-info, .product-info { padding-left: 16px; padding-right: 16px; }
+  .card-footer { padding: 16px; gap: 8px; }
+  .detail, .add-to-cart-btn { font-size: 13px; }
+  .detail { padding: 10px 8px; }
+  .add-to-cart-btn { padding: 10px 8px; gap: 5px; }
+  .bikes-scroll-container::after { width: 36px; }
+}
+
+@media (max-width: 360px) {
+  .product-card { flex-basis: 86vw; }
+  .card-footer { flex-direction: column; }
+  .view-detail-btn, .add-to-cart-btn { width: 100%; box-sizing: border-box; }
 }
 </style>

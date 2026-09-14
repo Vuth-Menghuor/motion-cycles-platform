@@ -264,5 +264,17 @@ const getCategoryName = (category) => {
   .action-buttons {
     flex-direction: column;
   }
+
+  .price-section { align-items: flex-start; margin-bottom: 0; }
+  .item-category-brand { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  .basic-info { margin-top: 0; gap: 16px; }
+  .bike-title { font-size: 22px; }
+  .rating-section { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .current-price { font-size: 30px; }
+  .original-price { font-size: 16px; }
+  .add-to-cart-btn, .buy-now-btn { padding: 14px 16px; }
 }
 </style>

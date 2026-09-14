@@ -66,6 +66,9 @@ export default {
 }
 .container {
   display: flex;
+  min-height: 100vh;
+  padding: 14px;
+  box-sizing: border-box;
 }
 
 .left-side {
@@ -75,8 +78,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   background-color: #14c9c9;
-  height: 97vh;
-  margin: 14px;
+  min-height: calc(100vh - 28px);
   border-radius: 10px;
   color: white;
   text-align: center;
@@ -122,7 +124,7 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 40px;
+  padding: 40px clamp(20px, 5vw, 72px);
   background-color: #ffffff;
   position: relative;
 }
@@ -136,5 +138,22 @@ export default {
 .form-wrapper {
   display: flex;
   justify-content: center;
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .left-side { flex: 0.8; }
+  .illustration img { max-width: 82%; }
+}
+
+@media (max-width: 700px) {
+  .container { display: block; padding: 0; }
+  .left-side { min-height: 185px; margin: 0; border-radius: 0 0 20px 20px; justify-content: flex-start; }
+  .logo { padding: 9px 38px 12px 12px; }
+  .illustration { display: none; }
+  .left-content { bottom: auto; max-width: min(88%, 460px); margin: 22px 0; }
+  .left-content h2 { margin: 0 0 6px; font-size: clamp(21px, 6vw, 26px); }
+  .left-content span { display: block; font-size: 14px; line-height: 1.5; }
+  .right-side { padding: 28px 16px 40px; }
 }
 </style>

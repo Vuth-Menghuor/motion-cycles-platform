@@ -326,23 +326,50 @@ const handleSocialClick = (platform) => emit('social-click', platform)
 /* Responsive Design */
 @media (max-width: 768px) {
   .footer-container {
-    padding: 2rem 1rem;
+    display: flow-root;
+    margin-top: 12rem;
+    padding: 0 1.25rem 2rem;
+  }
+
+  .footer-newsletter-section {
+    position: absolute;
+    top: -150px;
+    left: 50%;
+    width: calc(100% - 2.5rem);
+    transform: translateX(-50%);
+  }
+
+  .footer {
+    margin-top: 20rem;
   }
 
   .footer-newsletter {
-    padding: 1rem 2rem;
+    box-sizing: border-box;
+    padding: 2rem 1.5rem;
     height: auto;
-    width: 95%;
+    width: 100%;
+    margin: 0 0 2rem;
+    border-radius: 22px;
   }
 
   .newsletter {
     flex-direction: column;
     text-align: center;
+    width: 100%;
   }
 
   .newsletter-text {
     align-items: center;
     margin-bottom: 1rem;
+  }
+
+  .newsletter-form {
+    width: 100%;
+    align-items: center;
+  }
+
+  .newsletter-form small {
+    text-align: center;
   }
 
   .newsletter-title {
@@ -354,6 +381,14 @@ const handleSocialClick = (platform) => emit('social-click', platform)
     width: 100%;
     max-width: 300px;
   }
+
+  .footer-content {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .footer-logo { margin-top: 0; }
+  .footer-text { margin: 12px 0; }
 
   .footer-bottom {
     flex-direction: column;
@@ -368,5 +403,19 @@ const handleSocialClick = (platform) => emit('social-click', platform)
   .social-icons a {
     margin: 0 0.5rem;
   }
+}
+
+@media (max-width: 480px) {
+  .footer-container { margin-top: 11rem; padding: 0 1rem 1.5rem; }
+  .footer-newsletter-section { width: calc(100% - 2rem); }
+  .footer { margin-top: 20rem; }
+  .footer-newsletter { padding: 1.75rem 1.25rem; }
+  .newsletter-title { font-size: 1.4rem; }
+  .newsletter-subtitle { font-size: 1rem; margin: 1rem 0; }
+  .email-input { width: 100%; max-width: none; box-sizing: border-box; }
+  .footer-content { grid-template-columns: 1fr; gap: 1.25rem; }
+  .footer-section ul li { margin: 0.6rem 0; }
+  .footer-bottom { font-size: 0.85rem; }
+  .social-icons a { font-size: 1.65rem; }
 }
 </style>

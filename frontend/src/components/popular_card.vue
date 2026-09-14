@@ -188,7 +188,9 @@ onUnmounted(() => observer?.disconnect()) // Disconnect observer
 
 /* Card */
 .popular-product-card {
+  flex: 1 1 300px;
   max-width: 520px;
+  min-width: 0;
   background-color: white;
   border: 1px solid #dee2e6;
   border-radius: 10px;
@@ -349,5 +351,16 @@ onUnmounted(() => observer?.disconnect()) // Disconnect observer
   clip-path: polygon(5% 0, 95% 0, 100% 20%, 100% 80%, 95% 100%, 5% 100%, 0 80%, 0 20%);
   transition: background-color 0.3s ease;
   flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .bikes-container { gap: 20px; padding: 12px 16px; }
+  .popular-product-card { flex-basis: 100%; width: 100%; }
+  .product-specs { gap: 8px; padding: 10px 12px; }
+  .spec-item { align-items: flex-start; }
+  .item-icon { font-size: 21px; }
+  .spec-text { font-size: 11px; }
+  .card-footer { padding: 16px; gap: 10px; }
+  .price, .quick-buy-btn { padding: 10px 16px; }
 }
 </style>

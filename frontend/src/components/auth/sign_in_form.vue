@@ -116,12 +116,20 @@ const login = async () => {
 </script>
 
 <style scoped>
+.auth-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 .auth-card {
   border: 1px solid rgb(202, 202, 202);
   border-radius: 20px;
   background-color: white;
   height: auto;
-  width: 630px;
+  width: min(630px, 100%);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .auth-header {
@@ -162,7 +170,7 @@ const login = async () => {
   background-color: #fee;
   color: #c33;
   padding: 10px;
-  margin: 10px 80px;
+  margin: 18px clamp(24px, 13%, 80px) 0;
   border-radius: 4px;
   border: 1px solid #fcc;
   font-size: 14px;
@@ -186,7 +194,8 @@ const login = async () => {
   padding-right: 30px;
   padding-top: 10px;
   padding-bottom: 10px;
-  width: 400px;
+  width: min(400px, calc(100% - 48px));
+  box-sizing: border-box;
   background-color: transparent;
 }
 
@@ -233,8 +242,9 @@ const login = async () => {
   justify-content: space-between;
   align-items: center;
   margin-top: 12px;
-  margin-left: 84px;
-  margin-right: 110px;
+  width: min(440px, calc(100% - 48px));
+  margin-left: auto;
+  margin-right: auto;
   font-family: 'Poppins', sans-serif;
 }
 
@@ -278,8 +288,8 @@ const login = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 440px;
-  margin-right: 20px;
+  width: min(440px, calc(100% - 48px));
+  margin-right: 0;
   padding: 12px 0;
   border: none;
   font-weight: 500;
@@ -313,7 +323,7 @@ const login = async () => {
   left: 0;
   right: 0;
   height: 1px;
-  margin: 0 106px 0 82px;
+  margin: 0 clamp(24px, 13%, 82px);
   background: #ddd;
 }
 
@@ -331,7 +341,8 @@ const login = async () => {
 .social-login {
   display: flex;
   justify-content: space-around;
-  margin: 40px 100px;
+  gap: 12px;
+  margin: 40px clamp(24px, 16%, 100px);
 }
 
 .social-button {
@@ -341,7 +352,7 @@ const login = async () => {
   height: 40px;
   border: 1px solid rgb(212, 212, 212);
   border-radius: 6px;
-  width: 185px;
+  width: 100%;
   align-items: center;
   gap: 12px;
   font-size: 14px;
@@ -361,5 +372,13 @@ const login = async () => {
 
 .social-text {
   font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .auth-card { border-radius: 14px; }
+  .auth-title { font-size: 32px; margin-top: 30px; }
+  .form-group { margin-top: 28px; }
+  .form-option { align-items: flex-start; gap: 10px; }
+  .social-login { margin-top: 30px; margin-bottom: 30px; }
 }
 </style>

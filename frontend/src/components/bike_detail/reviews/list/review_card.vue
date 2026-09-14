@@ -150,4 +150,11 @@ const formatDate = (dateString) => {
   color: #374151;
   margin: 0;
 }
+
+@media (max-width: 480px) {
+  .review-card { padding: 14px; }
+  .review-card-header { align-items: flex-start; gap: 8px; }
+  .review-card-user { font-size: 14px; flex-wrap: wrap; }
+  .review-card-date { white-space: nowrap; }
+}
 </style>

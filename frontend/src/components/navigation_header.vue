@@ -571,27 +571,57 @@ onUnmounted(() => {
    ================================ */
 @media (max-width: 768px) {
   .nav-container {
-    flex-direction: column;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'brand'
+      'search'
+      'actions';
+    justify-content: initial;
+    gap: 0.75rem 1rem;
+    padding: 0.75rem 1rem;
   }
 
   .brand-logo-wrapper {
+    grid-area: brand;
     width: 100%;
+    min-width: 0;
+    gap: 0.75rem;
     justify-content: space-between;
   }
 
   .search-container {
+    grid-area: search;
     width: 100%;
     max-width: none;
+    flex: 0 1 auto;
   }
 
-  .brand-list {
-    flex-wrap: wrap;
+  .user-actions {
+    grid-area: actions;
+    display: flex;
+    justify-content: center;
+    margin-left: 0;
+    gap: 8px;
   }
+
+  .brand-nav-container {
+    padding: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .brand-nav-container::-webkit-scrollbar { display: none; }
+
+  .brand-list { flex-wrap: nowrap; width: max-content; }
 
   .brand-item {
-    flex: 1 1 25%;
-    min-width: 120px;
+    flex: 0 0 auto;
+    min-width: auto;
+  }
+
+  .brand-link {
+    padding: 0.7rem 1rem;
   }
 
   .user-actions {
@@ -600,13 +630,11 @@ onUnmounted(() => {
 }
 
 @media (max-width: 480px) {
-  .brand-item {
-    flex: 1 1 50%;
-  }
+  .brand-text { font-size: 17px; white-space: nowrap; }
 
   .action-button {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
   }
 
   .action-icon {

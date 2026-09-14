@@ -487,4 +487,11 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
 }
+
+@media (max-width: 480px) {
+  .stand-delivery { align-items: flex-start; line-height: 1.4; }
+  .summary-calculations { padding: 10px 12px 14px; }
+  .checkout-features { flex-wrap: wrap; justify-content: flex-start; }
+  .feature { font-size: 11px; }
+}
 </style>

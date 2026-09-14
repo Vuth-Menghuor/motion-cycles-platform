@@ -6,7 +6,7 @@
 
 <style scoped>
 .guest-button {
-  width: 440px;
+  width: min(440px, calc(100vw - 80px));
   color: #333;
   background-color: white;
   border-radius: 6px;
@@ -16,7 +16,7 @@
   font-size: 14px;
   padding: 12px 0;
   transition: background-color 0.3s ease;
-  margin-right: 20px;
+  margin-right: 0;
   font-family: 'Poppins', sans-serif;
 }
 </style>

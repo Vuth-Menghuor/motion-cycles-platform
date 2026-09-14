@@ -824,7 +824,9 @@ watch(
 }
 
 .product-card {
+  flex: 1 1 300px;
   max-width: 460px;
+  min-width: 0;
   background-color: white;
   border: 1px solid #dee2e6;
   border-radius: 10px;
@@ -1067,6 +1069,37 @@ watch(
     width: 100%;
     justify-content: center;
   }
+
+  .content-wrapper {
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .bikes-container {
+    justify-content: center;
+  }
+
+  .product-card {
+    width: min(100%, 460px);
+    flex-basis: 100%;
+  }
+
+  .products-header {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .filter-toggle-container { padding: 14px 16px; }
+  .content-wrapper { padding: 12px; }
+  .product-image-container { height: 210px; }
+  .product-info, .price-info { padding-left: 16px; padding-right: 16px; }
+  .brand-description { padding-left: 16px; padding-right: 16px; font-size: 13px; }
+  .rating-section { padding-left: 16px; padding-right: 16px; }
+  .card-footer { padding: 16px; }
+  .detail { width: 100%; }
+  .quick-buy-btn { padding: 10px 16px; }
+  .item-category-brand { flex-wrap: wrap; }
 }
 
 .static-mode-indicator {

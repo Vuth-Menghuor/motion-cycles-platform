@@ -178,6 +178,7 @@ const getCategoryName = (product) => {
 /* Item Details */
 .item-details {
   flex: 1;
+  min-width: 0;
   font-family: 'Poppins', sans-serif;
 }
 
@@ -186,6 +187,7 @@ const getCategoryName = (product) => {
   font-weight: 500;
   margin: 0;
   color: #333;
+  overflow-wrap: anywhere;
 }
 
 .item-category-brand {
@@ -279,13 +281,41 @@ const getCategoryName = (product) => {
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .cart-item {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
     gap: 15px;
+  }
+
+  .item-image img {
+    width: 120px;
+    height: 120px;
   }
 
   .item-controls {
     flex-direction: row;
     justify-content: space-between;
+    grid-column: 1 / -1;
   }
+}
+
+@media (max-width: 480px) {
+  .cart-item {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 0;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .item-image { width: 100%; }
+  .item-image img { width: 100%; height: 180px; display: block; }
+  .item-details { width: 100%; }
+  .item-name-row { align-items: flex-start; flex-direction: column; gap: 4px; }
+  .item-name { font-size: 14px; line-height: 1.35; }
+  .badge { padding: 3px 8px; font-size: 11px; }
+  .item-category-brand { margin: 5px 0; gap: 4px; }
+  .badge { max-width: 100%; overflow-wrap: anywhere; }
+  .current-price { font-size: 16px; }
+  .quantity-control { gap: 6px; }
+  .item-controls { width: 100%; }
 }
 </style>

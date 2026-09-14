@@ -135,7 +135,7 @@ const goToHelp = () => navigate('/help')
 <style scoped>
 /* Count Fav */
 .count-fav {
-  margin-left: 5.5rem;
+  margin-left: auto;
   color: #3491fa;
   font-weight: 500;
   padding: 2px 10px;
@@ -172,7 +172,7 @@ const goToHelp = () => navigate('/help')
   top: 0;
   left: 0;
   width: 280px;
-  height: 100vh;
+  height: 100dvh;
   background: #ffffff;
   border-right: 2px solid #e5e7eb;
   transform: translateX(-100%);
@@ -359,8 +359,18 @@ const goToHelp = () => navigate('/help')
 /* Responsive */
 @media (max-width: 768px) {
   .app-sidebar {
-    width: 100%;
-    max-width: 320px;
+    width: min(320px, calc(100vw - 32px));
+    max-width: none;
   }
+
+  .app-sidebar__header { padding: 1.25rem; }
+  .app-sidebar__menu-link { padding: 0.7rem 1.25rem; }
+  .app-sidebar__section-title { margin-left: 1.25rem; }
+}
+
+@media (max-width: 360px) {
+  .app-sidebar { width: calc(100vw - 20px); }
+  .app-sidebar__footer { padding: 0.75rem; }
+  .app-sidebar__user { gap: 0.5rem; }
 }
 </style>

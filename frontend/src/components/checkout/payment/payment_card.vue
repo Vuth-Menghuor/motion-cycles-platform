@@ -131,4 +131,10 @@ const selectPayment = () => emit('select', props.payment)
     padding: 16px;
   }
 }
+
+@media (max-width: 480px) {
+  .payment-card { gap: 12px; padding: 14px; }
+  .payment-name { font-size: 15px; }
+  .method-payment.credit-card { height: 24px; }
+}
 </style>

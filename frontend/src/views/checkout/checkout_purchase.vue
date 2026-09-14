@@ -1069,8 +1069,14 @@ const updateSummaryBreakdown = (breakdown) => {
 
 /* Responsive */
 @media (max-width: 768px) {
+  .checkout-purchase-container {
+    margin-top: 14rem;
+    padding: 16px;
+  }
+
   .checkout-content {
     grid-template-columns: 1fr;
+    gap: 32px;
   }
 
   .purchase-section {
@@ -1081,6 +1087,11 @@ const updateSummaryBreakdown = (breakdown) => {
   .checkout-actions,
   .payment-actions {
     flex-direction: column;
+  }
+
+  .checkout-actions .btn,
+  .payment-actions .btn {
+    width: 100%;
   }
 
   .purchase-header {
@@ -1094,7 +1105,18 @@ const updateSummaryBreakdown = (breakdown) => {
   }
 
   .qr-code {
-    max-width: 300px;
+    width: min(300px, 100%);
+    height: auto;
   }
+
+  .checkout-summary-sticky { position: static; width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .checkout-purchase-container { padding: 12px; }
+  .bakong-payment-content { width: calc(100% - 32px); box-sizing: border-box; padding: 22px 16px; }
+  .qr-code-container { min-height: 0; padding: 24px 12px; }
+  .success-content { width: calc(100% - 32px); box-sizing: border-box; padding: 32px 20px; }
+  .success-content h3 { font-size: 23px; }
 }
 </style>

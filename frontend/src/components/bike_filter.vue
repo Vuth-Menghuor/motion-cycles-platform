@@ -254,6 +254,19 @@ defineExpose({ priceRanges })
   top: 20px;
 }
 
+@media (max-width: 768px) {
+  .filters-sidebar {
+    display: none;
+    width: auto;
+    padding: 20px;
+    position: static;
+  }
+
+  .filters-sidebar.show-mobile {
+    display: block;
+  }
+}
+
 /* Filters Header */
 .filters-header {
   display: flex;

@@ -270,6 +270,12 @@ const handleSubmit = () => {
   border: 1px solid #14c9c9;
 }
 
+@media (max-width: 480px) {
+  .modal-content { max-width: calc(100% - 32px); padding: 20px; max-height: 85vh; overflow-y: auto; }
+  .form-actions { flex-direction: column-reverse; }
+  .form-actions .btn { width: 100%; }
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {

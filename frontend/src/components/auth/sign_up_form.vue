@@ -174,12 +174,20 @@ const register = async () => {
 </script>
 
 <style scoped>
+.auth-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 .auth-card {
   border: 1px solid rgb(202, 202, 202);
   border-radius: 20px;
   background-color: white;
   height: auto;
-  width: 630px;
+  width: min(630px, 100%);
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .auth-header {
@@ -221,7 +229,7 @@ const register = async () => {
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
-  margin: 20px 80px 0 80px;
+  margin: 20px clamp(24px, 13%, 80px) 0;
   background-color: #fee;
   border-left: 4px solid #f44;
   border-radius: 6px;
@@ -264,7 +272,8 @@ const register = async () => {
   padding-right: 30px;
   padding-top: 10px;
   padding-bottom: 10px;
-  width: 400px;
+  width: min(400px, calc(100% - 48px));
+  box-sizing: border-box;
   background-color: transparent;
   transition: border-color 0.3s;
 }
@@ -323,8 +332,9 @@ const register = async () => {
   align-items: center;
   gap: 4px;
   margin-top: 12px;
-  margin-left: 84px;
-  margin-right: 110px;
+  width: min(440px, calc(100% - 48px));
+  margin-left: auto;
+  margin-right: auto;
   font-family: 'Poppins', sans-serif;
 }
 
@@ -370,8 +380,8 @@ const register = async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 440px;
-  margin-right: 20px;
+  width: min(440px, calc(100% - 48px));
+  margin-right: 0;
   padding: 12px 0;
   font-weight: 500;
   border: none;
@@ -426,7 +436,7 @@ const register = async () => {
   left: 0;
   right: 0;
   height: 1px;
-  margin: 0 106px 0 82px;
+  margin: 0 clamp(24px, 13%, 82px);
   background: #ddd;
 }
 
@@ -444,7 +454,8 @@ const register = async () => {
 .social-login {
   display: flex;
   justify-content: space-around;
-  margin: 40px 100px;
+  gap: 12px;
+  margin: 40px clamp(24px, 16%, 100px);
 }
 
 .social-button {
@@ -454,7 +465,7 @@ const register = async () => {
   height: 40px;
   border: 1px solid rgb(212, 212, 212);
   border-radius: 6px;
-  width: 185px;
+  width: 100%;
   align-items: center;
   gap: 12px;
   font-size: 14px;
@@ -474,5 +485,13 @@ const register = async () => {
 
 .social-text {
   font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .auth-card { border-radius: 14px; }
+  .auth-title { font-size: 32px; margin-top: 30px; }
+  .form-group { margin-top: 28px; }
+  .form-option { align-items: flex-start; flex-wrap: wrap; }
+  .social-login { margin-top: 30px; margin-bottom: 30px; }
 }
 </style>

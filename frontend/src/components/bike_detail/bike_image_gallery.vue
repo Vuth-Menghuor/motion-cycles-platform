@@ -192,11 +192,23 @@ watch(
 @media (max-width: 768px) {
   .image-section {
     flex-direction: column;
+    gap: 12px;
   }
 
+  .main-image { width: 100%; height: clamp(300px, 75vw, 480px); }
+
   .thumbnail-grid {
+    width: 100%;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: 1fr;
   }
+
+  .thumbnail-item { height: clamp(76px, 20vw, 150px); }
+}
+
+@media (max-width: 480px) {
+  .main-image { height: 300px; }
+  .thumbnail-grid { grid-template-columns: repeat(2, 1fr); }
+  .thumbnail-item { height: 115px; }
 }
 </style>

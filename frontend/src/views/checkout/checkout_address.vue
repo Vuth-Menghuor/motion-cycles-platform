@@ -374,8 +374,14 @@ const continueToPayment = () => {
 
 /* Responsive */
 @media (max-width: 768px) {
+  .checkout-address-container {
+    margin-top: 14rem;
+    padding: 16px;
+  }
+
   .checkout-content {
     grid-template-columns: 1fr;
+    gap: 32px;
   }
 
   .address-section {
@@ -393,8 +399,19 @@ const continueToPayment = () => {
     flex-direction: column;
   }
 
+  .checkout-actions .btn { width: 100%; }
+
+  .checkout-summary-sticky {
+    position: static;
+    width: 100%;
+  }
+
   .newsletter-form {
     flex-direction: column;
   }
+}
+
+@media (max-width: 480px) {
+  .checkout-address-container { padding: 12px; }
 }
 </style>

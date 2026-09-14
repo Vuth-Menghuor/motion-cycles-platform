@@ -56,4 +56,12 @@ defineProps({
   font-size: 14px;
   color: #6b7280;
 }
+
+@media (max-width: 640px) {
+  .rating-summary {
+    border-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0 0 16px;
+  }
+}
 </style>
