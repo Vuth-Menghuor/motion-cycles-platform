@@ -120,6 +120,10 @@
           </div>
         </div>
         <div class="header-actions">
+          <router-link to="/home" class="home-page-btn" title="Go to home page">
+            <Icon icon="material-symbols:home-outline-rounded" />
+            <span>Home Page</span>
+          </router-link>
           <button class="profile-btn">
             <img :src="user.avatar" :alt="user.name" />
             <Icon icon="nrk:more" class="profile-icon" />
@@ -1036,6 +1040,32 @@ onMounted(() => {
 .header-actions {
   display: flex;
   align-items: center;
+  gap: 14px;
+}
+
+.home-page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border: 1px solid #d5dce6;
+  border-radius: 5px;
+  color: #1e3a8a;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.home-page-btn:hover {
+  border-color: #1e3a8a;
+  background: #eff4ff;
+}
+
+.home-page-btn :deep(svg) {
+  width: 18px;
+  height: 18px;
 }
 
 .profile-btn {
@@ -1397,6 +1427,18 @@ onMounted(() => {
 
   .search-bar {
     width: 200px;
+  }
+
+  .header-actions {
+    gap: 8px;
+  }
+
+  .home-page-btn {
+    padding: 8px;
+  }
+
+  .home-page-btn span {
+    display: none;
   }
 
   .page-content {
