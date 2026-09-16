@@ -82,8 +82,8 @@ import { useAuthStore } from '@/stores/auth'
 const authStore = useAuthStore()
 
 // Reactive data for form inputs and state
-const email = ref('')
-const password = ref('')
+const email = ref('admin@gmail.com')
+const password = ref('admin123')
 const errorMessage = ref('')
 const isLoading = ref(false)
 const showPassword = ref(false)
