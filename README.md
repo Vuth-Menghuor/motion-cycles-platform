@@ -2,7 +2,19 @@
 
 Motion Cycle is a full-stack electric-bike commerce platform with a customer storefront and a responsive administration workspace. It supports product discovery, shopping, order and payment tracking, reviews, discounts, stock management, and operational analytics.
 
-![Motion Cycle administration dashboard preview](docs/images/admin-dashboard-preview.png)
+## Screenshots
+
+### Sign In
+
+![Motion Cycle sign-in screen](docs/images/authentication-sign-in.png)
+
+### Storefront Catalog
+
+![Motion Cycle storefront catalog](docs/images/storefront-product-catalog.png)
+
+### Administration Dashboard
+
+![Motion Cycle administration dashboard](docs/images/admin-dashboard.png)
 
 ## Highlights
 
@@ -141,10 +153,6 @@ php artisan test
 docker compose up --build
 docker compose down
 ```
-
-## Documentation Asset
-
-The README preview image was generated with the built-in image-generation workflow and saved at [docs/images/admin-dashboard-preview.png](docs/images/admin-dashboard-preview.png).
 
 ## License
 
