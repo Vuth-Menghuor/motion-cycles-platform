@@ -424,6 +424,7 @@ export default {
   box-shadow: 0 6px 18px rgba(2, 6, 23, 0.06);
   display: flex;
   flex-direction: column;
+  min-width: 0;
   font-family: 'Poppins', sans-serif;
 }
 
@@ -628,17 +629,105 @@ export default {
   border-radius: 6px;
   min-width: 200px;
   text-align: center;
+  line-height: 1.4;
   font-family: 'Poppins', sans-serif;
 }
 
 .chart-container {
   position: relative;
   width: 100%;
+  min-width: 0;
   height: 320px;
+  overflow: hidden;
 }
 
 canvas {
-  width: auto;
-  height: 100%;
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+  height: 100% !important;
+}
+
+@media (max-width: 900px) {
+  .chart-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chart-filters {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .date-indicator {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .date-picker-container,
+  .date-picker-button {
+    flex: 1 1 180px;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .date-picker-button {
+    width: 100%;
+  }
+
+  .filter-select {
+    flex: 1 1 140px;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .calendar-overlay {
+    left: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .revenue-chart {
+    padding: 16px;
+  }
+
+  .chart-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chart-filters {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .date-indicator {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .date-picker-container,
+  .date-picker-button,
+  .filter-select {
+    flex: 1 1 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .calendar-overlay {
+    left: 0;
+  }
+
+  .calendar-dropdown {
+    width: min(280px, calc(100vw - 64px));
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .chart-container {
+    height: 260px;
+  }
 }
 </style>

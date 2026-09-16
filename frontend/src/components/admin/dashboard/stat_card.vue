@@ -199,6 +199,25 @@ const shortTitle = computed(() => {
   gap: 20px;
 }
 
+@media (max-width: 640px) {
+  .stat-card {
+    min-height: 156px;
+    padding: 16px;
+  }
+
+  .stat-value {
+    font-size: 32px;
+  }
+
+  .action-group {
+    gap: 12px;
+  }
+
+  .action-icon {
+    padding: 6px;
+  }
+}
+
 .action-icon {
   background: transparent;
   border: none;

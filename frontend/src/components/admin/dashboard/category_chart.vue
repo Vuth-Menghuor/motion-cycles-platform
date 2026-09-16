@@ -175,4 +175,24 @@ canvas {
 .legend-label {
   color: #475569;
 }
+
+@media (max-width: 640px) {
+  .category-chart {
+    padding: 16px;
+  }
+
+  .chart-header {
+    margin-bottom: 16px;
+  }
+
+  .chart-container {
+    height: 200px;
+  }
+
+  .chart-legend {
+    flex-direction: column;
+    align-items: flex-start;
+    top: 0;
+  }
+}
 </style>

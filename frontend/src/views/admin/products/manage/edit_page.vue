@@ -610,6 +610,7 @@ onMounted(async () => {
   display: flex;
   gap: 12px;
   align-items: center;
+  min-width: 0;
 }
 
 .product-input {
@@ -671,18 +672,17 @@ onMounted(async () => {
 .form-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-items: start;
   gap: 20px;
   margin: 0 auto;
-  width: auto;
-  overflow-y: scroll;
-  height: 72vh;
+  width: 100%;
+  min-width: 0;
 }
 
 .form-column {
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 0;
+  min-width: 0;
 }
 
 .form-column-left {
@@ -716,17 +716,33 @@ onMounted(async () => {
   font-family: 'Poppins', sans-serif;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1100px) {
   .form-container {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .breadcrumb {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .breadcrumb-separator {
+    margin: 0 4px;
+  }
+
+  .input-group {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .load-btn {
+    width: 100%;
   }
 
   .edit-product-page {
     padding: 15px;
-  }
-
-  .form-column-left {
-    position: static;
   }
 }
 </style>

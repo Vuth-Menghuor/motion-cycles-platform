@@ -361,8 +361,9 @@ const handleChartDateChange = (newDate) => {
 
 <style scoped>
 .dashboard {
-  overflow-y: scroll;
-  max-height: 88vh;
+  min-width: 0;
+  width: 100%;
+  overflow-x: hidden;
   margin: 0 auto;
 }
 
@@ -385,5 +386,28 @@ const handleChartDateChange = (newDate) => {
   grid-template-columns: 1fr;
   gap: 20px;
   margin-bottom: 25px;
+}
+
+@media (max-width: 1024px) {
+  .chart-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .chart-row {
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .stock-section {
+    margin-bottom: 16px;
+  }
 }
 </style>

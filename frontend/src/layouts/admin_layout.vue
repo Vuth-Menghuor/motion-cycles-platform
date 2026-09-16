@@ -99,6 +99,13 @@
         </router-link>
       </nav>
     </aside>
+    <button
+      v-if="sidebarOpen"
+      type="button"
+      class="sidebar-backdrop"
+      aria-label="Close sidebar"
+      @click="toggleSidebar"
+    ></button>
 
     <!-- Main Content Area -->
     <main class="main-content" :class="{ 'sidebar-open': sidebarOpen }">
@@ -106,11 +113,15 @@
       <header class="top-header">
         <div class="header-left">
           <button
+            type="button"
             class="sidebar-toggle"
             @click="toggleSidebar"
             :aria-label="sidebarOpen ? 'Close sidebar' : 'Open sidebar'"
+            :title="sidebarOpen ? 'Close sidebar' : 'Open sidebar'"
           >
-            <Icon icon="charm:menu" />
+            <Icon
+              :icon="sidebarOpen ? 'material-symbols:close-rounded' : 'material-symbols:menu-rounded'"
+            />
           </button>
           <div class="search-bar">
             <input type="text" placeholder="Search something..." v-model="searchQuery" />
@@ -124,7 +135,13 @@
             <Icon icon="material-symbols:home-outline-rounded" />
             <span>Home Page</span>
           </router-link>
-          <button class="profile-btn">
+          <button
+            type="button"
+            class="profile-btn"
+            title="Update profile"
+            aria-label="Update profile"
+            @click="showProfileModal = true"
+          >
             <img :src="user.avatar" :alt="user.name" />
             <Icon icon="nrk:more" class="profile-icon" />
           </button>
@@ -167,7 +184,7 @@
         <div class="modal-header">
           <h3>Change Password</h3>
           <button class="modal-close" @click="closePasswordModal">
-            <Icon icon="charm:cross" />
+            <Icon icon="material-symbols:close-rounded" />
           </button>
         </div>
         <div class="modal-body">
@@ -222,7 +239,7 @@
         <div class="modal-header">
           <h3>Update Profile</h3>
           <button class="modal-close" @click="closeProfileModal">
-            <Icon icon="charm:cross" />
+            <Icon icon="material-symbols:close-rounded" />
           </button>
         </div>
         <div class="modal-body">
@@ -753,6 +770,10 @@ const handleAvatarChange = (event) => {
 onMounted(() => {
   // Initialize profile form with current user data
   resetProfileForm()
+
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    sidebarOpen.value = false
+  }
 })
 </script>
 
@@ -780,7 +801,17 @@ onMounted(() => {
   color: white;
   padding: 20px;
   flex-shrink: 0;
-  transition: width 0.3s ease;
+  min-width: 0;
+  transition: width 0.3s ease, padding 0.3s ease;
+}
+
+@media (min-width: 769px) {
+  .admin-layout > .sidebar:not(.sidebar-open) {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    overflow: hidden;
+  }
 }
 
 .admin-layout > .main-content {
@@ -788,6 +819,10 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   min-width: 0;
+}
+
+.sidebar-backdrop {
+  display: none;
 }
 
 /* Brand Section */
@@ -985,19 +1020,29 @@ onMounted(() => {
 }
 
 .sidebar-toggle {
-  background: none;
-  border: none;
-  color: #666;
-  font-size: 20px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #d5dce6;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #1e3a8a;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: background 0.3s;
-  display: none;
+  transition: background 0.2s, border-color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .sidebar-toggle:hover {
-  background: #f5f5f5;
+  border-color: #1e3a8a;
+  background: #eff4ff;
+}
+
+.sidebar-toggle :deep(svg) {
+  width: 22px;
+  height: 22px;
 }
 
 .search-bar {
@@ -1098,10 +1143,21 @@ onMounted(() => {
 .page-tabs {
   background: white;
   border-bottom: 1px solid #e5e7eb;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.page-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tabs {
   display: flex;
+  width: max-content;
+  min-width: 100%;
   background: #ffffff;
 }
 
@@ -1120,6 +1176,8 @@ onMounted(() => {
   text-decoration: none;
   font-family: 'Poppins', sans-serif;
   position: relative;
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
 .tab.active {
@@ -1224,24 +1282,27 @@ onMounted(() => {
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
   z-index: 1000;
 }
 
 .modal-content {
   background: white;
   border-radius: 8px;
-  width: 90%;
+  width: min(500px, calc(100vw - 32px));
   max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
@@ -1251,6 +1312,7 @@ onMounted(() => {
   align-items: center;
   padding: 20px 24px;
   border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
 }
 
 .modal-header h3 {
@@ -1262,6 +1324,11 @@ onMounted(() => {
 }
 
 .modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   background: none;
   border: none;
   color: #6b7280;
@@ -1271,6 +1338,11 @@ onMounted(() => {
   transition: background 0.2s;
 }
 
+.modal-close :deep(svg) {
+  width: 20px;
+  height: 20px;
+}
+
 .modal-close:hover {
   background: #f3f4f6;
   color: #374151;
@@ -1278,6 +1350,8 @@ onMounted(() => {
 
 .modal-body {
   padding: 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 /* Form Styles */
@@ -1303,6 +1377,9 @@ onMounted(() => {
 
 .form-input,
 .form-textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 10px 12px;
   border: 1px solid #d1d5db;
   border-radius: 6px;
@@ -1386,29 +1463,100 @@ onMounted(() => {
   border-top: 1px solid #e5e7eb;
 }
 
+@media (max-width: 480px) {
+  .modal-overlay {
+    align-items: center;
+    padding: 8px;
+  }
+
+  .modal-content {
+    width: calc(100vw - 16px);
+    height: calc(100dvh - 16px);
+    max-height: none;
+    border-radius: 6px;
+  }
+
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-header h3 {
+    font-size: 16px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .password-form,
+  .profile-form {
+    gap: 14px;
+  }
+
+  .avatar-section {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .avatar-preview {
+    width: 68px;
+    height: 68px;
+  }
+
+  .form-actions {
+    gap: 8px;
+    padding-top: 14px;
+  }
+
+  .form-actions .btn {
+    flex: 1;
+    min-width: 0;
+    padding: 0.6rem 0.5rem;
+  }
+}
+
 /* ===========================================
    RESPONSIVE STYLES
    =========================================== */
 
 @media (max-width: 768px) {
   .admin-layout {
-    flex-direction: column;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .admin-layout > .sidebar {
-    width: 100%;
-    height: auto;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 900;
+    width: min(280px, calc(100vw - 44px));
+    height: 100dvh;
+    max-height: none;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
   }
 
   .admin-layout > .sidebar.sidebar-open {
-    max-height: 500px;
+    transform: translateX(0);
   }
 
-  .sidebar-toggle {
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 800;
     display: block;
+    border: 0;
+    background: rgba(15, 23, 42, 0.45);
+    cursor: pointer;
+  }
+
+  .admin-layout > .main-content {
+    height: 100dvh;
+    min-height: 0;
   }
 
   .search-bar {
@@ -1417,6 +1565,8 @@ onMounted(() => {
 
   .page-content {
     padding: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 }
 
@@ -1425,8 +1575,15 @@ onMounted(() => {
     padding: 10px 15px;
   }
 
+  .header-left {
+    min-width: 0;
+    gap: 5px;
+  }
+
   .search-bar {
-    width: 200px;
+    width: min(200px, calc(100vw - 160px));
+    min-width: 0;
+    padding: 10px;
   }
 
   .header-actions {
@@ -1444,6 +1601,161 @@ onMounted(() => {
   .page-content {
     padding: 15px;
   }
+
+  .tab {
+    height: 40px;
+    gap: 7px;
+    padding: 0 8px 0 12px;
+    font-size: 11px;
+  }
+
+  .tab-close {
+    width: 24px;
+    height: 24px;
+    margin-left: 2px;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  :deep(.table-container),
+  :deep(.table-wrapper) {
+    height: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  :deep(.orders-table),
+  :deep(.stock-table),
+  :deep(.products-table),
+  :deep(.customers-table),
+  :deep(.analytics-table) {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  :deep(.orders-table thead),
+  :deep(.stock-table thead),
+  :deep(.products-table thead),
+  :deep(.customers-table thead),
+  :deep(.analytics-table thead) {
+    display: none;
+  }
+
+  :deep(.orders-table tbody),
+  :deep(.stock-table tbody),
+  :deep(.products-table tbody),
+  :deep(.customers-table tbody),
+  :deep(.analytics-table tbody),
+  :deep(.orders-table tr),
+  :deep(.stock-table tr),
+  :deep(.products-table tr),
+  :deep(.customers-table tr),
+  :deep(.analytics-table tr),
+  :deep(.orders-table td),
+  :deep(.stock-table td),
+  :deep(.products-table td),
+  :deep(.customers-table td),
+  :deep(.analytics-table td) {
+    display: block;
+  }
+
+  :deep(.orders-table tbody tr),
+  :deep(.stock-table tbody tr),
+  :deep(.products-table tbody tr),
+  :deep(.customers-table tbody tr),
+  :deep(.analytics-table tbody tr) {
+    margin-bottom: 12px;
+    padding: 4px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+  }
+
+  :deep(.orders-table td),
+  :deep(.stock-table td),
+  :deep(.products-table td),
+  :deep(.customers-table td),
+  :deep(.analytics-table td) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0 !important;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: right;
+  }
+
+  :deep(.orders-table td::before),
+  :deep(.stock-table td::before),
+  :deep(.products-table td::before),
+  :deep(.customers-table td::before),
+  :deep(.analytics-table td::before) {
+    flex: 0 0 auto;
+    color: #6b7280;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  :deep(.orders-table td:nth-child(1)::before) { content: 'Select'; }
+  :deep(.orders-table td:nth-child(2)::before) { content: 'Order ID'; }
+  :deep(.orders-table td:nth-child(3)::before) { content: 'Customer'; }
+  :deep(.orders-table td:nth-child(4)::before) { content: 'Products'; }
+  :deep(.orders-table td:nth-child(5)::before) { content: 'Category'; }
+  :deep(.orders-table td:nth-child(6)::before) { content: 'Brand'; }
+  :deep(.orders-table td:nth-child(7)::before) { content: 'Payment'; }
+  :deep(.orders-table td:nth-child(8)::before) { content: 'Total'; }
+  :deep(.orders-table td:nth-child(9)::before) { content: 'Order date'; }
+  :deep(.orders-table td:nth-child(10)::before) { content: 'Status'; }
+  :deep(.orders-table td:nth-child(11)::before) { content: 'Actions'; }
+
+  :deep(.stock-table td:nth-child(1)::before) { content: 'Select'; }
+  :deep(.stock-table td:nth-child(2)::before) { content: 'Product ID'; }
+  :deep(.stock-table td:nth-child(3)::before) { content: 'Product'; }
+  :deep(.stock-table td:nth-child(4)::before) { content: 'Brand'; }
+  :deep(.stock-table td:nth-child(5)::before) { content: 'Category'; }
+  :deep(.stock-table td:nth-child(6)::before) { content: 'Current stock'; }
+  :deep(.stock-table td:nth-child(7)::before) { content: 'Minimum stock'; }
+  :deep(.stock-table td:nth-child(8)::before) { content: 'Status'; }
+  :deep(.stock-table td:nth-child(9)::before) { content: 'Last updated'; }
+  :deep(.stock-table td:nth-child(10)::before) { content: 'Stock alert'; }
+
+  :deep(.products-table td:nth-child(1)::before) { content: 'Select'; }
+  :deep(.products-table td:nth-child(2)::before) { content: 'ID / Code'; }
+  :deep(.products-table td:nth-child(3)::before) { content: 'Name / Type'; }
+  :deep(.products-table td:nth-child(4)::before) { content: 'Brand / Value'; }
+  :deep(.products-table td:nth-child(5)::before) { content: 'Category / Status'; }
+  :deep(.products-table td:nth-child(6)::before) { content: 'Quality / Valid until'; }
+  :deep(.products-table td:nth-child(7)::before) { content: 'Price / Actions'; }
+  :deep(.products-table td:nth-child(8)::before) { content: 'Color'; }
+  :deep(.products-table td:nth-child(9)::before) { content: 'Quantity'; }
+  :deep(.products-table td:nth-child(10)::before) { content: 'Actions'; }
+
+  :deep(.customers-table td:nth-child(1)::before) { content: 'Select'; }
+  :deep(.customers-table td:nth-child(2)::before) { content: 'Customer ID'; }
+  :deep(.customers-table td:nth-child(3)::before) { content: 'Name'; }
+  :deep(.customers-table td:nth-child(4)::before) { content: 'Email'; }
+  :deep(.customers-table td:nth-child(5)::before) { content: 'Registered'; }
+  :deep(.customers-table td:nth-child(6)::before) { content: 'Total orders'; }
+  :deep(.customers-table td:nth-child(7)::before) { content: 'Actions'; }
+
+  :deep(.analytics-table .day-cell::before) { content: 'Day'; }
+  :deep(.analytics-table .date-cell::before) { content: 'Date'; }
+  :deep(.analytics-table .period-cell::before) { content: 'Period'; }
+  :deep(.analytics-table .revenue-cell::before) { content: 'Revenue'; }
+  :deep(.analytics-table .expense-cell::before) { content: 'Expense'; }
+  :deep(.analytics-table .net-profit-cell::before) { content: 'Net profit'; }
+  :deep(.analytics-table .orders-cell::before) { content: 'Orders'; }
+  :deep(.analytics-table .customers-cell::before) { content: 'Customers'; }
+  :deep(.analytics-table .status-cell::before) { content: 'Status'; }
+
+  :deep(.analytics-table tfoot) { display: none; }
+  :deep(.orders-table td:last-child),
+  :deep(.stock-table td:last-child),
+  :deep(.products-table td:last-child),
+  :deep(.customers-table td:last-child),
+  :deep(.analytics-table td:last-child) { border-bottom: 0; }
 }
 
 /* ===========================================

@@ -2,13 +2,15 @@
   <div class="stock-alert-table">
     <div class="table-header">
       <h3>Stock Alert Breakdown</h3>
-      <select v-model="filterCategory" class="filter-select">
-        <option value="all">AllCategory</option>
-        <option value="Mountain Bike">Mountain Bikes</option>
-        <option value="Road Bike">Road Bikes</option>
-      </select>
+      <div class="table-controls">
+        <select v-model="filterCategory" class="filter-select">
+          <option value="all">AllCategory</option>
+          <option value="Mountain Bike">Mountain Bikes</option>
+          <option value="Road Bike">Road Bikes</option>
+        </select>
+      </div>
     </div>
-    <div>
+    <div class="table-scroll">
       <table>
         <thead>
           <tr>
@@ -23,18 +25,18 @@
         </thead>
         <tbody>
           <tr v-for="(item, index) in filteredStockData" :key="index">
-            <td>
+            <td data-label="Status">
               <span class="status-badge" :class="getStatusClass(item.status)">
                 <span class="status-dot"></span>
                 {{ item.status }}
               </span>
             </td>
-            <td>{{ item.brand }}</td>
-            <td>{{ item.category }}</td>
-            <td>{{ item.currentStock }}</td>
-            <td>{{ item.minStock }}</td>
-            <td>{{ item.lastUpdated }}</td>
-            <td>
+            <td data-label="Brand">{{ item.brand }}</td>
+            <td data-label="Category">{{ item.category }}</td>
+            <td data-label="Current Stock">{{ item.currentStock }}</td>
+            <td data-label="Minimum Stock">{{ item.minStock }}</td>
+            <td data-label="Last Updated">{{ item.lastUpdated }}</td>
+            <td data-label="Stock Alert">
               <span class="action-badge" :class="getActionClass(item.stockAlert)">
                 {{ item.stockAlert }}
               </span>
@@ -103,6 +105,12 @@ export default {
   align-items: center;
   margin-bottom: 12px;
   gap: 12px;
+}
+
+.table-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .table-header h3 {
@@ -221,5 +229,92 @@ tbody tr:hover {
 .action-monitor {
   background: #fffbeb;
   color: #b45309;
+}
+
+.table-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: scroll;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  isolation: isolate;
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 transparent;
+}
+
+@media (max-width: 640px) {
+  .stock-alert-table {
+    padding: 16px;
+  }
+
+  .table-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .table-controls {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .table-scroll {
+    overflow-x: hidden;
+  }
+
+  table {
+    width: 100%;
+    min-width: 0;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody,
+  tr,
+  td {
+    display: block;
+  }
+
+  tr {
+    margin-bottom: 12px;
+    padding: 4px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+  }
+
+  tr:last-child {
+    margin-bottom: 0;
+  }
+
+  td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+    text-align: right;
+  }
+
+  td:last-child {
+    border-bottom: 0;
+  }
+
+  td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    color: #6b7280;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-align: left;
+    text-transform: uppercase;
+  }
 }
 </style>

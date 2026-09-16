@@ -463,23 +463,33 @@ onMounted(() => {
 .form-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-items: start;
   gap: 20px;
   margin: 0 auto;
-  width: auto;
-  overflow-y: scroll;
-  height: 82vh;
+  width: 100%;
+  min-width: 0;
 }
 
 .form-column {
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 0;
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .form-container {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
-  .form-container {
-    grid-template-columns: 1fr;
+  .breadcrumb {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .breadcrumb-separator {
+    margin: 0 4px;
   }
 
   .add-product-page {
