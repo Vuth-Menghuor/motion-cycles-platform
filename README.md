@@ -12,6 +12,10 @@ Motion Cycle is a full-stack electric-bike commerce platform with a customer sto
 
 ![Motion Cycle storefront catalog](docs/images/storefront-product-catalog.png)
 
+### Cart and Checkout
+
+![Motion Cycle cart and checkout](docs/images/storefront-cart-checkout.png)
+
 ### Administration Dashboard
 
 ![Motion Cycle administration dashboard](docs/images/admin-dashboard.png)
