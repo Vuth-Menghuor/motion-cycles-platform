@@ -344,7 +344,7 @@ const handlePurchase = async () => {
       const requestData = {
         bakong_account: 'vuth_menghuor@aclb', // Merchant's Bakong account
         account_name: 'MOTION CYCLE', // Display name for customer
-        amount: purchaseAmount.value, // Total amount to pay
+        amount: Number(purchaseAmount.value.toFixed(2)), // KHQR accepts USD values with at most two decimal places
         currency: 'USD', // Payment currency (USD/KHR)
         track_payment: true, // Enable real-time payment detection
         include_image: false, // Generate QR image URL separately for better control

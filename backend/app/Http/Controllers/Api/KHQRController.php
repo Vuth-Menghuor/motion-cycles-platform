@@ -202,12 +202,16 @@ class KHQRController extends Controller
             // Step 3: Set defaults
             $currency = $validated['currency'] ?? 'USD';
             $trackPayment = $validated['track_payment'] ?? false;
+            // KHQR requires USD amounts to use at most two decimal places; KHR is whole riel.
+            $amount = $currency === 'USD'
+                ? round((float) $validated['amount'], 2)
+                : round((float) $validated['amount']);
 
             // Step 4: Generate QR using service
             $result = BakongApiService::generateIndividual(
                 $validated['bakong_account'],
                 $validated['account_name'],
-                $validated['amount'],
+                $amount,
                 $currency,
                 $trackPayment
             );
