@@ -27,6 +27,8 @@ class Order extends Model
         'total_amount',         // Final total amount
         'currency',             // Currency code
         'promo_code',           // Applied promo code
+        'payment_method',       // Payment method selected at checkout
+        'payment_status',       // Current payment status
         'order_status',         // Current order status
         'confirmed_at',         // When order was confirmed
         'processing_at',        // When order started processing

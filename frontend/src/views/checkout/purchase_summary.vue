@@ -624,7 +624,9 @@ const saveOrderToAdminList = () => {
 }
 
 .order-card {
+  box-sizing: border-box;
   max-width: 1000px;
+  width: min(100%, 1000px);
   margin: auto;
   border: 1px solid #eee;
   border-radius: 8px;
@@ -638,6 +640,7 @@ const saveOrderToAdminList = () => {
   margin-bottom: 1rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #f0f0f0;
+  min-width: 0;
 }
 
 .order-item:last-of-type {
@@ -646,7 +649,7 @@ const saveOrderToAdminList = () => {
 }
 
 .order-item-image {
-  width: auto;
+  width: 160px;
   height: 120px;
   object-fit: cover;
   border-radius: 8px;
@@ -656,6 +659,7 @@ const saveOrderToAdminList = () => {
 .order-item-details {
   text-align: left;
   flex: 1;
+  min-width: 0;
 }
 
 .order-item-name {
@@ -663,6 +667,7 @@ const saveOrderToAdminList = () => {
   color: #333;
   margin: 0;
   font-size: 16px;
+  overflow-wrap: anywhere;
 }
 
 .order-item-brand {
@@ -733,10 +738,17 @@ const saveOrderToAdminList = () => {
 }
 
 .summary-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 1rem;
   margin-bottom: 1.5rem;
   font-size: 14px;
+}
+
+.summary-row span:last-child {
+  text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .summary-row.total {
@@ -775,6 +787,7 @@ hr {
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 14px;
+  width: 100%;
 }
 
 .separator {
@@ -806,16 +819,19 @@ hr {
   font-size: 1.6rem;
   font-weight: 600;
   color: #333;
+  margin: 0;
 }
 
 .invoice-info {
   text-align: right;
   font-size: 14px;
   color: #555;
+  min-width: 0;
 }
 
 .invoice-info p {
   margin: 2px 0;
+  overflow-wrap: anywhere;
 }
 
 .btn-download:hover {
@@ -904,6 +920,7 @@ hr {
   font-size: 14px;
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .badge {
@@ -925,6 +942,26 @@ hr {
 }
 
 @media (max-width: 768px) {
+  .payment-success {
+    margin-top: 96px;
+    padding: 1.25rem;
+  }
+
+  .order-card {
+    padding: 1.25rem;
+  }
+
+  .invoice-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .invoice-info {
+    text-align: left;
+  }
+
   .order-actions {
     flex-direction: column;
   }
@@ -938,8 +975,75 @@ hr {
     text-align: center;
   }
 
+  .order-item-image {
+    width: min(100%, 260px);
+    height: auto;
+    aspect-ratio: 4 / 3;
+    margin: 0 auto;
+  }
+
+  .item-category-brand {
+    justify-content: center;
+  }
+
+  .order-item-quantity {
+    padding-top: 1rem;
+  }
+
   .price-total-row {
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-success {
+    margin-top: 80px;
+    padding: 1rem;
+  }
+
+  .success-title {
+    font-size: 1.5rem;
+  }
+
+  .success-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .order-card {
+    padding: 1rem;
+    border-radius: 6px;
+  }
+
+  .invoice-title {
+    font-size: 1.35rem;
+  }
+
+  .invoice-info,
+  .summary-row {
+    font-size: 0.82rem;
+  }
+
+  .summary-row {
+    column-gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .summary-row.total {
+    font-size: 1rem;
+  }
+
+  .order-item-name {
+    font-size: 0.95rem;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 3px 9px;
+  }
+
+  .btn-download,
+  .btn-continue {
+    min-height: 48px;
   }
 }
 </style>

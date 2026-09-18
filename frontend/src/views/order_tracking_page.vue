@@ -360,6 +360,7 @@ onMounted(() => {
 .tracking-container {
   max-width: 1000px;
   margin: 0 auto;
+  min-width: 0;
 }
 
 .back-btn {
@@ -415,6 +416,7 @@ onMounted(() => {
   background: white;
   border-radius: 12px;
   padding: 2rem;
+  min-width: 0;
 }
 
 /* Order Header */
@@ -431,6 +433,7 @@ onMounted(() => {
   margin: 0 0 0.5rem 0;
   font-size: 2rem;
   color: #1f2937;
+  overflow-wrap: anywhere;
 }
 
 .order-date {
@@ -541,6 +544,7 @@ onMounted(() => {
 .step-content {
   flex: 1;
   padding-bottom: 1rem;
+  min-width: 0;
 }
 
 .step-content h3 {
@@ -552,6 +556,7 @@ onMounted(() => {
 .step-content p {
   margin: 0 0 0.5rem 0;
   color: #6b7280;
+  overflow-wrap: anywhere;
 }
 
 .step-date {
@@ -605,11 +610,12 @@ onMounted(() => {
   background: #f9fafb;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
+  min-width: 0;
 }
 
 .item-image {
-  width: 230px;
-  height: auto;
+  width: 180px;
+  height: 135px;
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
@@ -623,12 +629,14 @@ onMounted(() => {
 
 .item-details {
   flex: 1;
+  min-width: 0;
 }
 
 .item-details h3 {
   margin: 0 0 0.5rem 0;
   font-size: 1.1rem;
   color: #1f2937;
+  overflow-wrap: anywhere;
 }
 
 .item-category-brand {
@@ -637,6 +645,7 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   margin: 12px 0;
+  flex-wrap: wrap;
 }
 
 .badge {
@@ -680,10 +689,17 @@ onMounted(() => {
 }
 
 .summary-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 1rem;
   margin-bottom: 0.75rem;
   font-size: 1rem;
+}
+
+.summary-row span:last-child {
+  text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .summary-row:last-child {
@@ -831,6 +847,7 @@ onMounted(() => {
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   display: inline-block;
+  overflow-wrap: anywhere;
 }
 
 /* Action Buttons */
@@ -885,6 +902,18 @@ onMounted(() => {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .order-tracking-page {
+    padding: 100px 15px 32px;
+  }
+
+  .order-details {
+    padding: 1.25rem;
+  }
+
+  .back-btn {
+    margin-bottom: 1.25rem;
+  }
+
   .shipping-section,
   .payment-section {
     padding: 2rem 1.5rem;
@@ -908,9 +937,25 @@ onMounted(() => {
     height: 35px;
   }
 
+  .step-connector {
+    left: 17px;
+    top: 35px;
+  }
+
   .order-item {
     flex-direction: column;
     text-align: center;
+  }
+
+  .item-image {
+    width: min(100%, 260px);
+    height: auto;
+    aspect-ratio: 4 / 3;
+    margin: 0 auto;
+  }
+
+  .item-category-brand {
+    justify-content: center;
   }
 
   .item-meta {
@@ -966,6 +1011,60 @@ onMounted(() => {
   .btn-primary,
   .btn-danger {
     width: 100%;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .order-tracking-page {
+    padding: 86px 12px 24px;
+  }
+
+  .order-details {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .order-title h1 {
+    font-size: 1.45rem;
+  }
+
+  .order-header,
+  .tracking-section,
+  .order-items-section,
+  .order-summary-section,
+  .shipping-section {
+    margin-bottom: 2rem;
+  }
+
+  .tracking-section h2,
+  .order-items-section h2,
+  .order-summary-section h2 {
+    font-size: 1.25rem;
+  }
+
+  .tracking-step {
+    gap: 0.6rem;
+  }
+
+  .step-content h3 {
+    font-size: 1rem;
+  }
+
+  .step-content p,
+  .summary-row {
+    font-size: 0.85rem;
+  }
+
+  .summary-details,
+  .shipping-section,
+  .info-card {
+    padding: 1rem;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 3px 9px;
   }
 }
 </style>

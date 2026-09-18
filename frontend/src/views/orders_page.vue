@@ -214,11 +214,13 @@ onMounted(() => {
 }
 
 .order-card {
+  box-sizing: border-box;
   background: #f8fafc;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 1.5rem;
   cursor: pointer;
+  min-width: 0;
 }
 
 .order-header {
@@ -232,6 +234,7 @@ onMounted(() => {
   margin: 0 0 0.25rem 0;
   font-size: 1.1rem;
   color: #1f2937;
+  overflow-wrap: anywhere;
 }
 
 .order-date {
@@ -296,17 +299,19 @@ onMounted(() => {
   border-radius: 8px;
   flex: 1;
   min-width: 200px;
+  min-inline-size: 0;
 }
 
 .item-image {
-  width: 230px;
-  height: auto;
+  width: 160px;
+  height: 120px;
   object-fit: cover;
   border-radius: 6px;
 }
 
 .item-info {
   flex: 1;
+  min-width: 0;
 }
 
 .item-name {
@@ -314,6 +319,7 @@ onMounted(() => {
   font-size: 0.9rem;
   font-weight: 500;
   color: #1f2937;
+  overflow-wrap: anywhere;
 }
 
 .item-category-brand {
@@ -322,6 +328,7 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   margin: 12px 0;
+  flex-wrap: wrap;
 }
 
 .badge {
@@ -404,6 +411,10 @@ onMounted(() => {
     gap: 0.5rem;
   }
 
+  .order-card {
+    padding: 1.25rem;
+  }
+
   .order-status {
     text-align: left;
   }
@@ -416,6 +427,11 @@ onMounted(() => {
     min-width: auto;
   }
 
+  .item-image {
+    width: 120px;
+    height: 96px;
+  }
+
   .order-footer {
     flex-direction: column;
     gap: 1rem;
@@ -423,8 +439,48 @@ onMounted(() => {
   }
 
   .view-details-btn {
-    align-self: flex-end;
-    width: fit-content;
+    width: 100%;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .orders-page {
+    padding: 100px 12px 32px;
+  }
+
+  .order-card {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .order-item-preview {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .item-image {
+    width: min(100%, 220px);
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .item-category-brand {
+    justify-content: center;
+  }
+
+  .order-footer {
+    text-align: center;
+  }
+
+  .order-total {
+    align-items: center;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 3px 9px;
   }
 }
 </style>

@@ -71,6 +71,8 @@ class OrderController extends Controller
                 'total_amount' => $validated['total_amount'],
                 'currency' => $validated['currency'] ?? 'USD',
                 'promo_code' => $validated['promo_code'] ?? null,
+                'payment_method' => $validated['payment_method'],
+                'payment_status' => 'pending',
                 'order_status' => 'pending',
             ]);
 
