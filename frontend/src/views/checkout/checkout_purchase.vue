@@ -643,6 +643,9 @@ const updateSummaryBreakdown = (breakdown) => {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow-y: auto;
   z-index: 1000;
   backdrop-filter: blur(3px);
 }
@@ -650,9 +653,12 @@ const updateSummaryBreakdown = (breakdown) => {
 .bakong-payment-content {
   background: white;
   border-radius: 20px;
-  padding: 32px;
+  padding: 24px;
   max-width: 380px;
-  width: 90%;
+  width: 100%;
+  max-height: calc(100dvh - 32px);
+  box-sizing: border-box;
+  overflow-y: auto;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   text-align: center;
   position: relative;
@@ -780,7 +786,7 @@ const updateSummaryBreakdown = (breakdown) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .payment-header h3 {
@@ -812,12 +818,12 @@ const updateSummaryBreakdown = (breakdown) => {
 }
 
 .qr-section {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .khqr-card {
   background: white;
-  border-radius: 24px;
+  border-radius: 18px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   margin-bottom: 16px;
@@ -826,7 +832,7 @@ const updateSummaryBreakdown = (breakdown) => {
 
 .khqr-header {
   background: #f90000;
-  padding: 12px 20px;
+  padding: 10px 16px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -838,7 +844,7 @@ const updateSummaryBreakdown = (breakdown) => {
 
 .khqr-merchant {
   background: #f9fafb;
-  padding: 16px 20px;
+  padding: 12px 16px;
   text-align: left;
   border-bottom: 2px dashed #e5e7eb;
 }
@@ -851,25 +857,26 @@ const updateSummaryBreakdown = (breakdown) => {
 }
 
 .amount-display {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
   color: #111827;
   padding: 4px 0;
 }
 
 .qr-code-container {
-  padding: 40px 20px;
+  padding: 24px 16px;
   background: white;
   text-align: center;
-  min-height: 280px;
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .qr-code {
-  width: 300px;
-  height: 300px;
+  width: min(260px, 100%);
+  aspect-ratio: 1;
+  height: auto;
   display: block;
   margin: 0 auto;
 }
@@ -882,7 +889,7 @@ const updateSummaryBreakdown = (breakdown) => {
 }
 
 .payment-status {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .status-waiting,
@@ -1101,11 +1108,12 @@ const updateSummaryBreakdown = (breakdown) => {
   }
 
   .bakong-payment-content {
-    padding: 30px 20px;
+    max-width: 350px;
+    padding: 20px 16px;
   }
 
   .qr-code {
-    width: min(300px, 100%);
+    width: min(240px, 100%);
     height: auto;
   }
 
@@ -1114,9 +1122,32 @@ const updateSummaryBreakdown = (breakdown) => {
 
 @media (max-width: 480px) {
   .checkout-purchase-container { padding: 12px; }
-  .bakong-payment-content { width: calc(100% - 32px); box-sizing: border-box; padding: 22px 16px; }
-  .qr-code-container { min-height: 0; padding: 24px 12px; }
+  .bakong-payment-modal { padding: 12px; align-items: center; }
+  .bakong-payment-content { max-width: none; max-height: calc(100dvh - 24px); padding: 18px 14px; border-radius: 16px; }
+  .payment-header { margin-bottom: 14px; }
+  .payment-header h3 { font-size: 18px; }
+  .close-btn { width: 36px; height: 36px; font-size: 26px; }
+  .qr-section { margin-bottom: 14px; }
+  .khqr-card { border-radius: 16px; margin-bottom: 12px; }
+  .khqr-header { padding: 8px 12px; }
+  .khqr-logo { height: 20px; }
+  .khqr-merchant { padding: 10px 12px; }
+  .merchant-name { font-size: 14px; }
+  .amount-display { font-size: 20px; }
+  .qr-code-container { min-height: 0; padding: 16px 10px; }
+  .qr-code { width: min(220px, 100%); }
+  .payment-status { margin-bottom: 14px; }
+  .status-waiting, .status-checking { gap: 8px; padding: 12px; }
   .success-content { width: calc(100% - 32px); box-sizing: border-box; padding: 32px 20px; }
   .success-content h3 { font-size: 23px; }
+}
+
+@media (max-height: 700px) and (max-width: 768px) {
+  .bakong-payment-content { padding-block: 14px; }
+  .payment-header { margin-bottom: 10px; }
+  .qr-section { margin-bottom: 10px; }
+  .qr-code-container { padding-block: 12px; }
+  .qr-code { width: min(190px, 100%); }
+  .payment-status { margin-bottom: 10px; }
 }
 </style>
