@@ -3,8 +3,6 @@
 namespace App\Services;
 
 use KHQR\BakongKHQR;
-use KHQR\Models\IndividualInfo;
-use KHQR\Helpers\KHQRData;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 
@@ -18,44 +16,9 @@ class BakongApiService
         bool $trackPayment = false
     ): array {
         try {
-            $individualInfo = new IndividualInfo(
-                $bakongAccount,
-                $accountName,
-                'PHNOM PENH',
-                null,
-                null,
-                $currency === 'USD' ? KHQRData::CURRENCY_USD : KHQRData::CURRENCY_KHR,
-                $amount
-            );
+            $qrData = self::generateWithOfficialSdk($bakongAccount, $accountName, $amount, $currency);
 
-            // Try API generation first if tracking enabled
-            if ($trackPayment && env('BAKONG_API_TOKEN')) {
-                try {
-                    $bakong = new BakongKHQR(env('BAKONG_API_TOKEN'));
-                    $apiResponse = $bakong->generateIndividual($individualInfo, false);
-                    $qrData = self::extractQRData($apiResponse);
-                    if (!empty($qrData['qr'])) {
-                        return self::buildResult($qrData, $bakongAccount, $accountName, $amount, $currency, $trackPayment);
-                    }
-                } catch (\Exception $e) {
-                    Log::warning('API generation failed, falling back to local: ' . $e->getMessage());
-                }
-            }
-
-            // Fallback to local generation
-            $response = BakongKHQR::generateIndividual($individualInfo);
-            $qrData = self::extractQRData($response);
-            $qrString = $qrData['qr'] ?? (string)$response;
-            $md5Hash = $qrData['md5'] ?? hash('md5', $qrString);
-
-            if (empty($qrString)) {
-                throw new \Exception('Failed to generate QR string');
-            }
-
-            return self::buildResult([
-                'qr' => $qrString,
-                'md5' => $md5Hash
-            ], $bakongAccount, $accountName, $amount, $currency, $trackPayment);
+            return self::buildResult($qrData, $bakongAccount, $accountName, $amount, $currency, $trackPayment);
 
         } catch (\Exception $e) {
             Log::error('KHQR generation failed', ['error' => $e->getMessage()]);
@@ -66,14 +29,48 @@ class BakongApiService
         }
     }
 
-    private static function extractQRData($response): array
+    private static function generateWithOfficialSdk(string $bakongAccount, string $accountName, float $amount, string $currency): array
     {
-        $data = is_object($response) ? (array)($response->data ?? $response) :
-               (is_array($response) ? ($response['data'] ?? $response) : []);
+        $scriptPath = base_path('scripts/generate-khqr.cjs');
+        $process = proc_open(
+            ['node', $scriptPath],
+            [
+                0 => ['pipe', 'r'],
+                1 => ['pipe', 'w'],
+                2 => ['pipe', 'w'],
+            ],
+            $pipes
+        );
+
+        if (!is_resource($process)) {
+            throw new \RuntimeException('Unable to start the official KHQR SDK');
+        }
+
+        fwrite($pipes[0], json_encode([
+            'bakong_account' => $bakongAccount,
+            'account_name' => $accountName,
+            'amount' => $amount,
+            'currency' => $currency,
+            'expiration_minutes' => env('KHQR_EXPIRATION_MINUTES', 15),
+        ], JSON_THROW_ON_ERROR));
+        fclose($pipes[0]);
+
+        $stdout = stream_get_contents($pipes[1]);
+        $stderr = stream_get_contents($pipes[2]);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        $exitCode = proc_close($process);
+
+        $response = json_decode($stdout, true);
+        if ($exitCode !== 0 || !is_array($response) || !($response['success'] ?? false)) {
+            $message = $response['message'] ?? trim($stderr) ?: 'Official KHQR SDK failed to generate a QR code';
+            throw new \RuntimeException($message);
+        }
 
         return [
-            'qr' => $data['qr'] ?? $data['qrCode'] ?? null,
-            'md5' => $data['md5'] ?? $data['hash'] ?? null
+            'qr' => $response['qr'],
+            'md5' => $response['md5'],
+            'expires_at' => $response['expires_at'],
         ];
     }
 
