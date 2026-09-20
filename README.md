@@ -18,7 +18,7 @@ Motion Cycle is a full-stack electric-bike commerce platform with a customer sto
 
 ### Administration Dashboard
 
-![Motion Cycle administration dashboard](docs/images/admin-dashboard.png)
+![Motion Cycle administration dashboard](https://raw.githubusercontent.com/Vuth-Menghuor/motion-cycles-platform/bb6c915c0f167f9ac6d27544ce82d1693b74412c/docs/images/admin-dashboard.png)
 
 ## Highlights
 
