@@ -267,6 +267,7 @@ onMounted(() => {
 <style scoped>
 .feedback-page {
   font-family: 'Poppins', sans-serif;
+  min-width: 0;
 }
 
 .main-content {
@@ -280,6 +281,7 @@ onMounted(() => {
   gap: 24px;
   flex: 1;
   overflow-y: scroll;
+  overscroll-behavior: contain;
 }
 
 .feedback-section {
@@ -348,6 +350,33 @@ onMounted(() => {
   .main-content.two-column .product-section {
     flex: none;
     margin-bottom: 24px;
+    position: static;
+  }
+
+  .main-content.two-column :deep(.product-card) {
+    max-width: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    height: auto;
+  }
+
+  .feedback-content-group {
+    gap: 16px;
+    overflow: visible;
+  }
+
+  .main-content.two-column .product-section {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumb {
+    margin-bottom: 12px;
+    padding: 10px 12px;
   }
 }
 </style>

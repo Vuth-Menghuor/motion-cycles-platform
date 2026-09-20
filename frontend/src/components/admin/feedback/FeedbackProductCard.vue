@@ -182,4 +182,26 @@ const getCategoryName = (category) => {
   font-size: 14px;
   color: #6b7280;
 }
+
+@media (max-width: 768px) {
+  .product-card {
+    max-width: none;
+  }
+
+  .product-image-container {
+    height: min(260px, 58vw);
+    min-height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .product-info {
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .product-name {
+    font-size: 18px;
+  }
+}
 </style>

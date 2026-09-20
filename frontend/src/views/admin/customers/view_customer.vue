@@ -261,6 +261,7 @@ onMounted(() => loadCustomer())
 <style scoped>
 .admin-customers-container {
   margin: 0 auto;
+  min-width: 0;
   font-family: 'Poppins', sans-serif;
   color: #333;
   background: #f8fafc;
@@ -275,6 +276,8 @@ onMounted(() => loadCustomer())
 .breadcrumb {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 6px;
   margin-bottom: 20px;
   padding: 12px 16px;
   background: white;
@@ -716,6 +719,7 @@ onMounted(() => loadCustomer())
   max-height: calc(100vh - 200px);
   border-top: 1px solid #e2e8f0;
   height: 680px;
+  overscroll-behavior: contain;
 }
 
 .btn:hover {
@@ -934,6 +938,18 @@ onMounted(() => loadCustomer())
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
+    padding: 20px;
+  }
+
+  .customer-meta {
+    flex-wrap: wrap;
+    gap: 6px 16px;
+  }
+
+  .customer-view-inner {
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .section-header {
@@ -960,6 +976,8 @@ onMounted(() => loadCustomer())
 
   .info-value {
     text-align: left;
+    max-width: 100%;
+    overflow-wrap: anywhere;
   }
 
   .order-card {
@@ -971,19 +989,59 @@ onMounted(() => loadCustomer())
     width: 100%;
     justify-content: space-between;
   }
+
+  .order-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .item-flex-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .item-details {
+    height: auto;
+    min-width: 0;
+  }
+
+  .item-thumb {
+    width: 120px;
+    height: 90px;
+    object-fit: contain;
+  }
 }
 
 @media (max-width: 480px) {
+  .breadcrumb {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+  }
+
+  .breadcrumb-separator {
+    margin: 0 8px;
+  }
+
   .customer-header {
-    flex-direction: column;
     gap: 8px;
-    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .customer-info h2 {
+    font-size: 20px;
+  }
+
+  .section-header {
+    padding: 16px;
+  }
+
+  .section-content {
+    padding: 16px;
   }
 
   .section-header h2 {
-    flex-direction: column;
-    gap: 8px;
-    text-align: center;
+    font-size: 18px;
   }
 
   .info-row {
@@ -1004,6 +1062,24 @@ onMounted(() => loadCustomer())
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
+  }
+
+  .order-header-info,
+  .order-summary {
+    padding: 12px;
+  }
+
+  .item-info {
+    text-align: left;
+  }
+
+  .item-category-brand {
+    flex-wrap: wrap;
+  }
+
+  .summary-row {
+    gap: 12px;
+    font-size: 14px;
   }
 }
 </style>

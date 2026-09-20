@@ -265,6 +265,7 @@ onMounted(() => loadOrder())
 <style scoped>
 .admin-orders-container {
   margin: 0 auto;
+  min-width: 0;
   font-family: 'Poppins', sans-serif;
   color: #333;
   background: #f8fafc;
@@ -281,6 +282,8 @@ onMounted(() => loadOrder())
 .breadcrumb {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 6px;
   margin-bottom: 20px;
   padding: 12px 16px;
   background: white;
@@ -404,6 +407,7 @@ onMounted(() => loadOrder())
   overflow-y: scroll;
   height: calc(100vh - 200px);
   max-height: 680px;
+  overscroll-behavior: contain;
 }
 
 .item-image {
@@ -459,6 +463,7 @@ onMounted(() => loadOrder())
 }
 
 .item-details {
+  display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: 130px;
@@ -797,6 +802,24 @@ onMounted(() => loadOrder())
     padding: 24px;
   }
 
+  .order-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .order-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .order-details {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
   .info-row {
     flex-direction: column;
     align-items: flex-start;
@@ -810,6 +833,9 @@ onMounted(() => loadOrder())
 
   .info-value {
     margin-left: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: left;
   }
 
   .order-header-row {
@@ -827,11 +853,14 @@ onMounted(() => loadOrder())
     flex-direction: column;
     gap: 8px;
     align-items: flex-start;
+    height: auto;
+    min-width: 0;
   }
 
   .item-thumb {
-    width: 60px;
-    height: 60px;
+    width: 120px;
+    height: 90px;
+    object-fit: contain;
   }
 
   .item-name {
@@ -852,10 +881,44 @@ onMounted(() => loadOrder())
 }
 
 @media (max-width: 480px) {
+  .breadcrumb {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+  }
+
+  .breadcrumb-separator {
+    margin: 0 8px;
+  }
+
+  .order-header {
+    padding: 16px;
+  }
+
+  .order-info h2 {
+    font-size: 20px;
+  }
+
+  .order-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .order-actions .btn {
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .section-header {
+    padding: 16px;
+  }
+
+  .section-content {
+    padding: 16px;
+  }
+
   .section-header h2 {
-    flex-direction: column;
-    gap: 8px;
-    text-align: center;
+    font-size: 18px;
   }
 
   .info-row {
@@ -894,12 +957,12 @@ onMounted(() => loadOrder())
   }
 
   .item-thumb {
-    width: 50px;
-    height: 50px;
+    width: 120px;
+    height: 90px;
   }
 
   .item-info {
-    text-align: center;
+    text-align: left;
   }
 
   .item-name {
@@ -907,7 +970,8 @@ onMounted(() => loadOrder())
   }
 
   .item-category-brand {
-    justify-content: center;
+    flex-wrap: wrap;
+    justify-content: flex-start;
   }
 
   .item-price {
@@ -920,6 +984,7 @@ onMounted(() => loadOrder())
 
   .summary-row {
     font-size: 14px;
+    gap: 12px;
   }
 }
 </style>

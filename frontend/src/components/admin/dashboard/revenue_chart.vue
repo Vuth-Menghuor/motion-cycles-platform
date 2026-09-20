@@ -249,9 +249,15 @@ export default {
       const datasets = []
       const baseConfig = {
         fill: false,
-        tension: 0,
+        // Use a smooth, monotone curve so the trend looks rounded without
+        // introducing artificial peaks between the real data points.
+        tension: 0.35,
+        cubicInterpolationMode: 'monotone',
+        borderWidth: 2.5,
+        borderCapStyle: 'round',
+        borderJoinStyle: 'round',
         pointBorderWidth: 2,
-        pointRadius: 4,
+        pointRadius: 3.5,
         pointHoverRadius: 6,
       }
 

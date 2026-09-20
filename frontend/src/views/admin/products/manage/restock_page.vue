@@ -316,6 +316,8 @@ onMounted(() => {
 .breadcrumb {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 6px;
   margin-bottom: 20px;
   padding: 12px 16px;
   background: white;
@@ -419,6 +421,7 @@ onMounted(() => {
   width: auto;
   overflow-y: scroll;
   height: 72vh;
+  overscroll-behavior: contain;
 }
 
 .form-column {
@@ -460,6 +463,7 @@ label {
 
 .readonly-field {
   width: 100%;
+  box-sizing: border-box;
   padding: 10px 12px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
@@ -482,6 +486,7 @@ label {
 
 .editable-field {
   width: 100%;
+  box-sizing: border-box;
   padding: 10px 12px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
@@ -503,6 +508,7 @@ label {
 
 .textarea-field {
   width: 100%;
+  box-sizing: border-box;
   padding: 10px 12px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
@@ -618,6 +624,22 @@ label {
 @media (max-width: 768px) {
   .form-container {
     grid-template-columns: 1fr;
+    gap: 0;
+    height: auto;
+    overflow: visible;
+  }
+
+  .form-column {
+    position: static;
+  }
+
+  .image-preview {
+    min-height: 260px;
+  }
+
+  .product-image {
+    width: min(100%, 320px);
+    max-height: 260px;
   }
 
   .action-buttons {
@@ -628,6 +650,39 @@ label {
   .btn-secondary {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumb {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+  }
+
+  .breadcrumb-separator {
+    margin: 0 8px;
+  }
+
+  .form-section {
+    margin-bottom: 16px;
+    padding: 16px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  .image-preview {
+    min-height: 220px;
+  }
+
+  .product-image {
+    max-height: 220px;
+  }
+
+  .action-buttons {
+    margin-top: 4px;
   }
 }
 </style>

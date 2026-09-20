@@ -126,6 +126,7 @@ const clearFilters = () => {
 
 .search-input {
   width: 100%;
+  box-sizing: border-box;
   padding: 0.75rem 2.5rem 0.75rem 1rem;
   border: 1px solid #dee2e6;
   border-radius: 4px;
@@ -227,6 +228,7 @@ const clearFilters = () => {
   .filter-input {
     min-width: auto;
     width: 100%;
+    box-sizing: border-box;
   }
 
   .clear-filters {

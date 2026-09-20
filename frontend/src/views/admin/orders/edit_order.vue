@@ -316,6 +316,7 @@ watch(order, (newOrder) => {
 <style scoped>
 .admin-orders-container {
   margin: 0 auto;
+  min-width: 0;
   font-family: 'Poppins', sans-serif;
   color: #333;
   background: #f8fafc;
@@ -332,6 +333,8 @@ watch(order, (newOrder) => {
 .breadcrumb {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 6px;
   margin-bottom: 20px;
   padding: 12px 16px;
   background: white;
@@ -455,6 +458,7 @@ watch(order, (newOrder) => {
   overflow-y: scroll;
   height: calc(100vh - 200px);
   max-height: 680px;
+  overscroll-behavior: contain;
 }
 
 .order-card {
@@ -933,6 +937,18 @@ watch(order, (newOrder) => {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
+    padding: 20px;
+  }
+
+  .section-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .order-details {
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .section-header {
@@ -956,6 +972,9 @@ watch(order, (newOrder) => {
 
   .info-value {
     margin-left: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: left;
   }
 
   .order-card {
@@ -974,16 +993,45 @@ watch(order, (newOrder) => {
 }
 
 @media (max-width: 480px) {
+  .breadcrumb {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+  }
+
+  .breadcrumb-separator {
+    margin: 0 8px;
+  }
+
   .order-header {
-    flex-direction: column;
     gap: 8px;
-    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .order-info h2 {
+    font-size: 20px;
+  }
+
+  .section-header-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .section-header-actions .btn {
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .section-header {
+    padding: 16px;
+  }
+
+  .section-content {
+    padding: 16px;
   }
 
   .section-header h2 {
-    flex-direction: column;
-    gap: 8px;
-    text-align: center;
+    font-size: 18px;
   }
 
   .info-row {
@@ -1034,7 +1082,7 @@ watch(order, (newOrder) => {
   }
 
   .progress-container {
-    grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 </style>
