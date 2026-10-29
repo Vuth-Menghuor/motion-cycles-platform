@@ -78,9 +78,9 @@
         <div class="button-wrapper">
           <button type="submit" class="submit-button" :disabled="isLoading">
             <span v-if="!isLoading">Sign Up</span>
-            <span v-else class="loading-text">
-              <Icon icon="eos-icons:loading" class="loading-icon" />
-              Creating account...
+            <span v-else class="loading-text" aria-live="polite">
+              <Icon icon="mdi:loading" class="loading-icon" aria-hidden="true" />
+              Creating account…
             </span>
           </button>
           <Guest_button />

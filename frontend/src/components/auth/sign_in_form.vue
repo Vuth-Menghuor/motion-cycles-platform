@@ -47,7 +47,10 @@
 
       <div class="button-wrapper">
         <button @click="login" type="submit" class="submit-button" :disabled="isLoading">
-          <span v-if="isLoading">Signing In...</span>
+          <span v-if="isLoading" class="loading-text" aria-live="polite">
+            <Icon icon="mdi:loading" class="loading-icon" aria-hidden="true" />
+            Signing in…
+          </span>
           <span v-else>Sign In</span>
         </button>
         <Guest_button />
@@ -308,6 +311,24 @@ const login = async () => {
 .submit-button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+.loading-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-icon {
+  width: 19px;
+  height: 19px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .form-divider {
