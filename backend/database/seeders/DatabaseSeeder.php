@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use App\Models\Product;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,11 +13,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call([
-            AdminSeeder::class,
-            CategorySeeder::class,
-            ProductSeeder::class,
-            OrderSeeder::class,
-        ]);
+        // The application seeds during deployment. Always ensure the admin
+        // account exists, but only add catalogue and sample-order data to an
+        // empty database so deploys never duplicate it.
+        $this->call(AdminSeeder::class);
+
+        if (! Product::exists()) {
+            $this->call([
+                CategorySeeder::class,
+                ProductSeeder::class,
+                OrderSeeder::class,
+            ]);
+        }
     }
 }
